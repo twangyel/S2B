@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Order - Shop2Bhutan</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #1044b8;
+      --primary-light: #e8f0fe;
+      --secondary: #0c1a2e;
+      --light: #f7f9fc;
+      --border: #e2e8f0;
+      --text: #1a2540;
+      --muted: #64748b;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --radius: 16px;
+      --radius-lg: 24px;
+    }
+
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--light); 
+      color: var(--text); 
+      line-height: 1.65; 
+    }
+
+    .container { width: 100%; max-width: 1140px; margin: auto; padding: 0 24px; }
+
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(226,232,240,0.8);
+    }
+    .nav-content {
+      display: flex; align-items: center; justify-content: space-between; padding: 16px 0;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'Sora', sans-serif;
+      font-size: 1.45rem; font-weight: 800; color: var(--secondary);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 44px; height: 44px; border-radius: 13px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .track-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      max-width: 720px;
+      margin: 60px auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .input-group input {
+      width: 100%; padding: 18px 20px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+    }
+    .input-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+    .status-badge {
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .products-list {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .product-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .product-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container nav-content">
+      <a href="https://shop2bhutan.netlify.app/" class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        Shop2Bhutan
+      </a>
+      <a href="https://shop2bhutan.netlify.app/" style="color:var(--muted); text-decoration:none; font-weight:500;">
+        ← Back to Home
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="track-card">
+      <div style="text-align:center; margin-bottom:32px;">
+        <h2 style="font-size:2.2rem; margin-bottom:12px;">Track Your Order</h2>
+        <p style="color:var(--muted);">Enter your Order ID to check real-time status</p>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="orderId" placeholder="e.g. S2B-250517-042" />
+      </div>
+
+      <button onclick="searchOrder()" class="btn-primary">
+        <i class="fa-solid fa-magnifying-glass"></i> Check Status
+      </button>
+
+      <div id="result" class="result hidden"></div>
+    </div>
+  </div>
+
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxzpEvzI0K5ei3fcEMnaDaQTcgWmwboC_avWt-fks_HSvtL1JjKFbqre1sr2EpP0QHM/exec";
+
+  async function searchOrder() {
+    const orderIdInput = document.getElementById('orderId').value.trim().toUpperCase();
+    const resultDiv = document.getElementById('result');
+
+    if (!orderIdInput) {
+      alert("Please enter your Order ID");
+      return;
+    }
+
+    resultDiv.classList.remove('hidden');
+    resultDiv.innerHTML = `<p style="text-align:center; padding:40px;">Searching for <strong>${orderIdInput}</strong>...</p>`;
+
+    try {
+      const response = await fetch(`${WEB_APP_URL}?orderId=${encodeURIComponent(orderIdInput)}`);
+      const result = await response.json();
+
+      if (result.success) {
+        const d = result.data;
+        let productsHtml = '';
+        
+        if (d.products) {
+          const lines = d.products.toString().split('\n').filter(l => l.trim() !== '');
+          productsHtml = lines.map(line => `
+            <div class="product-item">
+              <i class="fa-solid fa-circle-check" style="color:var(--success);"></i> ${line}
+            </div>
+          `).join('');
+        }
+
+        resultDiv.innerHTML = `
+          <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+              <h3 style="margin:0;">${d.orderId}</h3>
+              <span class="status-badge" style="background:var(--success-bg); color:var(--success); padding:8px 20px; border-radius:999px;">
+                ${d.status || 'Processing'}
+              </span>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:0.98rem;">
+              <div><strong>Date:</strong> ${d.date || '—'}</div>
+              <div><strong>City:</strong> ${d.city || '—'}</div>
+              <div><strong>Customer:</strong> ${d.customer || '—'}</div>
+              <div><strong>Status:</strong> <span style="color:var(--success);font-weight:600;">${d.status || '—'}</span></div>
+            </div>
+
+            ${productsHtml ? `
+            <div style="margin-top:24px;">
+              <strong>Products:</strong>
+              <div class="products-list">${productsHtml}</div>
+            </div>` : ''}
+
+            ${d.remark ? `
+            <div style="margin-top:24px; padding:16px; background:#fff; border:1px solid var(--border); border-radius:12px;">
+              <strong>Latest Update:</strong><br>${d.remark}
+            </div>` : ''}
+          </div>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="text-align:center; color:#dc2626; padding:40px;">${result.message || "Order ID not found"}</p>`;
+      }
+    } catch (err) {
+      resultDiv.innerHTML = `<p style="text-align:center; color:#dc2626; padding:40px;">Unable to connect. Please try again later.</p>`;
+    }
+  }
+
+  // Allow pressing Enter key
+  document.getElementById('orderId').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') searchOrder();
+  });
+</script>
+</body>
+</html>

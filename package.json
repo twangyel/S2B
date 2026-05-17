@@ -1,0 +1,8 @@
+{
+  "name": "shop2bhutan",
+  "version": "1.0.0",
+  "description": "Shop2Bhutan - Cross border shopping service",
+  "scripts": {
+    "dev": "echo \"Use Live Server for local development\""
+  }
+}

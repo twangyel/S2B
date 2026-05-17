@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop2Bhutan | Shop India • Deliver to Bhutan</title>
+  <meta name="description" content="Order products from Amazon India, Flipkart, Myntra and more. Shop2Bhutan delivers directly to your doorstep in Bhutan." />
+  <meta property="og:title" content="Shop2Bhutan" />
+  <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="mainNav">
+  <div class="container nav-content">
+    <a href="#" class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
+      Shop2Bhutan
+    </a>
+    <div class="nav-actions">
+      <a href="#order-form" class="nav-btn btn-primary">Place Order</a>
+      <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+      </a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#order-form" class="nav-btn btn-primary">Place Order</a>
+    <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
+      <i class="fa-brands fa-whatsapp"></i> WhatsApp
+    </a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <i class="fa-solid fa-location-dot"></i>
+      Delivering in Thimphu, Phuntsholing &amp; Paro
+    </div>
+    <h1>Shop India.<br><span>Delivered</span> to Bhutan.</h1>
+    <p>Order from Amazon, Flipkart, Myntra and more. We personally collect from Jaigaon and deliver straight to your doorstep.</p>
+    <div class="hero-cta">
+      <a href="#order-form" class="cta-main">Submit Order Request</a>
+      <a href="https://wa.me/97577113302" target="_blank" class="cta-wa">
+        <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+      </a>
+    </div>
+    <div class="hero-chips">
+      <div class="hero-chip"><i class="fa-solid fa-circle-check"></i> Trusted Local Service</div>
+      <div class="hero-chip"><i class="fa-solid fa-truck"></i> Doorstep Delivery</div>
+      <div class="hero-chip"><i class="fa-solid fa-calendar"></i> Weekly Delivery</div>
+      <div class="hero-chip"><i class="fa-solid fa-clock"></i> 5–10 Day Turnaround</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEE ESTIMATOR ── -->
+<section class="estimator-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Quick Estimate</span>
+      <h2 class="section-title">How much will it cost?</h2>
+      <p class="section-subtitle">Enter the product price in Indian Rupees to get an instant estimate including our service charge.</p>
+    </div>
+    <div class="estimator-box">
+      <h3><i class="fa-solid fa-calculator" style="color:var(--primary);margin-right:8px;"></i>Service Charge Estimator</h3>
+      <div class="est-row">
+        <div>
+          <div class="est-label">Product Price (₹ INR)</div>
+          <input type="number" class="est-input" id="estPrice" placeholder="e.g. 1500" min="0" oninput="calcEstimate()">
+        </div>
+        <div>
+          <div class="est-label">Delivery Location</div>
+          <select class="est-input" id="dcharge" onchange="calcEstimate()">
+            <option value="350">Thimphu</option>
+            <option value="150">Phuntsholing</option>
+            <option value="400">Paro</option>
+          </select>
+        </div>
+      </div>
+      <div class="est-result" id="estResult">
+        <div>
+          <div class="est-result-label">Product Price</div>
+          <div class="est-result-val" id="estBase">₹ —</div>
+        </div>
+        <div>
+          <div class="est-result-label">Service Fee</div>
+          <div class="est-result-val" id="estServiceCharge">₹ —</div>
+        </div>
+        <div>
+          <div class="est-result-label">Shipping Fee</div>
+          <div class="est-result-val" id="estShipping">₹ —</div>
+        </div>
+        <div>
+          <div class="est-result-label">Delivery Fee</div>
+          <div class="est-result-val" id="dchargeDisplay">₹ —</div>
+        </div>
+        <div>
+          <div class="est-result-label">Est. Total (INR)</div>
+          <div class="est-result-val" id="estTotal">₹ —</div>
+        </div>
+      </div>
+      <p class="est-note">* Shipping fee shown is an estimate (₹50–₹150). Exchange rate adjustments may apply. Final price confirmed on WhatsApp before order.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SHOPPING WEBSITES ── -->
+<section class="shops-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Browse &amp; Shop</span>
+      <h2 class="section-title">Start Shopping</h2>
+      <p class="section-subtitle">Browse your favorite Indian shopping websites and share the product links with us.</p>
+    </div>
+    <div class="shop-grid">
+
+      <a class="shop-card" href="https://www.amazon.in/" target="_blank" rel="noopener">
+        <div class="shop-logo-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff9900;color:#000;\'>AMZ</div>'">
+        </div>
+        <h3>Amazon India</h3>
+        <span class="shop-tag">Electronics, books, fashion &amp; more</span>
+      </a>
+
+      <a class="shop-card" href="https://www.flipkart.com/" target="_blank" rel="noopener">
+        <div class="shop-logo-wrap">
+          <img src="image/flipkart.png" alt="Flipkart"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#2874f0;\'>FK</div>'">
+        </div>
+        <h3>Flipkart</h3>
+        <span class="shop-tag">Wide range of products</span>
+      </a>
+
+      <a class="shop-card" href="https://www.myntra.com/" target="_blank" rel="noopener">
+        <div class="shop-logo-wrap">
+          <img src="image/myntra.jpg" alt="Myntra"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff3f6c;\'>MYN</div>'">
+        </div>
+        <h3>Myntra</h3>
+        <span class="shop-tag">Fashion &amp; lifestyle</span>
+      </a>
+
+      <a class="shop-card" href="https://www.meesho.com/" target="_blank" rel="noopener">
+        <div class="shop-logo-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#9400d3;\'>MS</div>'">
+        </div>
+        <h3>Meesho</h3>
+        <span class="shop-tag">Budget-friendly finds</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── TRUST ── -->
+<section class="trust-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Why Us</span>
+      <h2 class="section-title">Why Shop2Bhutan?</h2>
+      <p class="section-subtitle">We make cross-border shopping simple, safe and convenient for everyone in Bhutan.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        <h3>No Indian Payment Needed</h3>
+        <p>We handle the entire ordering process on your behalf. Pay us locally in BTN.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+        <h3>No Indian SIM Required</h3>
+        <p>Simply send us the product link or a screenshot — we do the rest.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-box-open"></i></div>
+        <h3>Personally Sourced</h3>
+        <p>Products are personally collected from Jaigaon — no middlemen.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Trusted Local Delivery</h3>
+        <p>Delivered directly to your door in Thimphu, Phuntsholing or Paro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="testi-header">
+      <div>
+        <span class="section-tag">Reviews</span>
+        <h2 class="section-title" style="margin-bottom:0;">What customers say</h2>
+      </div>
+      <button class="review-btn" onclick="openReviewForm()">
+        <i class="fa-solid fa-pen"></i> Write a Review
+      </button>
+    </div>
+    <div id="testiGrid" class="testi-grid">
+      <div class="testi-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading reviews…</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ORDER FORM ── -->
+<section class="form-section" id="order-form">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Get Started</span>
+      <h2 class="section-title">Submit Order Request</h2>
+      <p class="section-subtitle">Share your product links or screenshots. We will contact you on WhatsApp for confirmation and payment.</p>
+    </div>
+
+    <div class="form-card">
+      <form id="orderForm" action="https://forminit.com/f/x1qtsk3ghjh" method="POST" enctype="multipart/form-data" novalidate>
+
+        <!-- Honeypot -->
+        <div style="display:none;"><input type="text" name="_gotcha"></div>
+        <input type="hidden" name="_subject" value="New Shop2Bhutan Order Request">
+        <input type="hidden" name="source" value="Shop2Bhutan Website">
+        <input type="hidden" name="service_area" value="Bhutan">
+        <input type="hidden" name="fi-text-products" id="hiddenProducts">
+
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" name="fi-sender-fullName" required placeholder="Your full name">
+            <div class="field-error-msg" id="err-name">Please enter your name.</div>
+          </div>
+          <div class="input-group">
+            <label for="whatsapp">WhatsApp Number *</label>
+            <input type="tel" id="whatsapp" name="fi-text-whatsapp" required placeholder="+975 17XXXXXX">
+            <div class="field-error-msg" id="err-phone">Enter a valid Bhutan number (e.g. +975 17113302).</div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="deliveryCity">Delivery City *</label>
+          <select id="deliveryCity" name="fi-text-city" required>
+            <option value="" disabled selected>Select your city</option>
+            <option>Thimphu</option>
+            <option>Phuntsholing</option>
+            <option>Paro</option>
+          </select>
+          <div class="field-error-msg" id="err-city">Please select your city.</div>
+        </div>
+
+        <div class="input-group">
+          <label for="address">Delivery Address *</label>
+          <textarea id="address" name="fi-text-address" rows="3" required placeholder="House number, area, landmark…"></textarea>
+          <div class="field-error-msg" id="err-address">Please enter your delivery address.</div>
+        </div>
+
+        <!-- PRODUCTS -->
+        <div class="input-group">
+          <label>Products *</label>
+          <div id="productsContainer"></div>
+          <button type="button" class="add-product-btn" onclick="addProductRow()">
+            <i class="fa-solid fa-plus"></i> Add Another Product
+          </button>
+        </div>
+
+        <!-- FILE UPLOAD -->
+        <div class="input-group">
+          <label>Upload Screenshots (Optional)</label>
+          <div class="file-upload-area">
+            <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)">
+            <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <p><strong>Click to upload</strong> or drag &amp; drop</p>
+            <p>JPG, PNG — max 5 MB per file</p>
+          </div>
+          <div class="file-list" id="fileList"></div>
+          <div class="field-error-msg" id="err-files"></div>
+        </div>
+
+        <div class="pricing-box">
+          <strong>Delivery &amp; Pricing Info</strong>
+          <ul>
+            <li>Service fee varies by product type and price</li>
+            <li>Currency exchange adjustment may apply</li>
+            <li>Estimated shipping fee (₹50–₹150) added at confirmation</li>
+            <li>Fixed delivery fee applies based on your location</li>
+            <li>Weekly delivery — typically collected on weekends</li>
+          </ul>
+          <div class="pricing-steps">
+            <div class="pricing-step">
+              <div class="pricing-step-num">1</div>
+              <p>Submit your request</p>
+            </div>
+            <div class="pricing-step">
+              <div class="pricing-step-num">2</div>
+              <p>WhatsApp confirmation &amp; payment</p>
+            </div>
+            <div class="pricing-step">
+              <div class="pricing-step-num">3</div>
+              <p>We order &amp; collect from India</p>
+            </div>
+            <div class="pricing-step">
+              <div class="pricing-step-num">4</div>
+              <p>Delivered to your door</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice-box">
+          <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>
+          Certain restricted, commercial, oversized, or prohibited items may not be eligible for delivery.
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-submit" id="submitBtn">Submit Order Request</button>
+          <button type="button" class="btn-clear" onclick="clearForm()">Clear Form</button>
+        </div>
+        <p class="form-footer-note">You will be prompted to confirm your order on WhatsApp after submission.</p>
+        <p class="form-footer-note" style="margin-top:4px;">Orders are processed only after payment confirmation.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="faq-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">FAQ</span>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>How do I place an order?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">Browse any Indian shopping site, copy the product link and paste it into the order form above. You can also upload screenshots if you don't have a direct link.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>How do payments work?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">After you submit the form, we contact you on WhatsApp to confirm product availability, total price (including service charge), and payment. Orders are placed only after payment is confirmed.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>How long does delivery take?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">Most orders are fulfilled weekly. Typical end-to-end time is 5–10 days from order confirmation, depending on the seller's shipping speed within India.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>Can I send screenshots instead of links?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">Yes, absolutely. Use the file upload field in the form to attach product screenshots. You can also send them directly in the WhatsApp chat after submitting.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>What items can't be delivered?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">Restricted, prohibited, or oversized items may not be eligible. Items like flammable goods, large furniture, or commercially restricted products cannot be shipped. Contact us on WhatsApp if you're unsure about a specific item.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-header">
+          <h3>How is the service charge calculated?</h3>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">Our service charge is tiered: 15% for orders under ₹2,000, 10% for ₹2,000–₹5,999, and 8% for ₹6,000 and above. Use the estimator at the top of this page to get a quick idea of the total before ordering.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DELIVERY SCHEDULE ── -->
+<section class="delivery-section">
+  <div class="container text-center">
+    <span class="section-tag">Schedule</span>
+    <h2 class="section-title">Delivery Schedule</h2>
+    <p class="section-subtitle">Here's how a typical order flows from submission to your door.</p>
+    <div class="schedule-grid">
+      <div class="schedule-card">
+        <div class="schedule-num">01</div>
+        <h3>Order Cutoff</h3>
+        <p>Friday 6 PM</p>
+      </div>
+      <div class="schedule-card">
+        <div class="schedule-num">02</div>
+        <h3>India Sourcing</h3>
+        <p>Weekend</p>
+      </div>
+      <div class="schedule-card">
+        <div class="schedule-num">03</div>
+        <h3>Bhutan Delivery</h3>
+        <p>Monday – Wednesday</p>
+      </div>
+      <div class="schedule-card">
+        <div class="schedule-num">04</div>
+        <h3>Total Time</h3>
+        <p>Typically 5–10 days</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="logo-icon" style="width:38px;height:38px;border-radius:10px;font-size:1rem;">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          Shop2Bhutan
+        </div>
+        <p>Shop from Indian e-commerce platforms and get delivery directly to your doorstep in Bhutan.</p>
+        <div class="footer-social">
+          <a href="https://wa.me/97577113302" target="_blank" aria-label="WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h3 class="footer-title">Delivery Areas</h3>
+        <ul class="footer-list">
+          <li><span>Thimphu</span></li>
+          <li><span>Phuntsholing</span></li>
+          <li><span>Paro</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">Platforms</h3>
+        <ul class="footer-list">
+          <li><a href="https://www.amazon.in/" target="_blank" rel="noopener">Amazon India</a></li>
+          <li><a href="https://www.flipkart.com/" target="_blank" rel="noopener">Flipkart</a></li>
+          <li><a href="https://www.myntra.com/" target="_blank" rel="noopener">Myntra</a></li>
+          <li><a href="https://www.meesho.com/" target="_blank" rel="noopener">Meesho</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">Contact</h3>
+        <ul class="footer-list">
+          <li><a href="https://wa.me/97577113302" target="_blank">WhatsApp Support</a></li>
+          <li><a href="#order-form">Submit Order</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Shop2Bhutan · Trusted Cross-Border Shopping</span>
+      <span>Thimphu, Bhutan</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ── FLOATING WHATSAPP ── -->
+<div class="floating-wa">
+  <div class="floating-wa-label">Chat with us</div>
+  <a href="https://wa.me/97577113302" class="floating-wa-btn" target="_blank" aria-label="Chat on WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+</div>
+
+<!-- ── SUCCESS POPUP ── -->
+<div class="popup-backdrop" id="successPopup">
+  <div class="popup-box">
+    <div class="popup-icon">✅</div>
+    <h3>Order Submitted!</h3>
+    <div class="popup-order-id" id="popupOrderId">—</div>
+    <p class="popup-copy-note" id="copyNote">Tap the ID above to copy it</p>
+    <p>Your request has been received. Tap below to confirm on WhatsApp and we'll sort out the details.</p>
+    <a id="whatsappConfirmBtn" href="#" target="_blank" class="popup-wa-btn">
+      <i class="fa-brands fa-whatsapp"></i> Confirm on WhatsApp
+    </a>
+    <button class="popup-close-btn" onclick="closePopup()">Close</button>
+  </div>
+</div>
+
+<!-- ── REVIEW MODAL ── -->
+<div class="modal-backdrop" id="reviewModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Write a Review</h3>
+      <button class="modal-close" onclick="closeReviewForm()" aria-label="Close">&times;</button>
+    </div>
+    <input type="text" id="reviewName" placeholder="Your Name *">
+    <input type="text" id="reviewLocation" placeholder="Location (e.g. Thimphu)">
+    <select id="reviewRating">
+      <option value="5">5 ⭐ — Excellent</option>
+      <option value="4">4 ⭐ — Good</option>
+      <option value="3">3 ⭐ — Average</option>
+      <option value="2">2 ⭐ — Poor</option>
+      <option value="1">1 ⭐ — Very Poor</option>
+    </select>
+    <textarea id="reviewText" rows="4" placeholder="Share your experience *"></textarea>
+    <button class="modal-submit" id="reviewSubmitBtn" onclick="submitReview()">Submit Review</button>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+
+
+<script src="/js/main.js"></script>
+</body>
+</html>
