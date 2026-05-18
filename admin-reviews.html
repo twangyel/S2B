@@ -1,143 +1,206 @@
-<script>
-  const session = localStorage.getItem("sb_admin");
-
-if (!session) {
-  window.location.href = "admin-login.html";
-}
-</script>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Review Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop2Bhutan Admin Panel</title>
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const supabase = createClient(
-       "https://deecrnfbvgbzyybqhywy.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+      "https://deecrnfbvgbzyybqhywy.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
     );
-    
 
-    const container = document.getElementById("reviews");
+    if (!localStorage.getItem("sb_admin")) {
+      window.location.href = "admin-login.html";
+    }
 
-    async function loadReviews() {
-      container.innerHTML = "Loading...";
+    const statusOptions = ["pending", "ordered", "purchased", "shipped", "jaigaon", "phuentsholing", "delivery", "delivered"];
 
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("*")
-        .order("created_at", { ascending: false });
+    // ==================== SWITCH TAB ====================
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab + '-tab').classList.add('active');
+      
+      document.getElementById('orders-section').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('reviews-section').style.display = tab === 'reviews' ? 'block' : 'none';
+
+      if (tab === 'orders') loadOrders();
+      if (tab === 'reviews') loadReviews();
+    }
+
+    // ==================== ORDERS ====================
+    async function loadOrders(filter = "") {
+      const tbody = document.getElementById("orders-body");
+      tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;padding:40px;'>Loading...</td></tr>";
+
+      let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+
+      if (filter) query = query.ilike('order_id', `%${filter}%`);
+
+      const { data, error } = await query;
 
       if (error) {
-        container.innerHTML = "Error loading reviews";
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan='6' style='color:red;text-align:center;'>Error: ${error.message}</td></tr>`;
         return;
       }
 
-      container.innerHTML = data.map(r => `
-        <div class="card">
-          <div class="top">
-            <b>${r.full_name}</b>
-            <span>${r.city || ""}</span>
-          </div>
-
-          <div class="stars">
-            ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}
-          </div>
-
-          <p>${r.message}</p>
-
-          <div class="actions">
-            <button onclick="approve('${r.id}', ${r.is_approved})">
-              ${r.is_approved ? "Unapprove" : "Approve"}
-            </button>
-
-            <button class="delete" onclick="remove('${r.id}')">
-              Delete
-            </button>
-          </div>
-
-          <small>Status: ${r.is_approved ? "Approved" : "Pending"}</small>
-        </div>
-      `).join("");
+      tbody.innerHTML = data.map(order => `
+        <tr>
+          <td><strong>${order.order_id}</strong></td>
+          <td>${order.full_name}</td>
+          <td>${order.delivery_city || '-'}</td>
+          <td><span class="status-badge">${order.status || 'pending'}</span></td>
+          <td>${new Date(order.created_at).toLocaleDateString('en-IN')}</td>
+          <td>
+            <select onchange="updateOrderStatus('${order.id}', this.value)" class="status-select">
+              ${statusOptions.map(s => `
+                <option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>
+              `).join('')}
+            </select>
+            <button onclick="addRemark('${order.id}')" class="remark-btn">Remark</button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    window.approve = async (id, current) => {
-      await supabase
-        .from("reviews")
-        .update({ is_approved: !current })
-        .eq("id", id);
+    // FIXED: Status Update Function
+    window.updateOrderStatus = async (id, newStatus) => {
+      console.log("Updating status:", id, "→", newStatus); // Debug log
 
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status: newStatus,
+          last_updated: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error("Update Error:", error);
+        alert("❌ Failed to update status:\n" + error.message);
+      } else {
+        console.log("✅ Status updated successfully");
+        // Refresh the list
+        loadOrders(document.getElementById('order-search').value);
+      }
+    };
+
+    window.addRemark = async (id) => {
+      const remark = prompt("Enter latest update / remark:");
+      if (remark === null || !remark.trim()) return;
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          remark: remark,
+          last_updated: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) alert("Failed to save remark");
+      else loadOrders(document.getElementById('order-search').value);
+    };
+
+    // ==================== REVIEWS (unchanged) ====================
+    async function loadReviews() {
+      const container = document.getElementById("reviews-container");
+      container.innerHTML = "<p>Loading reviews...</p>";
+
+      const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
+
+      if (error) return container.innerHTML = "<p>Error loading reviews</p>";
+
+      container.innerHTML = data.map(r => `
+        <div class="review-card">
+          <div><b>${r.full_name}</b> - ${r.city || ""}</div>
+          <div class="stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+          <p>${r.message}</p>
+          <button onclick="toggleApprove('${r.id}', ${r.is_approved})">
+            ${r.is_approved ? "✅ Approved" : "Approve"}
+          </button>
+          <button class="delete-btn" onclick="deleteReview('${r.id}')">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    window.toggleApprove = async (id, current) => {
+      await supabase.from("reviews").update({ is_approved: !current }).eq("id", id);
       loadReviews();
     };
 
-    window.remove = async (id) => {
-      await supabase
-        .from("reviews")
-        .delete()
-        .eq("id", id);
-
-      loadReviews();
+    window.deleteReview = async (id) => {
+      if (confirm("Delete this review?")) {
+        await supabase.from("reviews").delete().eq("id", id);
+        loadReviews();
+      }
     };
 
-    loadReviews();
-
-    //logout script
     window.logout = () => {
-  localStorage.removeItem("sb_admin");
-  window.location.href = "admin-login.html";
-};
+      localStorage.removeItem("sb_admin");
+      window.location.href = "admin-login.html";
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOrders();
+    });
   </script>
 
   <style>
-    body {
-      font-family: Arial;
-      background: #f5f5f5;
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .top {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .stars {
-      color: gold;
-      margin: 5px 0;
-    }
-
-    .actions {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-
-    button {
-      padding: 6px 10px;
-      border: none;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-
-    .delete {
-      background: red;
-      color: white;
-    }
+    body { font-family: Arial, sans-serif; background: #f8fafc; padding: 20px; }
+    .tabs { display: flex; gap: 10px; margin: 20px 0; }
+    .tab { padding: 12px 24px; cursor: pointer; background: #e2e8f0; border-radius: 8px; }
+    .tab.active { background: #3b82f6; color: white; }
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    th, td { padding: 14px; border-bottom: 1px solid #eee; }
+    th { background: #1e2937; color: white; }
+    select { padding: 8px; border-radius: 6px; }
+    .status-badge { padding: 6px 12px; border-radius: 20px; background: #fef3c7; }
+    .delete-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; margin-left: 8px; }
   </style>
-
-  <body>
-    <h2>Review Admin Panel</h2>
-    <div id="reviews"></div>
-    <button onclick="logout()">Logout</button>
-  </body>
 </head>
+<body>
+  <h1>🛠️ Shop2Bhutan Admin Panel</h1>
+
+  <div class="tabs">
+    <div id="orders-tab" class="tab active" onclick="switchTab('orders')">📦 Orders</div>
+    <div id="reviews-tab" class="tab" onclick="switchTab('reviews')">⭐ Reviews</div>
+  </div>
+
+  <div id="orders-section">
+    <input type="text" id="order-search" placeholder="Search Order ID..." style="padding:10px; width:300px; margin-bottom:15px;">
+    <button onclick="loadOrders(document.getElementById('order-search').value)">Search</button>
+    <button onclick="loadOrders()">Refresh</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>City</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="orders-body"></tbody>
+    </table>
+  </div>
+
+  <div id="reviews-section" style="display:none;">
+    <div id="reviews-container"></div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab + '-tab').classList.add('active');
+      document.getElementById('orders-section').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('reviews-section').style.display = tab === 'reviews' ? 'block' : 'none';
+    }
+  </script>
+</body>
 </html>

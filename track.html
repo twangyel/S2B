@@ -29,19 +29,18 @@
       </div>
 
       <div class="input-group">
-        <!-- FIX: id used by JS, keep consistent -->
-        <input type="text" id="orderId" placeholder="e.g. S2B-250517-042" />
+        <label for="orderId" style="display:block; margin-bottom:8px; font-weight:500;">Order ID</label>
+        <input type="text" id="orderId" placeholder="e.g. S2B-250517-042" autocomplete="off" />
       </div>
 
-      <!-- FIX: onclick calls the globally exposed function -->
       <button onclick="searchOrder()" class="btn-primary" id="searchBtn">
         <i class="fa-solid fa-magnifying-glass"></i> Check Status
       </button>
 
-      <!-- FIX #3: removed dead static timeline; result div starts hidden -->
       <div id="result" class="hidden"></div>
     </div>
   </div>
+
   <script type="module" src="/js/track.js"></script>
 </body>
 </html>
