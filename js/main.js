@@ -379,23 +379,25 @@ document.getElementById('popupOrderId').addEventListener('click', function() {
 
 /* ==========================================================
    FILE UPLOAD TO SUPABASE STORAGE
+   FIX: now accepts (file, orderId) parameters and returns the
+        public URL of the uploaded file (or throws on error).
    ========================================================== */
 async function uploadFile(file, orderId) {
-  const filePath = `${orderId}/${Date.now()}-${file.name}`;
+  const ext      = file.name.split('.').pop();
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path     = `${orderId}/${Date.now()}_${safeName}`;
 
-  const { data, error } = await supabase
-    .storage
+  const { error } = await supabase.storage
     .from('order-files')
-    .upload(filePath, file);
+    .upload(path, file, { upsert: false });
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 
-  const { data: publicUrlData } = supabase
-    .storage
+  const { data } = supabase.storage
     .from('order-files')
-    .getPublicUrl(filePath);
+    .getPublicUrl(path);
 
-  return publicUrlData.publicUrl;
+  return data.publicUrl;
 }
 
 /* ==========================================================
@@ -449,24 +451,23 @@ form.addEventListener('submit', async function(e) {
   const orderId = generateOrderId();
 
   // ── Upload files if any ──
-  const fileInput = document.getElementById('fileInput');
-const uploadedUrls = [];
+  // FIX: file upload failures show a toast warning but do NOT block
+  //      the order from being submitted — uploaded URLs are saved
+  //      if available, otherwise the order proceeds without them.
+  const fileInput    = document.getElementById('fileInput');
+  const uploadedUrls = [];
 
-try {
   if (fileInput && fileInput.files.length > 0) {
     for (const file of fileInput.files) {
-      console.log("Uploading:", file.name);
-
-      const url = await uploadFile(file, orderId);
-
-      console.log("Uploaded:", url);
-      uploadedUrls.push(url);
+      try {
+        const url = await uploadFile(file, orderId);
+        uploadedUrls.push(url);
+      } catch (err) {
+        console.error('File upload failed for', file.name, err);
+        showToast('⚠️ Could not upload ' + file.name + ' — continuing without it.', 4000);
+      }
     }
   }
-} catch (err) {
-  console.error("UPLOAD FAILED:", err);
-  alert("File upload failed: " + err.message);
-}
 
   try {
     // ── Supabase insert ──
@@ -489,7 +490,7 @@ try {
       return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || '1') + ')';
     }).join('\n');
 
-    const fileCount     = fileInput?.files?.length ?? 0;
+    const fileCount      = fileInput ? fileInput.files.length : 0;
     const screenshotNote = fileCount > 0
       ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded via form.'
       : '';
@@ -517,7 +518,7 @@ try {
 
   } catch (err) {
     console.error('FULL SUPABASE ERROR:', err);
-    alert(err.message || JSON.stringify(err));
+    showToast('❌ Failed to submit order: ' + (err.message || 'Unknown error'), 4000);
   } finally {
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Submit Order Request';
