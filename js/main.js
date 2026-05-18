@@ -20,7 +20,7 @@ const supabase = createClient(
    CONFIGURATION — replace with your Google Apps Script URL
    (used only for the Reviews feature)
    ========================================================== */
-var SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
 
 /* ==========================================================
    HAMBURGER
@@ -538,112 +538,136 @@ window.closePopup = closePopup;
 /* ==========================================================
    REVIEW MODAL
    ========================================================== */
+/* ==========================================================
+   REVIEWS (CLEAN SUPABASE VERSION)
+========================================================== */
+
 function openReviewForm() {
   document.getElementById('reviewModal').classList.add('open');
 }
 
 function closeReviewForm() {
   document.getElementById('reviewModal').classList.remove('open');
-  document.getElementById('reviewName').value     = '';
+
+  document.getElementById('reviewName').value = '';
   document.getElementById('reviewLocation').value = '';
-  document.getElementById('reviewRating').value   = '5';
-  document.getElementById('reviewText').value     = '';
+  document.getElementById('reviewRating').value = '5';
+  document.getElementById('reviewText').value = '';
 }
 
-window.openReviewForm  = openReviewForm;
+window.openReviewForm = openReviewForm;
 window.closeReviewForm = closeReviewForm;
 
+/* ---------------- SUBMIT REVIEW ---------------- */
+
 async function submitReview() {
-  const name   = document.getElementById('reviewName').value.trim();
-  const review = document.getElementById('reviewText').value.trim();
+  const name = document.getElementById('reviewName').value.trim();
+  const location = document.getElementById('reviewLocation').value.trim();
+  const rating = document.getElementById('reviewRating').value;
+  const message = document.getElementById('reviewText').value.trim();
 
-  if (!name)   { showToast('Please enter your name.');   return; }
-  if (!review) { showToast('Please write your review.'); return; }
+  if (!name || !message) {
+    showToast("Please fill all required fields");
+    return;
+  }
 
-  const reviewBtn         = document.getElementById('reviewSubmitBtn');
-  reviewBtn.disabled    = true;
-  reviewBtn.textContent = 'Submitting…';
-
-  const payload = {
-    name:     name,
-    location: document.getElementById('reviewLocation').value.trim() || 'Bhutan',
-    rating:   document.getElementById('reviewRating').value,
-    review:   review,
-  };
+  const btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
 
   try {
-    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-    showToast('Thank you for your review!', 3000);
+    const { error } = await supabase
+      .from('reviews')
+      .insert([{
+        full_name: name,
+        city: location || "Bhutan",
+        rating: parseInt(rating),
+        message: message,
+        is_approved: false
+      }]);
+
+    if (error) throw error;
+
+    showToast("Review submitted successfully!");
     closeReviewForm();
     loadReviews();
+
   } catch (err) {
-    showToast('Failed to submit. Please try again.');
+    console.error("Review Error:", err);
+    showToast("Failed to submit review");
   } finally {
-    reviewBtn.disabled    = false;
-    reviewBtn.textContent = 'Submit Review';
+    btn.disabled = false;
+    btn.textContent = "Submit Review";
   }
 }
 
 window.submitReview = submitReview;
 
-/* ==========================================================
-   LOAD & RENDER REVIEWS
-   ========================================================== */
-var AVATAR_COLORS = ['#1a56db','#7c3aed','#0891b2','#059669','#d97706','#dc2626','#9333ea'];
-
-function getInitials(name) {
-  return (name || 'A').split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
-}
-
-function renderStars(n) {
-  var s = '';
-  for (var i = 0; i < 5; i++) s += i < n ? '★' : '☆';
-  return s;
-}
-
-function renderReviews(reviews) {
-  var grid = document.getElementById('testiGrid');
-  if (!reviews || reviews.length === 0) {
-    grid.innerHTML = '<div class="testi-empty">No reviews yet. Be the first to share your experience!</div>';
-    return;
-  }
-  grid.innerHTML = reviews.map(function(r, i) {
-    var color    = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    var initials = getInitials(r.name);
-    var stars    = parseInt(r.rating) || 5;
-    return [
-      '<div class="testi-card">',
-        '<div class="testi-stars">' + renderStars(stars) + '</div>',
-        '<p class="testi-text">' + escHtml(r.review || '') + '</p>',
-        '<div class="testi-author">',
-          '<div class="testi-avatar" style="background:' + color + '">' + escHtml(initials) + '</div>',
-          '<div>',
-            '<div class="testi-name">'     + escHtml(r.name     || 'Anonymous') + '</div>',
-            '<div class="testi-location">' + escHtml(r.location || 'Bhutan')    + '</div>',
-          '</div>',
-        '</div>',
-      '</div>',
-    ].join('');
-  }).join('');
-}
+/* ---------------- LOAD REVIEWS ---------------- */
 
 function loadReviews() {
-  var grid = document.getElementById('testiGrid');
-  grid.innerHTML = '<div class="testi-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading reviews…</div>';
+  const grid = document.getElementById('testiGrid');
 
-  fetch(SCRIPT_URL)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      renderReviews(Array.isArray(data) ? data : (data.data || []));
-    })
-    .catch(function() {
-      // Fallback placeholder reviews if script URL isn't set yet
-      renderReviews([
-        { name: 'Pema Wangchuk',  location: 'Thimphu',      rating: 5, review: 'Super easy service! Ordered from Amazon India and got it delivered to Thimphu in less than a week. Highly recommended.' },
-        { name: 'Sonam Choden',   location: 'Phuntsholing', rating: 5, review: 'Finally I can shop online without needing an Indian account. Very smooth process and friendly communication on WhatsApp.' },
-        { name: 'Tshering Dorji', location: 'Paro',         rating: 4, review: 'Good service. Package was well packed. Will definitely order again for my next purchase from Flipkart.' },
-      ]);
+  if (!grid) return;
+
+  grid.innerHTML = "Loading reviews...";
+
+  supabase
+    .from('reviews')
+    .select('*')
+    .eq('is_approved', true) //Approve the review or not. false to show on site
+    .order('created_at', { ascending: false })
+    .limit(3)
+    .then(({ data, error }) => {
+      if (error) {
+        console.error(error);
+        grid.innerHTML = "Failed to load reviews";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        grid.innerHTML = "No reviews yet.";
+        return;
+      }
+
+      grid.innerHTML = data.map(r => `
+        <div class="testi-card">
+          <div class="testi-stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+          <p class="testi-text">${escapeHtml(r.message)}</p>
+          <div class="testi-author">
+            <div class="testi-avatar">${getInitials(r.full_name)}</div>
+            <div>
+              <div class="testi-name">${escapeHtml(r.full_name)}</div>
+              <div class="testi-location">${escapeHtml(r.city || "Bhutan")}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
     });
 }
 
-loadReviews();
+window.loadReviews = loadReviews;
+
+/* ---------------- HELPERS ---------------- */
+
+function getInitials(name) {
+  return (name || "A")
+    .split(" ")
+    .map(w => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function escapeHtml(str) {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ---------------- AUTO LOAD ---------------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadReviews();
+});
