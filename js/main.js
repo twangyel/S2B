@@ -1,11 +1,29 @@
+// ==========================================================
+//  Shop2Bhutan — main.js (corrected)
+//  Script tag in index.html must have type="module"
+// ==========================================================
+
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+// ==========================================================
+//  SUPABASE — replace with your real project URL and anon key.
+//  The anon key is public (visible in browser source), so make
+//  sure your Supabase RLS policy on the `orders` table only
+//  allows INSERT for anonymous/unauthenticated users.
+// ==========================================================
+const supabase = createClient(
+  "https://deecrnfbvgbzyybqhywy.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+);
+
 /* ==========================================================
-   CONFIGURATION
-   Replace with your actual Google Apps Script URL for reviews
+   CONFIGURATION — replace with your Google Apps Script URL
+   (used only for the Reviews feature)
    ========================================================== */
 var SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
 /* ==========================================================
-   HAMBURGER — close on outside click
+   HAMBURGER
    ========================================================== */
 var hamburger  = document.getElementById('hamburger');
 var mobileMenu = document.getElementById('mobileMenu');
@@ -19,9 +37,7 @@ document.querySelectorAll('.mobile-menu .nav-btn').forEach(function(btn) {
   btn.addEventListener('click', function() { mobileMenu.classList.remove('open'); });
 });
 document.addEventListener('click', function(e) {
-  if (!mainNav.contains(e.target)) {
-    mobileMenu.classList.remove('open');
-  }
+  if (!mainNav.contains(e.target)) mobileMenu.classList.remove('open');
 });
 
 /* ==========================================================
@@ -41,9 +57,11 @@ function toggleFaq(el) {
   el.classList.toggle('open');
 }
 
+// Expose to inline onclick handlers (needed because this is a module)
+window.toggleFaq = toggleFaq;
+
 /* ==========================================================
    FEE ESTIMATOR
-   FIX: SHIPPING_ESTIMATE was 40 but UI shows "₹50–₹150"; changed to 100 (midpoint)
    ========================================================== */
 var SHIPPING_ESTIMATE = 100;
 
@@ -63,14 +81,16 @@ function calcEstimate() {
   var rate       = price < 2000 ? 0.15 : price <= 5999 ? 0.10 : 0.08;
   var serviceFee = Math.round(price * rate);
   var shipping   = SHIPPING_ESTIMATE;
-  var total      = Math.round(price + serviceFee + shipping + dlcharge);
+  var total      = Math.round(price + serviceFee + shipping + (isNaN(dlcharge) ? 0 : dlcharge));
 
   document.getElementById('estBase').textContent          = '₹ ' + Math.round(price).toLocaleString('en-IN');
   document.getElementById('estServiceCharge').textContent = '₹ ' + serviceFee.toLocaleString('en-IN');
   document.getElementById('estShipping').textContent      = '~₹ ' + shipping.toLocaleString('en-IN');
-  document.getElementById('dchargeDisplay').textContent   = '₹ ' + Math.round(dlcharge).toLocaleString('en-IN');
+  document.getElementById('dchargeDisplay').textContent   = '₹ ' + Math.round(isNaN(dlcharge) ? 0 : dlcharge).toLocaleString('en-IN');
   document.getElementById('estTotal').textContent         = '₹ ' + total.toLocaleString('en-IN');
 }
+
+window.calcEstimate = calcEstimate;
 
 /* ==========================================================
    FILE UPLOAD DISPLAY
@@ -96,6 +116,8 @@ function handleFileSelect(input) {
   });
   if (!valid) input.value = '';
 }
+
+window.handleFileSelect = handleFileSelect;
 
 /* ==========================================================
    PRODUCT ROWS
@@ -129,7 +151,10 @@ function removeProduct(btn) {
   if (rows.length > 1) btn.closest('.product-row').remove();
 }
 
-// Init first row
+window.addProductRow = addProductRow;
+window.removeProduct = removeProduct;
+
+// Initialise first row on page load
 addProductRow();
 
 /* ==========================================================
@@ -174,6 +199,8 @@ function onLinkInput(input) {
   debounceMap[id] = setTimeout(function() { fetchPreview(input, val); }, 900);
 }
 
+window.onLinkInput = onLinkInput;
+
 function fetchPreview(input, url) {
   var row     = input.closest('.product-row');
   var preview = row.querySelector('.product-preview');
@@ -193,11 +220,11 @@ function fetchPreview(input, url) {
     if (done) return;
     var parser = new DOMParser();
     var doc    = parser.parseFromString(html, 'text/html');
-    var title  = ((doc.querySelector('meta[property="og:title"]') || {}).content)
-              || ((doc.querySelector('meta[name="og:title"]') || {}).content)
+    var title  = ((doc.querySelector('meta[property="og:title"]')  || {}).content)
+              || ((doc.querySelector('meta[name="og:title"]')      || {}).content)
               || doc.title || '';
-    var imgUrl = ((doc.querySelector('meta[property="og:image"]') || {}).content)
-              || ((doc.querySelector('meta[name="og:image"]') || {}).content) || '';
+    var imgUrl = ((doc.querySelector('meta[property="og:image"]')  || {}).content)
+              || ((doc.querySelector('meta[name="og:image"]')      || {}).content) || '';
     var site   = ((doc.querySelector('meta[property="og:site_name"]') || {}).content) || brandFallback;
 
     title = title.replace(/\s*[-|–]\s*(Amazon|Flipkart|Myntra|Meesho).*/i, '').trim();
@@ -210,7 +237,8 @@ function fetchPreview(input, url) {
 
   function tryMicrolink() {
     if (done) return;
-    fetch('https://api.microlink.io/?url=' + encodeURIComponent(url) + '&palette=false&audio=false&video=false&iframe=false')
+    fetch('https://api.microlink.io/?url=' + encodeURIComponent(url) +
+          '&palette=false&audio=false&video=false&iframe=false')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (done) return;
@@ -218,7 +246,10 @@ function fetchPreview(input, url) {
         done = true;
         var d     = data.data;
         var title = (d.title || '').replace(/\s*[-|–]\s*(Amazon|Flipkart|Myntra|Meesho).*/i, '').trim();
-        renderPreview(preview, title || brandFallback + ' product', (d.image && d.image.url) || '', d.publisher || brandFallback);
+        renderPreview(preview,
+          title || brandFallback + ' product',
+          (d.image && d.image.url) || '',
+          d.publisher || brandFallback);
       })
       .catch(showFallback);
   }
@@ -252,7 +283,9 @@ function renderPreview(preview, title, imgUrl, source, isFallback) {
   }
   preview.style.display = 'block';
 
-  var imgHtml      = imgUrl ? '<img class="preview-img" src="' + escHtml(imgUrl) + '" alt="Product" onerror="this.style.display=\'none\'">' : '';
+  var imgHtml      = imgUrl
+    ? '<img class="preview-img" src="' + escHtml(imgUrl) + '" alt="Product" onerror="this.style.display=\'none\'">'
+    : '';
   var fallbackNote = isFallback
     ? '<div style="font-size:0.78rem;color:#f97316;margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Preview unavailable — link saved.</div>'
     : '';
@@ -268,7 +301,7 @@ function renderPreview(preview, title, imgUrl, source, isFallback) {
     '</div>',
   ].join('');
 
-  preview.querySelector('.preview-title').textContent = title;
+  preview.querySelector('.preview-title').textContent  = title;
   preview.querySelector('.preview-source').textContent = source;
 }
 
@@ -288,8 +321,10 @@ function clearForm() {
   document.querySelectorAll('.product-preview').forEach(function(el) { el.style.display = 'none'; });
 }
 
+window.clearForm = clearForm;
+
 /* ==========================================================
-   FORM VALIDATION
+   VALIDATION HELPERS
    ========================================================== */
 function validatePhone(val) {
   return /^(\+975[\s-]?)?[0-9]{7,8}$/.test(val.replace(/\s/g, ''));
@@ -319,7 +354,7 @@ function sanitize(str) {
 }
 
 /* ==========================================================
-   COPY ORDER ID — FIX: was hinted at but never wired up
+   COPY ORDER ID
    ========================================================== */
 document.getElementById('popupOrderId').addEventListener('click', function() {
   var text = this.textContent;
@@ -330,11 +365,10 @@ document.getElementById('popupOrderId').addEventListener('click', function() {
     self.style.opacity = '0.6';
     setTimeout(function() { self.style.opacity = ''; }, 600);
   }).catch(function() {
-    // Fallback for browsers without clipboard API
+    // Fallback for browsers without Clipboard API
     var el = document.createElement('textarea');
     el.value = text;
-    el.style.position = 'fixed';
-    el.style.opacity  = '0';
+    el.style.cssText = 'position:fixed;opacity:0;';
     document.body.appendChild(el);
     el.select();
     document.execCommand('copy');
@@ -344,13 +378,28 @@ document.getElementById('popupOrderId').addEventListener('click', function() {
 });
 
 /* ==========================================================
+   FILE UPLOAD TO SUPABASE STORAGE
+   ========================================================== */
+async function uploadFile(file, orderId) {
+  const filePath = `${orderId}/${Date.now()}-${file.name}`;
+
+  const { data, error } = await supabase
+    .storage
+    .from('order-files')
+    .upload(filePath, file);
+
+  if (error) throw error;
+
+  const { data: publicUrlData } = supabase
+    .storage
+    .from('order-files')
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
+}
+
+/* ==========================================================
    FORM SUBMISSION
-   FIXES:
-   1. orderId now generated BEFORE fetch so it's included in POST data
-   2. Removed duplicate 'const formData' inside success block
-   3. screenshotNote now actually inserted into the WhatsApp message
-   4. 'btn' in finally block → correctly 'submitBtn'
-   5. submitBtn label restored to match HTML ("Submit Order Request")
    ========================================================== */
 var form      = document.getElementById('orderForm');
 var submitBtn = document.getElementById('submitBtn');
@@ -358,96 +407,118 @@ var submitBtn = document.getElementById('submitBtn');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  var nameVal    = sanitize(form.querySelector('[name="fi-sender-fullName"]').value);
-  var phoneVal   = sanitize(form.querySelector('[name="fi-text-whatsapp"]').value);
-  var cityVal    = form.querySelector('[name="fi-text-city"]').value;
-  var addressVal = sanitize(form.querySelector('[name="fi-text-address"]').value);
+  // ── Read field values ──
+  const nameVal    = sanitize(document.getElementById('fullName').value);
+  const phoneVal   = sanitize(document.getElementById('whatsapp').value);
+  const cityVal    = sanitize(document.getElementById('deliveryCity').value);
+  const addressVal = sanitize(document.getElementById('address').value);
 
-  var ok = true;
-  showErr('err-name', !nameVal);
-  if (!nameVal) ok = false;
-  if (!validatePhone(phoneVal)) { showErr('err-phone', true); ok = false; } else showErr('err-phone', false);
-  if (!cityVal) { showErr('err-city', true); ok = false; } else showErr('err-city', false);
-  if (!addressVal) { showErr('err-address', true); ok = false; } else showErr('err-address', false);
-
-  var productInputs  = form.querySelectorAll('input[name="product_links"]');
-  var quantityInputs = form.querySelectorAll('input[name="quantities"]');
-  var productsText   = '';
-  productInputs.forEach(function(inp, i) {
-    var link = inp.value.trim();
-    if (!link) return;
-    var qty = (quantityInputs[i] ? quantityInputs[i].value : '1') || '1';
-    productsText += (productsText ? '\n' : '') + (i + 1) + '. ' + link + ' (Qty: ' + qty + ')';
+  // ── Collect all product rows ──
+  const linkInputs = form.querySelectorAll('input[name="product_links"]');
+  const qtyInputs  = form.querySelectorAll('input[name="quantities"]');
+  const links = [];
+  const qtys  = [];
+  linkInputs.forEach(function(inp, i) {
+    const link = inp.value.trim();
+    if (link) {
+      links.push(link);
+      qtys.push(qtyInputs[i] ? qtyInputs[i].value.trim() : '1');
+    }
   });
 
-  if (!productsText.trim()) {
-    ok = false;
-    alert('Please add at least one product link or description.');
+  // ── Validate ──
+  var hasError = false;
+  showErr('err-name',    !nameVal);
+  showErr('err-phone',   !validatePhone(phoneVal));
+  showErr('err-city',    !cityVal);
+  showErr('err-address', !addressVal);
+  if (!nameVal || !validatePhone(phoneVal) || !cityVal || !addressVal) hasError = true;
+
+  if (links.length === 0) {
+    showToast('Please add at least one product link.');
+    hasError = true;
   }
 
-  if (!ok) return;
+  if (hasError) return;
 
-  // FIX: Generate Order ID BEFORE fetch so it's included in the POST body
-  var orderId = generateOrderId();
-  document.getElementById('orderId').value          = orderId;
-  document.getElementById('hiddenProducts').value   = productsText.trim();
-
+  // ── UI: loading state ──
   submitBtn.disabled    = true;
   submitBtn.textContent = 'Submitting…';
 
-  var formData = new FormData(form);
-  formData.delete('product_links');
-  formData.delete('quantities');
+  // ── Generate order ID ──
+  const orderId = generateOrderId();
+
+  // ── Upload files if any ──
+  const fileInput = document.getElementById('fileInput');
+const uploadedUrls = [];
+
+try {
+  if (fileInput && fileInput.files.length > 0) {
+    for (const file of fileInput.files) {
+      console.log("Uploading:", file.name);
+
+      const url = await uploadFile(file, orderId);
+
+      console.log("Uploaded:", url);
+      uploadedUrls.push(url);
+    }
+  }
+} catch (err) {
+  console.error("UPLOAD FAILED:", err);
+  alert("File upload failed: " + err.message);
+}
 
   try {
-    const response = await fetch(form.action, {
-      method: 'POST',
-      body: formData,
-      headers: { Accept: 'application/json' }
-    });
+    // ── Supabase insert ──
+    const { error } = await supabase.from('orders').insert([{
+      order_id:         orderId,
+      full_name:        nameVal,
+      whatsapp:         phoneVal,
+      delivery_city:    cityVal,
+      delivery_address: addressVal,
+      product_links:    links.join('\n'),
+      quantities:       qtys.join(', '),
+      screenshot_url:   uploadedUrls.join(', '),
+      status:           'pending',
+    }]);
 
-    const result = await response.json();
+    if (error) throw error;
 
-    if (result.success) {
-      // FIX: screenshotNote is now actually used in the message
-      const screenshotInput = form.querySelector('input[name="fi-file-screenshot"]');
-      const fileCount = screenshotInput && screenshotInput.files ? screenshotInput.files.length : 0;
-      const screenshotNote = fileCount > 0
-        ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded via form.'
-        : '';
+    // ── Build WhatsApp confirmation message ──
+    const productsText = links.map(function(link, i) {
+      return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || '1') + ')';
+    }).join('\n');
 
-      const message =
-        'Hello Shop2Bhutan,\n\n' +
-        '🆔 Order ID: ' + orderId + '\n\n' +
-        '📦 New Order Request\n\n' +
-        '👤 Name: ' + nameVal + '\n' +
-        '📱 WhatsApp: ' + phoneVal + '\n' +
-        '🏙️ City: ' + cityVal + '\n' +
-        '📍 Address: ' + addressVal + '\n\n' +
-        '🛒 Products:\n' + productsText +
-        screenshotNote + '\n\n' +
-        'Please confirm availability, total price (including service charge), and next steps.';
+    const fileCount     = fileInput?.files?.length ?? 0;
+    const screenshotNote = fileCount > 0
+      ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded via form.'
+      : '';
 
-      document.getElementById('whatsappConfirmBtn').href =
-        'https://wa.me/97577113302?text=' + encodeURIComponent(message);
+    const message =
+      'Hello Shop2Bhutan,\n\n' +
+      '🆔 Order ID: '  + orderId    + '\n\n' +
+      '📦 New Order Request\n\n'              +
+      '👤 Name: '      + nameVal    + '\n'   +
+      '📱 WhatsApp: '  + phoneVal   + '\n'   +
+      '🏙️ City: '      + cityVal    + '\n'   +
+      '📍 Address: '   + addressVal + '\n\n' +
+      '🛒 Products:\n' + productsText        +
+      screenshotNote   + '\n\n'              +
+      'Please confirm availability, total price (including service charge), and next steps.';
 
-      var popupOrderEl = document.getElementById('popupOrderId');
-      if (popupOrderEl) popupOrderEl.textContent = orderId;
+    document.getElementById('whatsappConfirmBtn').href =
+      'https://wa.me/97577113302?text=' + encodeURIComponent(message);
 
-      document.getElementById('copyNote').textContent = 'Tap the ID above to copy it';
-      document.getElementById('successPopup').classList.add('open');
+    const popupOrderEl = document.getElementById('popupOrderId');
+    if (popupOrderEl) popupOrderEl.textContent = orderId;
+    document.getElementById('copyNote').textContent = 'Tap the ID above to copy it';
 
-    } else {
-      alert(result.message || 'Form submission failed. Please try again.');
-    }
+    document.getElementById('successPopup').classList.add('open');
 
   } catch (err) {
-    console.error(err);
-    alert('Network error. Please try again.');
-
+    console.error('FULL SUPABASE ERROR:', err);
+    alert(err.message || JSON.stringify(err));
   } finally {
-    // FIX: was 'btn' (undefined) → corrected to 'submitBtn'
-    // FIX: label matches HTML button text
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Submit Order Request';
   }
@@ -455,8 +526,6 @@ form.addEventListener('submit', async function(e) {
 
 /* ==========================================================
    SUCCESS POPUP
-   FIX: removed nested addEventListener that stacked on every call;
-        replaced clearCart() (undefined) with clearForm()
    ========================================================== */
 function closePopup() {
   document.getElementById('successPopup').classList.remove('open');
@@ -467,8 +536,6 @@ window.closePopup = closePopup;
 
 /* ==========================================================
    REVIEW MODAL
-   FIX: openReviewForm / closeReviewForm / submitReview were
-        called from HTML but never defined in JS
    ========================================================== */
 function openReviewForm() {
   document.getElementById('reviewModal').classList.add('open');
@@ -476,24 +543,27 @@ function openReviewForm() {
 
 function closeReviewForm() {
   document.getElementById('reviewModal').classList.remove('open');
-  document.getElementById('reviewName').value    = '';
+  document.getElementById('reviewName').value     = '';
   document.getElementById('reviewLocation').value = '';
-  document.getElementById('reviewRating').value  = '5';
-  document.getElementById('reviewText').value    = '';
+  document.getElementById('reviewRating').value   = '5';
+  document.getElementById('reviewText').value     = '';
 }
 
+window.openReviewForm  = openReviewForm;
+window.closeReviewForm = closeReviewForm;
+
 async function submitReview() {
-  var name   = document.getElementById('reviewName').value.trim();
-  var review = document.getElementById('reviewText').value.trim();
+  const name   = document.getElementById('reviewName').value.trim();
+  const review = document.getElementById('reviewText').value.trim();
 
-  if (!name)   { showToast('Please enter your name.');     return; }
-  if (!review) { showToast('Please write your review.');   return; }
+  if (!name)   { showToast('Please enter your name.');   return; }
+  if (!review) { showToast('Please write your review.'); return; }
 
-  var reviewBtn         = document.getElementById('reviewSubmitBtn');
+  const reviewBtn         = document.getElementById('reviewSubmitBtn');
   reviewBtn.disabled    = true;
   reviewBtn.textContent = 'Submitting…';
 
-  var payload = {
+  const payload = {
     name:     name,
     location: document.getElementById('reviewLocation').value.trim() || 'Bhutan',
     rating:   document.getElementById('reviewRating').value,
@@ -501,10 +571,7 @@ async function submitReview() {
   };
 
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
     showToast('Thank you for your review!', 3000);
     closeReviewForm();
     loadReviews();
@@ -515,6 +582,8 @@ async function submitReview() {
     reviewBtn.textContent = 'Submit Review';
   }
 }
+
+window.submitReview = submitReview;
 
 /* ==========================================================
    LOAD & RENDER REVIEWS
@@ -548,8 +617,8 @@ function renderReviews(reviews) {
         '<div class="testi-author">',
           '<div class="testi-avatar" style="background:' + color + '">' + escHtml(initials) + '</div>',
           '<div>',
-            '<div class="testi-name">' + escHtml(r.name || 'Anonymous') + '</div>',
-            '<div class="testi-location">' + escHtml(r.location || 'Bhutan') + '</div>',
+            '<div class="testi-name">'     + escHtml(r.name     || 'Anonymous') + '</div>',
+            '<div class="testi-location">' + escHtml(r.location || 'Bhutan')    + '</div>',
           '</div>',
         '</div>',
       '</div>',
@@ -564,17 +633,16 @@ function loadReviews() {
   fetch(SCRIPT_URL)
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      var reviews = Array.isArray(data) ? data : (data.data || []);
-      renderReviews(reviews);
+      renderReviews(Array.isArray(data) ? data : (data.data || []));
     })
     .catch(function() {
+      // Fallback placeholder reviews if script URL isn't set yet
       renderReviews([
-        { name: 'Pema Wangchuk', location: 'Thimphu',      rating: 5, review: 'Super easy service! Ordered from Amazon India and got it delivered to Thimphu in less than a week. Highly recommended.' },
-        { name: 'Sonam Choden',  location: 'Phuntsholing', rating: 5, review: 'Finally I can shop online without needing an Indian account. Very smooth process and friendly communication on WhatsApp.' },
-        { name: 'Tshering Dorji', location: 'Paro',        rating: 4, review: 'Good service. Package was well packed. Will definitely order again for my next purchase from Flipkart.' },
+        { name: 'Pema Wangchuk',  location: 'Thimphu',      rating: 5, review: 'Super easy service! Ordered from Amazon India and got it delivered to Thimphu in less than a week. Highly recommended.' },
+        { name: 'Sonam Choden',   location: 'Phuntsholing', rating: 5, review: 'Finally I can shop online without needing an Indian account. Very smooth process and friendly communication on WhatsApp.' },
+        { name: 'Tshering Dorji', location: 'Paro',         rating: 4, review: 'Good service. Package was well packed. Will definitely order again for my next purchase from Flipkart.' },
       ]);
     });
 }
 
-// Load reviews on page load
 loadReviews();

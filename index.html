@@ -19,13 +19,8 @@
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
-    <!--
-      FIX: Removed invalid nested <a> tag inside the logo <a>.
-           A single <a> now wraps the logo icon and brand name.
-    -->
     <a href="#" class="logo">
       <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan logo"></div>
-      <!-- <span class="logo-text">Shop2Bhutan</span> -->
     </a>
     <div class="nav-actions">
       <a href="#order-form" class="nav-btn btn-primary">Place Order</a>
@@ -231,18 +226,11 @@
     </div>
 
     <div class="form-card">
-      <form id="orderForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
-
-        <input type="hidden" name="access_key" value="248f0bfe-e83b-49e3-b853-ea291b71f353">
-        <input type="hidden" name="subject" value="New Order - Shop2Bhutan">
-        <input type="hidden" name="source" value="Shop2Bhutan Website">
-        <input type="hidden" name="fi-text-products" id="hiddenProducts">
-        <!--
-          FIX: id="orderId" is used by JS to write the generated order ID
-               into this field BEFORE the form is submitted, so it reaches
-               the Web3Forms backend correctly.
-        -->
-        <input type="hidden" name="order_id" id="orderId">
+      <!--
+        FIX: Removed Web3Forms action/method attributes and all Web3Forms hidden inputs.
+             Form is now handled entirely by main.js via Supabase.
+      -->
+      <form id="orderForm" novalidate>
 
         <div class="form-grid">
           <div class="input-group">
@@ -287,6 +275,9 @@
         <div class="input-group">
           <label>Upload Screenshots (Optional)</label>
           <div class="file-upload-area">
+            <!--
+              FIX: name kept as "fi-file-screenshot" — matches the querySelector in main.js.
+            -->
             <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)">
             <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
             <p><strong>Click to upload</strong> or drag &amp; drop</p>
@@ -489,10 +480,6 @@
   <div class="popup-box">
     <div class="popup-icon">✅</div>
     <h3>Order Submitted!</h3>
-    <!--
-      FIX: Click-to-copy is now wired up in JS via a click listener on this element.
-           Added cursor:pointer style so users know it's interactive.
-    -->
     <div class="popup-order-id" id="popupOrderId" style="cursor:pointer;" title="Tap to copy">—</div>
     <p class="popup-copy-note" id="copyNote">Tap the ID above to copy it</p>
     <p>Your request has been received. Tap below to confirm on WhatsApp and we'll sort out the details.</p>
@@ -527,6 +514,9 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<script src="/js/main.js"></script>
+<!--
+  FIX: Added type="module" so ES module import syntax in main.js works correctly.
+-->
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
