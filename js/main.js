@@ -576,15 +576,18 @@ async function submitReview() {
   btn.textContent = "Submitting...";
 
   try {
-    const { error } = await supabase
-      .from('reviews')
-      .insert([{
-        full_name: name,
-        city: location || "Bhutan",
-        rating: parseInt(rating),
-        message: message,
-        is_approved: false
-      }]);
+  const orderId = document.getElementById('reviewOrderId').value.trim();
+  const { error } = await supabase
+  .from("reviews")
+  .insert([{
+    full_name: name,
+    city: location || "Bhutan",
+    rating: parseInt(rating),
+    message: message,
+    order_id: orderId || null,
+    is_verified_buyer: orderId ? true : false,
+    is_approved: false
+  }]);
 
     if (error) throw error;
 
@@ -593,9 +596,11 @@ async function submitReview() {
     loadReviews();
 
   } catch (err) {
-    console.error("Review Error:", err);
-    showToast("Failed to submit review");
-  } finally {
+  console.error("FULL REVIEW ERROR:", err);
+  console.log("SUPABASE ERROR DETAIL:", err?.message, err?.details, err?.hint);
+
+  showToast("Failed to submit review: " + (err.message || "unknown error"));
+} finally {
     btn.disabled = false;
     btn.textContent = "Submit Review";
   }
@@ -615,9 +620,9 @@ function loadReviews() {
   supabase
     .from('reviews')
     .select('*')
-    .eq('is_approved', true) //Approve the review or not. false to show on site
+    .eq('is_approved', true) //Approve the review or not. false to show on
     .order('created_at', { ascending: false })
-    .limit(3)
+    .limit(3) //Accomodate more user review in the section
     .then(({ data, error }) => {
       if (error) {
         console.error(error);
@@ -637,7 +642,15 @@ function loadReviews() {
           <div class="testi-author">
             <div class="testi-avatar">${getInitials(r.full_name)}</div>
             <div>
-              <div class="testi-name">${escapeHtml(r.full_name)}</div>
+             <div class="testi-name">
+                      ${escapeHtml(r.full_name)}
+                      ${r.is_verified_buyer ? `
+  <span class="verified-badge">
+    <i class="fa-solid fa-circle-check"></i>
+    Verified Buyer
+  </span>
+` : ""}
+              </div>
               <div class="testi-location">${escapeHtml(r.city || "Bhutan")}</div>
             </div>
           </div>

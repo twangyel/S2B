@@ -1,0 +1,143 @@
+<script>
+  const session = localStorage.getItem("sb_admin");
+
+if (!session) {
+  window.location.href = "admin-login.html";
+}
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Review Admin Panel</title>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+       "https://deecrnfbvgbzyybqhywy.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+    );
+    
+
+    const container = document.getElementById("reviews");
+
+    async function loadReviews() {
+      container.innerHTML = "Loading...";
+
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        container.innerHTML = "Error loading reviews";
+        return;
+      }
+
+      container.innerHTML = data.map(r => `
+        <div class="card">
+          <div class="top">
+            <b>${r.full_name}</b>
+            <span>${r.city || ""}</span>
+          </div>
+
+          <div class="stars">
+            ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}
+          </div>
+
+          <p>${r.message}</p>
+
+          <div class="actions">
+            <button onclick="approve('${r.id}', ${r.is_approved})">
+              ${r.is_approved ? "Unapprove" : "Approve"}
+            </button>
+
+            <button class="delete" onclick="remove('${r.id}')">
+              Delete
+            </button>
+          </div>
+
+          <small>Status: ${r.is_approved ? "Approved" : "Pending"}</small>
+        </div>
+      `).join("");
+    }
+
+    window.approve = async (id, current) => {
+      await supabase
+        .from("reviews")
+        .update({ is_approved: !current })
+        .eq("id", id);
+
+      loadReviews();
+    };
+
+    window.remove = async (id) => {
+      await supabase
+        .from("reviews")
+        .delete()
+        .eq("id", id);
+
+      loadReviews();
+    };
+
+    loadReviews();
+
+    //logout script
+    window.logout = () => {
+  localStorage.removeItem("sb_admin");
+  window.location.href = "admin-login.html";
+};
+  </script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stars {
+      color: gold;
+      margin: 5px 0;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .delete {
+      background: red;
+      color: white;
+    }
+  </style>
+
+  <body>
+    <h2>Review Admin Panel</h2>
+    <div id="reviews"></div>
+    <button onclick="logout()">Logout</button>
+  </body>
+</head>
+</html>
