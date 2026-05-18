@@ -72,68 +72,7 @@ async function searchOrder() {
       return;
     }
 
-    const d = data;
-    const statusKey = (d.status || '').toLowerCase();
-    const currentIndex = trackingSteps.findIndex(step => step.key === statusKey);
-
-    const stepsHTML = trackingSteps.map((step, index) => {
-      const completed = index < currentIndex;
-      const active = index === currentIndex;
-
-      return `
-        <div class="step-item ${completed ? 'completed' : ''} ${active ? 'active' : ''}">
-          <div class="step-circle">
-            ${completed ? '✓' : active ? '🚚' : ''}
-          </div>
-          <div class="step-label">${step.label}</div>
-        </div>`;
-    }).join('');
-
-    resultDiv.innerHTML = `
-      <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
-
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
-          <h3 style="margin:0;">${d.order_id}</h3>
-          <span class="status-badge">${d.status}</span>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; font-size:0.97rem;">
-          <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
-          <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
-          <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
-          <div><strong>Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
-        </div>
-
-        <div style="margin-bottom:28px;">
-          <strong>Estimated Delivery:</strong> ${getEstimated(d)}
-        </div>
-
-        ${d.product_links ? `
-        <div style="margin-bottom:24px;">
-          <strong>Product:</strong><br>
-          <a href="${d.product_links}" target="_blank" style="color:var(--primary); word-break:break-all;">${d.product_links}</a>
-        </div>` : ''}
-
-        ${d.screenshot_url ? `
-        <div style="margin-bottom:24px;">
-          <strong>Proof:</strong><br>
-          <img src="${d.screenshot_url}" alt="Proof" style="max-width:100%; border-radius:12px; margin-top:10px;">
-        </div>` : ''}
-
-        <div style="margin-top:32px;">
-          <h4 style="margin-bottom:20px;">Tracking Progress</h4>
-          <div class="tracking-timeline">
-            ${stepsHTML}
-          </div>
-        </div>
-
-        ${d.remark ? `
-        <div style="margin-top:28px; padding:18px; background:#fff; border:1px solid var(--border); border-radius:12px;">
-          <strong>Latest Update:</strong><br>${d.remark}
-        </div>` : ''}
-
-      </div>
-    `;
+    renderOrderTracking(data);
 
   } catch (err) {
     console.error(err);
@@ -141,6 +80,74 @@ async function searchOrder() {
   } finally {
     searchBtn.disabled = false;
   }
+}
+
+// New function - Clean rendering
+function renderOrderTracking(d) {
+  const statusKey = (d.status || '').toLowerCase().trim();
+  const currentIndex = trackingSteps.findIndex(step => step.key === statusKey);
+
+  const stepsHTML = trackingSteps.map((step, index) => {
+    const completed = index < currentIndex;
+    const active = index === currentIndex;
+
+    return `
+      <div class="step-item ${completed ? 'completed' : ''} ${active ? 'active' : ''}">
+        <div class="step-circle">
+          ${completed ? '✓' : active ? '🚚' : ''}
+        </div>
+        <div class="step-label">${step.label}</div>
+      </div>`;
+  }).join('');
+
+  const resultDiv = document.getElementById('result');
+
+  resultDiv.innerHTML = `
+    <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+        <h3 style="margin:0;">${d.order_id}</h3>
+        <span class="status-badge">${d.status || 'Pending'}</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; font-size:0.97rem;">
+        <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
+        <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
+        <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
+        <div><strong>Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <strong>Estimated Delivery:</strong> ${getEstimated(d)}
+      </div>
+
+      ${d.product_links ? `
+      <div style="margin-bottom:24px;">
+        <strong>Product Link:</strong><br>
+        <a href="${d.product_links}" target="_blank" style="color:var(--primary); word-break:break-all;">${d.product_links}</a>
+      </div>` : ''}
+
+      ${d.screenshot_url ? `
+      <div style="margin-bottom:24px;">
+        <strong>Payment Proof:</strong><br>
+        <img src="${d.screenshot_url}" alt="Proof" style="max-width:100%; border-radius:12px; margin-top:10px;">
+      </div>` : ''}
+
+      <div style="margin-top:32px;">
+        <h4 style="margin-bottom:12px;">Tracking Progress</h4>
+        <div class="tracking-timeline">${stepsHTML}</div>
+      </div>
+
+      ${d.remark ? `
+      <div style="margin-top:28px; padding:18px; background:#fff; border:1px solid var(--border); border-radius:12px;">
+        <strong>Latest Update:</strong><br>${d.remark}
+      </div>` : ''}
+
+      <button onclick="searchOrder()" style="margin-top:20px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px; cursor:pointer;">
+        🔄 Refresh Status
+      </button>
+    </div>
+  `;
 }
 
 // Initialize
