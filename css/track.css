@@ -1,5 +1,5 @@
 /* =========================================================
-   GLOBAL RESET
+   RESET
 ========================================================= */
 *, *::before, *::after {
   margin: 0;
@@ -14,12 +14,17 @@
   --primary: #1a56db;
   --primary-dark: #1044b8;
   --primary-light: #e8f0fe;
+
   --secondary: #0c1a2e;
+
   --light: #f7f9fc;
+
   --border: #e2e8f0;
+
   --text: #1a2540;
   --muted: #64748b;
-  --success: #16a34a;
+
+  --success: #22c55e;
   --success-bg: #dcfce7;
 
   --radius: 16px;
@@ -37,6 +42,8 @@ body {
   background: var(--light);
   color: var(--text);
   line-height: 1.65;
+
+  overflow-x: hidden;
 }
 
 /* =========================================================
@@ -45,6 +52,7 @@ body {
 .container {
   width: 100%;
   max-width: 1140px;
+
   margin: auto;
   padding: 0 24px;
 }
@@ -69,6 +77,7 @@ nav {
   justify-content: space-between;
 
   gap: 16px;
+
   padding: 16px 0;
 }
 
@@ -85,6 +94,7 @@ nav {
   font-family: var(--font-display);
   font-size: 1.45rem;
   font-weight: 800;
+
   color: var(--secondary);
 }
 
@@ -102,12 +112,14 @@ nav {
   flex-shrink: 0;
 
   background: #fff;
+
   padding: 4px;
 }
 
 .logo-icon img {
   width: 100%;
   height: 100%;
+
   object-fit: contain;
   display: block;
 }
@@ -116,17 +128,45 @@ nav {
    TRACK CARD
 ========================================================= */
 .track-card {
+  width: 100%;
+  max-width: 720px;
+
+  margin: 60px auto;
+  padding: 40px 32px;
+
   background: #fff;
 
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
 
-  padding: 40px 32px;
-
-  max-width: 720px;
-  margin: 60px auto;
-
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   TEXT OVERFLOW FIX
+========================================================= */
+.track-card p,
+.track-card span,
+.track-card div,
+.track-card a {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* =========================================================
+   IMAGES
+========================================================= */
+.track-card img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+
+  display: block;
+
+  border-radius: 14px;
+  object-fit: cover;
 }
 
 /* =========================================================
@@ -140,7 +180,9 @@ nav {
   border: 2px solid var(--border);
   border-radius: 12px;
 
-  font-size: 1.1rem;
+  background: #fff;
+
+  font-size: 1.05rem;
   font-family: var(--font-body);
 
   text-transform: uppercase;
@@ -163,9 +205,9 @@ nav {
 ========================================================= */
 .btn-primary {
   width: 100%;
-  margin-top: 16px;
 
-  padding: 16px 32px;
+  margin-top: 16px;
+  padding: 16px 24px;
 
   border: none;
   border-radius: 999px;
@@ -173,17 +215,18 @@ nav {
   background: var(--primary);
   color: #fff;
 
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   font-family: var(--font-body);
 
   cursor: pointer;
 
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
+
   transform: translateY(-2px);
 }
 
@@ -193,23 +236,24 @@ nav {
 }
 
 /* =========================================================
-   TRACKING STEPS
+   STATUS BADGE
 ========================================================= */
-.tracking-steps {
-  margin-top: 32px;
-}
-
-.tracking-step {
-  display: flex;
+.status-badge {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
 
-  position: relative;
+  margin-top: 12px;
 
-  margin-bottom: 18px;
-}
+  padding: 8px 18px;
 
-.tracking-step:last-child {
-  margin-bottom: 0;
+  border-radius: 999px;
+
+  background: var(--success-bg);
+  color: var(--success);
+
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 /* =========================================================
@@ -219,27 +263,32 @@ nav {
   position: relative;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 
-  margin: 30px 0 10px;
+  gap: 10px;
+
+  margin: 32px 0 12px;
   padding: 10px 0;
+
+  width: 100%;
 }
 
+/* LINE */
 .tracking-timeline::before {
   content: '';
 
   position: absolute;
 
-  top: 28px;
-  left: 15px;
-  right: 15px;
+  top: 38px;
+  left: 45px;
+  right: 45px;
 
   height: 5px;
 
   background: #e2e8f0;
 
-  border-radius: 9999px;
+  border-radius: 999px;
 
   z-index: 1;
 }
@@ -252,7 +301,7 @@ nav {
   z-index: 2;
 
   flex: 1;
-  max-width: 110px;
+  min-width: 0;
 
   display: flex;
   flex-direction: column;
@@ -271,7 +320,7 @@ nav {
   margin-bottom: 10px;
 
   border-radius: 50%;
-  border: 4px solid #ffffff;
+  border: 4px solid #fff;
 
   background: #e2e8f0;
 
@@ -279,9 +328,9 @@ nav {
   align-items: center;
   justify-content: center;
 
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 
   transition: all 0.3s ease;
 }
@@ -290,75 +339,85 @@ nav {
    STEP STATES
 ========================================================= */
 .step-item.completed .step-circle {
-  background: #22c55e;
+  background: var(--success);
   color: #fff;
+
   border-color: #86efac;
 }
 
 .step-item.active .step-circle {
-  background: #3b82f6;
+  background: var(--primary);
   color: #fff;
+
   border-color: #93c5fd;
 
   transform: scale(1.08);
 
-  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.18);
 }
 
 /* =========================================================
    STEP LABEL
 ========================================================= */
 .step-label {
-  font-size: 0.88rem;
-  font-weight: 500;
-  line-height: 1.3;
+  width: 100%;
 
-  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.35;
+
+  color: var(--muted);
 }
 
 .step-item.completed .step-label,
 .step-item.active .step-label {
-  color: #1e2937;
+  color: var(--text);
   font-weight: 600;
 }
 
 /* =========================================================
-   STATUS BADGE
+   TRACKING STEPS LIST
 ========================================================= */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.tracking-steps {
+  margin-top: 28px;
+}
 
-  padding: 8px 18px;
+.tracking-step {
+  position: relative;
 
-  border-radius: 9999px;
+  display: flex;
+  align-items: flex-start;
 
-  background: var(--success-bg);
-  color: var(--success);
+  gap: 14px;
 
-  font-size: 0.95rem;
-  font-weight: 600;
+  margin-bottom: 22px;
+}
+
+.tracking-step:last-child {
+  margin-bottom: 0;
 }
 
 /* =========================================================
-   STEP CIRCLE STATUS
+   VERTICAL LINE
 ========================================================= */
-.step-circle.pending {
+.tracking-step::after {
+  content: '';
+
+  position: absolute;
+
+  top: 36px;
+  left: 16px;
+  bottom: -22px;
+
+  width: 3px;
+
   background: #e2e8f0;
-  color: #64748b;
+
+  z-index: 1;
 }
 
-.step-circle.completed {
-  background: var(--success);
-  color: #fff;
-}
-
-.step-circle.current {
-  background: var(--primary);
-  color: #fff;
-
-  box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.2);
+.tracking-step:last-child::after {
+  display: none;
 }
 
 /* =========================================================
@@ -371,36 +430,28 @@ nav {
 .step-content h4 {
   margin-bottom: 4px;
 
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .step-content p {
+  font-size: 0.92rem;
   color: var(--muted);
-  font-size: 0.93rem;
 }
 
 /* =========================================================
-   CONNECTOR LINE
+   UPDATE BOX
 ========================================================= */
-.tracking-step::after {
-  content: '';
+.latest-update,
+.update-box {
+  margin-top: 24px;
 
-  position: absolute;
+  padding: 18px;
 
-  top: 32px;
-  bottom: -18px;
-  left: 15px;
+  background: #fff;
 
-  width: 3px;
-
-  background: #e2e8f0;
-
-  z-index: 1;
-}
-
-.tracking-step:last-child::after {
-  display: none;
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 
 /* =========================================================
@@ -416,7 +467,7 @@ nav {
 @media (max-width: 768px) {
 
   .container {
-    padding: 0 16px;
+    padding: 0 14px;
   }
 
   /* NAV */
@@ -425,47 +476,52 @@ nav {
   }
 
   .logo {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     gap: 10px;
   }
 
   .logo-icon {
-    width: 64px;
-    height: 40px;
-    border-radius: 10px;
+    width: 60px;
+    height: 38px;
   }
 
   /* CARD */
   .track-card {
-    margin: 30px auto;
-    padding: 28px 20px;
+    max-width: 100%;
+
+    margin: 20px auto;
+    padding: 22px 16px;
+
     border-radius: 20px;
   }
 
   /* INPUT */
   .input-group input {
     padding: 16px;
-    font-size: 1rem;
+    font-size: 0.96rem;
   }
 
   /* BUTTON */
   .btn-primary {
-    padding: 15px 20px;
-    font-size: 1rem;
-    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 0.95rem;
   }
 
   /* TIMELINE */
   .tracking-timeline {
     overflow-x: auto;
+    overflow-y: hidden;
 
     justify-content: flex-start;
-    gap: 20px;
 
-    padding-bottom: 10px;
+    gap: 18px;
 
-    scrollbar-width: none;
+    padding: 10px 4px 16px;
+
+    scroll-behavior: smooth;
+
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
 
   .tracking-timeline::-webkit-scrollbar {
@@ -473,99 +529,107 @@ nav {
   }
 
   .tracking-timeline::before {
-    left: 35px;
-    right: 35px;
-    top: 25px;
+    left: 45px;
+    width: 700px;
+    right: auto;
+
+    top: 33px;
     height: 4px;
   }
 
+  /* STEP */
   .step-item {
-    flex: unset;
-    min-width: 90px;
+    min-width: 74px;
+    flex-shrink: 0;
   }
 
   .step-circle {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
 
-    font-size: 1.2rem;
+    font-size: 1.05rem;
 
     margin-bottom: 8px;
+
+    border-width: 3px;
   }
 
   .step-item.active .step-circle {
-    transform: scale(1.05);
+    transform: scale(1.04);
 
-    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.16);
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.14);
   }
 
   .step-label {
-    font-size: 0.76rem;
+    width: 74px;
+
+    font-size: 0.72rem;
     line-height: 1.25;
   }
 
   /* STATUS */
   .status-badge {
-    font-size: 0.82rem;
-    padding: 7px 14px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
   }
 
-  /* STEP LIST */
+  /* TRACK STEPS */
   .tracking-steps {
     margin-top: 24px;
   }
 
   .tracking-step {
-    align-items: flex-start;
-    margin-bottom: 22px;
-  }
-
-  .tracking-step::after {
-    left: 14px;
+    gap: 12px;
   }
 
   .step-content h4 {
-    font-size: 0.96rem;
+    font-size: 0.94rem;
   }
 
   .step-content p {
     font-size: 0.84rem;
-    line-height: 1.5;
+  }
+
+  /* UPDATE BOX */
+  .latest-update,
+  .update-box {
+    width: 100%;
+
+    padding: 14px;
+    border-radius: 14px;
   }
 }
 
 /* =========================================================
-   MOBILE RESPONSIVE
+   SMALL MOBILE
 ========================================================= */
 @media (max-width: 480px) {
 
   .container {
-    padding: 0 14px;
-  }
-
-  .logo {
-    font-size: 1rem;
-  }
-
-  .logo-icon {
-    width: 58px;
-    height: 36px;
+    padding: 0 12px;
   }
 
   .track-card {
-    padding: 22px 15px;
-    margin: 22px auto;
+    padding: 18px 14px;
+  }
+
+  .logo {
+    font-size: 0.95rem;
+  }
+
+  .logo-icon {
+    width: 56px;
+    height: 34px;
   }
 
   .input-group input {
-    padding: 15px;
-    font-size: 0.95rem;
+    padding: 14px;
+    font-size: 0.92rem;
   }
 
   .btn-primary {
-    width: 100%;
-    padding: 14px 18px;
-    font-size: 0.95rem;
+    padding: 13px 16px;
+    font-size: 0.92rem;
   }
 
   .tracking-timeline {
@@ -573,22 +637,24 @@ nav {
   }
 
   .step-item {
-    min-width: 82px;
+    min-width: 70px;
   }
 
   .step-circle {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
 
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .step-label {
-    font-size: 0.72rem;
+    width: 70px;
+
+    font-size: 0.68rem;
   }
 
   .step-content h4 {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   .step-content p {
@@ -596,7 +662,7 @@ nav {
   }
 
   .status-badge {
-    font-size: 0.78rem;
-    padding: 6px 12px;
+    font-size: 0.76rem;
+    padding: 6px 10px;
   }
 }
