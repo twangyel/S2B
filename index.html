@@ -19,9 +19,13 @@
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
+    <!--
+      FIX: Removed invalid nested <a> tag inside the logo <a>.
+           A single <a> now wraps the logo icon and brand name.
+    -->
     <a href="#" class="logo">
-      <div class="logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
-      Shop2Bhutan
+      <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan logo"></div>
+      <span class="logo-text">Shop2Bhutan</span>
     </a>
     <div class="nav-actions">
       <a href="#order-form" class="nav-btn btn-primary">Place Order</a>
@@ -227,13 +231,18 @@
     </div>
 
     <div class="form-card">
-      <form id="orderForm" action="https://api.web3forms.com/submit" method="POST" enctype="multipart/form-data" novalidate>
+      <form id="orderForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
 
-        <!-- Honeypot -->
-         <input type="hidden" name="access_key" value="248f0bfe-e83b-49e3-b853-ea291b71f353">
-         <input type="hidden" name="subject" value="New Order - Shop2Bhutan">
+        <input type="hidden" name="access_key" value="248f0bfe-e83b-49e3-b853-ea291b71f353">
+        <input type="hidden" name="subject" value="New Order - Shop2Bhutan">
         <input type="hidden" name="source" value="Shop2Bhutan Website">
-    
+        <input type="hidden" name="fi-text-products" id="hiddenProducts">
+        <!--
+          FIX: id="orderId" is used by JS to write the generated order ID
+               into this field BEFORE the form is submitted, so it reaches
+               the Web3Forms backend correctly.
+        -->
+        <input type="hidden" name="order_id" id="orderId">
 
         <div class="form-grid">
           <div class="input-group">
@@ -480,7 +489,11 @@
   <div class="popup-box">
     <div class="popup-icon">✅</div>
     <h3>Order Submitted!</h3>
-    <div class="popup-order-id" id="popupOrderId">—</div>
+    <!--
+      FIX: Click-to-copy is now wired up in JS via a click listener on this element.
+           Added cursor:pointer style so users know it's interactive.
+    -->
+    <div class="popup-order-id" id="popupOrderId" style="cursor:pointer;" title="Tap to copy">—</div>
     <p class="popup-copy-note" id="copyNote">Tap the ID above to copy it</p>
     <p>Your request has been received. Tap below to confirm on WhatsApp and we'll sort out the details.</p>
     <a id="whatsappConfirmBtn" href="#" target="_blank" class="popup-wa-btn">
@@ -513,8 +526,6 @@
 
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
-
-
 
 <script src="/js/main.js"></script>
 </body>
