@@ -63,8 +63,8 @@ nav {
   text-decoration: none;
 }
 .logo-icon {
-  width: 44px; height: 44px; border-radius: 13px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  width: 80px; height: 40px; border-radius: 13px;
+  /* background: linear-gradient(135deg, var(--primary), var(--primary-dark)); */
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; flex-shrink: 0;
 }
