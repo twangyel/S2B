@@ -5,9 +5,11 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
 );
 
+
+
 // ==================== TRACKING CONFIG ====================
 const trackingSteps = [
-  { key: "pending",       label: "Pending" },
+  { key: "pending",       label: "Pending" }, //key from supabase order database // label display on tracking page
   { key: "ordered",       label: "Order Confirmed" },
   { key: "purchased",     label: "Purchased" },
   { key: "shipped",       label: "Shipped from India" },
@@ -17,8 +19,20 @@ const trackingSteps = [
   { key: "delivered",     label: "Delivered" }
 ];
 
+// ==================== TRACKING PAYMENT STATUS ====================
+// const estimatedMap = {
+//   "pending":      "Awaiting advance payment",
+//   "ordered":      "5-7 days",
+//   "purchased":    "4-6 days",
+//   "shipped":      "2-4 days",
+//   "jaigaon":      "1-2 days",
+//   "phuentsholing":"1 day",
+//   "delivery":     "Today",
+//   "delivered":    "Completed"
+// };
+
 const estimatedMap = {
-  "pending":      "Awaiting confirmation",
+  "pending":      "-",
   "ordered":      "5-7 days",
   "purchased":    "4-6 days",
   "shipped":      "2-4 days",
@@ -102,6 +116,8 @@ function renderOrderTracking(d) {
 
   const resultDiv = document.getElementById('result');
 
+
+  //order status table
   resultDiv.innerHTML = `
     <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
 
@@ -114,7 +130,9 @@ function renderOrderTracking(d) {
         <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
         <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
         <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
-        <div><strong>Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
+        <div><strong>Order Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
+        <div><strong>Payment Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
+        <div><strong>Due Amount:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
       </div>
 
       <div style="margin-bottom:28px;">

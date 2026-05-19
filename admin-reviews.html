@@ -1,296 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shop2Bhutan Admin Panel</title>
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const supabase = createClient(
-  "https://deecrnfbvgbzyybqhywy.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
-);
-
-    // Redirect if not logged in
-    if (!localStorage.getItem("sb_admin")) {
-      window.location.href = "admin-login.html";
-    }
-
-    const statusOptions = ["pending", "ordered", "purchased", "shipped", "jaigaon", "phuentsholing", "delivery", "delivered"];
-
-    // ==================== SWITCH TAB ====================
-    window.switchTab = function(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(tab + '-tab').classList.add('active');
-      
-      document.getElementById('orders-section').style.display = tab === 'orders' ? 'block' : 'none';
-      document.getElementById('reviews-section').style.display = tab === 'reviews' ? 'block' : 'none';
-
-      if (tab === 'orders') loadOrders();
-      if (tab === 'reviews') loadReviews();
-    };
-
-    // ==================== LOAD ORDERS (Improved Debug) ====================
-async function loadOrders(filter = "") {
-  const tbody = document.getElementById("orders-body");
-  tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;padding:40px;'>Loading...</td></tr>";
-
-  let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
-
-  if (filter) query = query.ilike('order_id', `%${filter}%`);
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error(error);
-    tbody.innerHTML = `<tr><td colspan='6' style='color:red;'>Error: ${error.message}</td></tr>`;
-    return;
-  }
-
-  let html = '';
-  data.forEach(order => {
-    const orderId = order.id;   // Make sure we capture UUID correctly
-
-    html += `
-      <tr>
-        <td><strong>${order.order_id}</strong></td>
-        <td>${order.full_name || ''}</td>
-        <td>${order.delivery_city || '-'}</td>
-        <td><span class="status-badge">${order.status || 'pending'}</span></td>
-        <td>${new Date(order.created_at).toLocaleDateString('en-IN')}</td>
-        <td>
-          <select class="status-select" data-order-id="${orderId}">
-            ${statusOptions.map(s => `
-              <option value="${s}" ${ (order.status || '').toLowerCase() === s ? 'selected' : '' }>${s}</option>
-            `).join('')}
-          </select>
-          <button class="remark-btn" data-order-id="${orderId}">Remark</button>
-        </td>
-      </tr>`;
-  });
-
-  tbody.innerHTML = html;
-  attachTableListeners();
-}
-
-// ==================== ATTACH LISTENERS ====================
-function attachTableListeners() {
-  const tbody = document.getElementById("orders-body");
-
-  tbody.addEventListener('change', async (e) => {
-    if (e.target.classList.contains('status-select')) {
-      const orderId = e.target.getAttribute('data-order-id');
-      const newStatus = e.target.value;
-      await updateOrderStatus(orderId, newStatus);
-    }
-  });
-
-  tbody.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('remark-btn')) {
-      const orderId = e.target.getAttribute('data-order-id');
-      await addRemark(orderId);
-    }
-  });
-}
-
-// ==================== UPDATE STATUS ====================
-window.updateOrderStatus = async (id, newStatus) => {
-    console.log("=== SIMPLE UPDATE TEST ===");
-    console.log("UUID:", id);
-    console.log("New Status:", newStatus);
-
-    const { data, error } = await supabase
-        .from('orders')
-        .update({ 
-            status: newStatus 
-        })
-        .eq('id', id)
-        .select();
-
-    console.log("Update Data:", data);
-    console.log("Update Error:", error);
-
-    if (error) {
-        alert("Error: " + error.message);
-    } else if (data && data.length > 0) {
-        alert(`✅ SUCCESS! Updated to ${newStatus}`);
-        loadOrders();
-    } else {
-        alert("Update failed (0 rows). Trying to update a different field...");
-
-        // Try updating remark instead (to test if status column has issue)
-        const { data: remarkData, error: remarkError } = await supabase
-            .from('orders')
-            .update({ remark: "Test remark from admin " + new Date().toLocaleTimeString() })
-            .eq('id', id)
-            .select();
-
-        console.log("Remark Update Test:", remarkData, remarkError);
-        
-        if (remarkData && remarkData.length > 0) {
-            alert("✅ Remark update worked! Problem is with 'status' column.");
-        } else {
-            alert("Even remark update failed. Likely WITH CHECK or Trigger issue.");
-        }
-    }
-};
-
-async function tryAlternativeUpdate(uuid, newStatus) {
-    // Try finding by order_id instead
-    const { data } = await supabase.from('orders').select('order_id').eq('id', uuid).single();
-    
-    if (data) {
-        const { error } = await supabase
-            .from('orders')
-            .update({ status: newStatus })
-            .eq('order_id', data.order_id);
-        
-        if (!error) {
-            alert("✅ Updated using order_id fallback");
-            loadOrders();
-        }
-    }
-}
-    // ==================== ADD REMARK ====================
-    window.addRemark = async (id) => {
-      const remark = prompt("Enter latest update / remark:");
-      if (remark === null || !remark.trim()) return;
-
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          remark: remark,
-          last_updated: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (error) alert("Failed to save remark");
-      else {
-        alert("✅ Remark saved!");
-        loadOrders(document.getElementById('order-search').value || "");
-      }
-    };
-
-    // ==================== LOAD REVIEWS ====================
-    async function loadReviews() {
-      const container = document.getElementById("reviews-container");
-      container.innerHTML = "<p>Loading reviews...</p>";
-
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error(error);
-        container.innerHTML = `<p style="color:red">Error loading reviews: ${error.message}</p>`;
-        return;
-      }
-
-      if (data.length === 0) {
-        container.innerHTML = "<p>No reviews yet.</p>";
-        return;
-      }
-
-      container.innerHTML = data.map(r => `
-        <div class="review-card">
-          <div><strong>${r.full_name}</strong> - ${r.city || ""}</div>
-          <div class="stars">${"★".repeat(r.rating)}${"☆".repeat(5 - (r.rating || 0))}</div>
-          <p>${r.message || r.comment || ''}</p>
-          <div>
-            <button onclick="toggleApprove('${r.id}', ${!!r.is_approved})" 
-                    style="background:${r.is_approved ? '#10b981' : '#3b82f6'}">
-              ${r.is_approved ? "✅ Approved" : "Approve"}
-            </button>
-            <button class="delete-btn" onclick="deleteReview('${r.id}')">Delete</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    window.toggleApprove = async (id, current) => {
-      const { error } = await supabase
-        .from("reviews")
-        .update({ is_approved: !current })
-        .eq("id", id);
-
-      if (error) alert("Failed to update");
-      else loadReviews();
-    };
-
-    window.deleteReview = async (id) => {
-      if (confirm("Delete this review?")) {
-        const { error } = await supabase.from("reviews").delete().eq("id", id);
-        if (error) alert("Failed to delete");
-        else loadReviews();
-      }
-    };
-
-    // ==================== LOGOUT ====================
-    window.logout = () => {
-      if (confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem("sb_admin");
-        window.location.href = "admin-login.html";
-      }
-    };
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      loadOrders();
-    });
-  </script>
-
-  <style>
-    body { font-family: Arial, sans-serif; background: #f8fafc; padding: 20px; }
-    .tabs { display: flex; gap: 10px; margin: 20px 0; }
-    .tab { padding: 12px 24px; cursor: pointer; background: #e2e8f0; border-radius: 8px; font-weight: bold; }
-    .tab.active { background: #3b82f6; color: white; }
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    th, td { padding: 14px; border-bottom: 1px solid #eee; text-align: left; }
-    th { background: #1e2937; color: white; }
-    select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
-    .status-badge { padding: 6px 12px; border-radius: 20px; background: #fef3c7; font-weight: bold; }
-    .review-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .delete-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; margin-left: 8px; border-radius: 6px; }
-    button { cursor: pointer; }
-  </style>
+  <link rel="stylesheet" href="/css/admin_reviews.css">
 </head>
+
 <body>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
+
+  <!-- HEADER -->
+  <div class="topbar">
     <h1>🛠️ Shop2Bhutan Admin Panel</h1>
-    <button onclick="logout()" style="padding:10px 20px; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer;">
+
+    <button class="logout-btn" onclick="logout()">
       Logout
     </button>
   </div>
 
+  <!-- TABS -->
   <div class="tabs">
-    <div id="orders-tab" class="tab active" onclick="switchTab('orders')">📦 Orders</div>
-    <div id="reviews-tab" class="tab" onclick="switchTab('reviews')">⭐ Reviews</div>
+    <div id="orders-tab"
+         class="tab active"
+         onclick="switchTab('orders')">
+      📦 Orders
+    </div>
+
+    <div id="reviews-tab"
+         class="tab"
+         onclick="switchTab('reviews')">
+      ⭐ Reviews
+    </div>
   </div>
 
-  <div id="orders-section">
-    <input type="text" id="order-search" placeholder="Search Order ID..." style="padding:10px; width:300px; margin-bottom:15px;">
-    <button onclick="loadOrders(document.getElementById('order-search').value)">Search</button>
-    <button onclick="loadOrders()">Refresh</button>
+  <!-- ORDERS -->
+  <section id="orders-section">
 
-    <table>
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>City</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="orders-body"></tbody>
-    </table>
-  </div>
+   <!-- SEARCH BAR -->
+<div class="search-bar">
 
-  <div id="reviews-section" style="display:none;">
+  <input
+    type="text"
+    id="order-search"
+    placeholder="Search Order ID..."
+  >
+
+  <button onclick="loadOrders()">
+    Refresh
+  </button>
+
+</div>
+
+    <div class="table-wrapper">
+      <table>
+
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>City</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+            <th>Final Total</th>
+            <th>Due Amount</th>
+          </tr>
+        </thead>
+
+        <tbody id="orders-body"></tbody>
+
+      </table>
+    </div>
+
+  </section>
+
+  <!-- REVIEWS -->
+  <section id="reviews-section" style="display:none;">
     <div id="reviews-container"></div>
-  </div>
+  </section>
+
+  <!-- JS -->
+  <script type="module" src="/js/admin_reviews.js"></script>
+
 </body>
 </html>
