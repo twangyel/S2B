@@ -2,85 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Shop2Bhutan Admin Panel</title>
   <link rel="stylesheet" href="/css/admin_reviews.css">
 </head>
-
 <body>
 
-  <!-- HEADER -->
-  <div class="topbar">
-    <h1>🛠️ Shop2Bhutan Admin Panel</h1>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+<div class="topbar">
+  <h1>🛠️ Shop2Bhutan Admin Suite</h1>
+  <button class="logout-btn" id="logout-btn">Logout</button>
+</div>
+
+<div class="tabs">
+  <div id="orders-tab" class="tab active" data-tab="orders">📦 Orders</div>
+  <div id="reviews-tab" class="tab" data-tab="reviews">⭐ Reviews</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- ORDERS SECTION -->
+<section id="orders-section" class="section">
+  <div class="controls-bar">
+    <div class="search-group">
+      <input type="text" id="order-search" placeholder="🔍 Order ID, Name, City...">
+      <button id="orders-refresh-btn" class="btn">⟳ Refresh</button>
+    </div>
+    <div class="search-group">
+      <select id="orders-page-size">
+        <option value="10">10 per page</option>
+        <option value="25" selected>25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
+      <button id="export-orders-btn" class="btn btn-primary">📎 Export Orders (CSV)</button>
+    </div>
   </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <div id="orders-tab" class="tab active" onclick="switchTab('orders')">
-      📦 Orders
-    </div>
-    <div id="reviews-tab" class="tab" onclick="switchTab('reviews')">
-      ⭐ Reviews
-    </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>City</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Final (₹)</th>
+          <th>Advance (₹)</th>
+          <th>Due (₹)</th>
+          <th>Remark</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="orders-body">
+        <tr><td colspan="10" style="text-align:center">Loading orders...</td></tr>
+      </tbody>
+    </table>
   </div>
+  <div id="orders-pagination" class="pagination"></div>
+</section>
 
-  <!-- ORDERS -->
-  <section id="orders-section">
-
-    <div class="search-bar">
-      <input
-        type="text"
-        id="order-search"
-        placeholder="Search by Order ID, Name, or City..."
-      >
-      <!-- FIX #3: Button now calls window.loadOrders correctly -->
-      <button onclick="window.loadOrders()">Refresh</button>
-    </div>
-
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>City</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-            <th>Final Total</th>
-            <th>Due Amount</th>
-            <th>Advance Paid</th>
-          </tr>
-        </thead>
-        <tbody id="orders-body"></tbody>
-      </table>
-    </div>
-
-  </section>
-
-  <!-- REVIEWS -->
-  <section id="reviews-section" style="display:none;">
-
-    <!-- FIX #12: Added search/filter bar for reviews -->
-    <div class="search-bar">
-      <input
-        type="text"
-        id="review-search"
-        placeholder="Search by name..."
-      >
+<!-- REVIEWS SECTION -->
+<section id="reviews-section" class="section" style="display:none;">
+  <div class="controls-bar">
+    <div class="search-group">
+      <input type="text" id="review-search" placeholder="Search by name...">
       <select id="review-filter">
         <option value="all">All Reviews</option>
         <option value="approved">Approved</option>
         <option value="pending">Pending Approval</option>
       </select>
-      <button onclick="window.loadReviews()">Refresh</button>
+      <button id="reviews-refresh-btn" class="btn">⟳ Refresh</button>
     </div>
+    <div class="search-group">
+      <select id="reviews-page-size">
+        <option value="6">6 per page</option>
+        <option value="12" selected>12 per page</option>
+        <option value="24">24 per page</option>
+      </select>
+      <button id="export-reviews-btn" class="btn btn-primary">📎 Export Reviews (CSV)</button>
+    </div>
+  </div>
+  <div id="reviews-container" class="reviews-grid"></div>
+  <div id="reviews-pagination" class="pagination"></div>
+</section>
 
-    <div id="reviews-container"></div>
-  </section>
-
-  <script type="module" src="/js/admin_reviews.js"></script>
-
+<script type="module" src="/js/admin_reviews.js"></script>
 </body>
 </html>
