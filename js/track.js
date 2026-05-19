@@ -119,80 +119,68 @@ function renderOrderTracking(d) {
     return `
       <div class="step-item ${completed ? 'completed' : ''} ${active ? 'active' : ''}">
         <div class="step-circle">
-          ${completed ? '✓' : active ? '🚚' : ''}
+          ${completed ? '✓' : active ? '🚚' : index + 1}
         </div>
         <div class="step-label">${step.label}</div>
       </div>`;
   }).join('');
 
+  // Calculate progress percentage for the line
+  const progressPercent = currentIndex >= 0 ? Math.min(((currentIndex + 1) / trackingSteps.length) * 100, 100) : 10;
+
   const resultDiv = document.getElementById('result');
+  resultDiv.classList.remove('hidden');
 
-
-  //order status table
   resultDiv.innerHTML = `
-  <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
-      <h3 style="margin:0;">${d.order_id}</h3>
+    <div class="order-header">
+      <div>
+        <h3 style="margin:0; font-size:1.6rem;">${d.order_id}</h3>
+      </div>
       <span class="status-badge">${d.status || 'Pending'}</span>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; font-size:0.97rem;">
-
+    <div class="info-grid">
       <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
       <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
       <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
-
-      // <div><strong>Order Status:</strong> ${d.status}</div>
-
-      <!-- ✅ FIXED PAYMENT SECTION -->
       <div>
-        <strong>Payment Status:</strong>
-        <span style="font-weight:600; color:var(--primary);">
-          ${getPaymentStatus(d)}
-        </span>
+        <strong>Payment:</strong> 
+        <span style="color:var(--success); font-weight:600;">${getPaymentStatus(d)}</span>
       </div>
-
-      <div>
-        <strong>Due Amount:</strong>
-        <span style="font-weight:700; color:#dc2626;">
-          ${d.due_amount ? `Nu. ${d.due_amount}` : "Advance Pending"}
-        </span>
-      </div>
-
     </div>
 
-      <div style="margin-bottom:28px;">
-        <strong>Estimated Delivery:</strong> ${getEstimated(d)}
-      </div>
-
-      ${d.product_links ? `
-      <div style="margin-bottom:24px;">
-        <strong>Product Link:</strong><br>
-        <a href="${d.product_links}" target="_blank" style="color:var(--primary); word-break:break-all;">${d.product_links}</a>
-      </div>` : ''}
-
-      ${d.screenshot_url ? `
-      <div style="margin-bottom:24px;">
-        <strong>Payment Proof:</strong><br>
-        <img src="${d.screenshot_url}" alt="Proof" style="max-width:100%; border-radius:12px; margin-top:10px;">
-      </div>` : ''}
-
-      <div style="margin-top:32px;">
-        <h4 style="margin-bottom:12px;">Tracking Progress</h4>
-        <div class="tracking-timeline">${stepsHTML}</div>
-      </div>
-
-      ${d.remark ? `
-      <div style="margin-top:28px; padding:18px; background:#fff; border:1px solid var(--border); border-radius:12px;">
-        <strong>Latest Update:</strong><br>${d.remark}
-      </div>` : ''}
-
-      <button onclick="searchOrder()" style="margin-top:20px; padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:8px; cursor:pointer;">
-        🔄 Refresh Status
-      </button>
+    <div style="margin:24px 0;">
+      <strong>Estimated Delivery:</strong> ${getEstimated(d)}
     </div>
+
+    ${d.product_links ? `<div style="margin:20px 0;"><strong>Product:</strong><br><a href="${d.product_links}" target="_blank" style="color:var(--primary);">${d.product_links}</a></div>` : ''}
+
+    ${d.screenshot_url ? `
+      <div style="margin:28px 0;">
+        <strong>Payment Proof</strong><br>
+        <img src="${d.screenshot_url}" style="max-width:100%; border-radius:16px; margin-top:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+      </div>` : ''}
+
+    <h4 style="margin:32px 0 16px;">Tracking Progress</h4>
+    <div class="tracking-timeline" style="--progress: ${progressPercent}%;">
+      ${stepsHTML}
+    </div>
+
+    ${d.remark ? `
+      <div style="background:#f0f9ff; padding:20px; border-radius:16px; border-left:5px solid var(--primary);">
+        <strong>Latest Update:</strong><br>
+        ${d.remark}
+      </div>` : ''}
+
+    <button onclick="searchOrder()" style="margin-top:28px; width:100%; padding:14px; background:#64748b; color:white; border:none; border-radius:999px; cursor:pointer;">
+      🔄 Refresh Status
+    </button>
   `;
+
+  // Trigger progress animation
+  setTimeout(() => {
+    document.querySelector('.tracking-timeline').style.setProperty('--progress', `${progressPercent}%`);
+  }, 100);
 }
 
 // Initialize
