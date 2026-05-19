@@ -8,6 +8,13 @@
   <meta property="og:title" content="Shop2Bhutan" />
   <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
   <meta property="og:type" content="website" />
+  <link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#111827">
+
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -814,5 +821,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ── MAIN MODULE (Supabase logic unchanged) ── -->
 <script type="module" src="/js/main.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("Service Worker registered:", reg);
+        })
+        .catch((err) => {
+          console.log("SW registration failed:", err);
+        });
+    });
+  }
+</script>
 </body>
 </html>
