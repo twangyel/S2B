@@ -100,7 +100,7 @@ nav {
 /* ── HERO ── */
 .hero {
   background: linear-gradient(rgba(10,20,50,0.78), rgba(10,20,50,0.78)),
-    url('/image/background.jpg') center/cover no-repeat;
+    url('/image/bg.jpeg') center/cover no-repeat;
   color: #fff; padding: 130px 0 100px;
   position: relative; overflow: hidden;
 }
