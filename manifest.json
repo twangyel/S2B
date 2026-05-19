@@ -1,12 +1,11 @@
 {
   "name": "Shop2Bhutan",
   "short_name": "Shop2BT",
-  "description": "Online shopping & order tracking platform",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
   "theme_color": "#111827",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -14,7 +13,7 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/icon-192.png",
       "sizes": "512x512",
       "type": "image/png"
     }
