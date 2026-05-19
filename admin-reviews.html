@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shop2Bhutan Admin Panel</title>
-
   <link rel="stylesheet" href="/css/admin_reviews.css">
 </head>
 
@@ -13,23 +12,15 @@
   <!-- HEADER -->
   <div class="topbar">
     <h1>🛠️ Shop2Bhutan Admin Panel</h1>
-
-    <button class="logout-btn" onclick="logout()">
-      Logout
-    </button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
-    <div id="orders-tab"
-         class="tab active"
-         onclick="switchTab('orders')">
+    <div id="orders-tab" class="tab active" onclick="switchTab('orders')">
       📦 Orders
     </div>
-
-    <div id="reviews-tab"
-         class="tab"
-         onclick="switchTab('reviews')">
+    <div id="reviews-tab" class="tab" onclick="switchTab('reviews')">
       ⭐ Reviews
     </div>
   </div>
@@ -37,24 +28,18 @@
   <!-- ORDERS -->
   <section id="orders-section">
 
-   <!-- SEARCH BAR -->
-<div class="search-bar">
-
-  <input
-    type="text"
-    id="order-search"
-    placeholder="Search Order ID..."
-  >
-
-  <button onclick="loadOrders()">
-    Refresh
-  </button>
-
-</div>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="order-search"
+        placeholder="Search by Order ID, Name, or City..."
+      >
+      <!-- FIX #3: Button now calls window.loadOrders correctly -->
+      <button onclick="window.loadOrders()">Refresh</button>
+    </div>
 
     <div class="table-wrapper">
       <table>
-
         <thead>
           <tr>
             <th>Order ID</th>
@@ -65,11 +50,10 @@
             <th>Actions</th>
             <th>Final Total</th>
             <th>Due Amount</th>
+            <th>Advance Paid</th>
           </tr>
         </thead>
-
         <tbody id="orders-body"></tbody>
-
       </table>
     </div>
 
@@ -77,10 +61,25 @@
 
   <!-- REVIEWS -->
   <section id="reviews-section" style="display:none;">
+
+    <!-- FIX #12: Added search/filter bar for reviews -->
+    <div class="search-bar">
+      <input
+        type="text"
+        id="review-search"
+        placeholder="Search by name..."
+      >
+      <select id="review-filter">
+        <option value="all">All Reviews</option>
+        <option value="approved">Approved</option>
+        <option value="pending">Pending Approval</option>
+      </select>
+      <button onclick="window.loadReviews()">Refresh</button>
+    </div>
+
     <div id="reviews-container"></div>
   </section>
 
-  <!-- JS -->
   <script type="module" src="/js/admin_reviews.js"></script>
 
 </body>

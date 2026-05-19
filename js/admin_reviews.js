@@ -13,6 +13,7 @@ const supabase = createClient(
   "https://deecrnfbvgbzyybqhywy.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
 );
+
 // ======================================================
 // STATUS OPTIONS
 // ======================================================
@@ -37,69 +38,19 @@ if (!localStorage.getItem("sb_admin")) {
 }
 
 // ======================================================
-// TAB SWITCHING
+// PAYMENT STATUS
 // ======================================================
 
-window.switchTab = function(tab) {
+function getPaymentStatus(order) {
+  const total = Number(order.final_total  || 0);
+  const paid  = Number(order.advance_paid || 0);
 
-  document.querySelectorAll(".tab")
-    .forEach(t => t.classList.remove("active"));
-
-  document.getElementById(`${tab}-tab`)
-    .classList.add("active");
-
-  document.getElementById("orders-section").style.display =
-    tab === "orders" ? "block" : "none";
-
-  document.getElementById("reviews-section").style.display =
-    tab === "reviews" ? "block" : "none";
-
-  if (tab === "orders") {
-    loadOrders();
-  }
-
-  if (tab === "reviews") {
-    loadReviews();
-  }
-};
-
-// ======================================================
-// DYNAMIC SEARCH
-// ======================================================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    const searchInput =
-      document.getElementById("order-search");
-
-    if (searchInput) {
-
-      searchInput.addEventListener(
-        "input",
-        function () {
-
-          const value =
-            this.value.trim();
-
-          loadOrders(value);
-        }
-      );
-    }
-
-    loadOrders();
-  }
-);
-
-// OPTIONAL MANUAL SEARCH
-window.searchOrders = function () {
-
-  const value =
-    document.getElementById("order-search").value;
-
-  loadOrders(value);
-};
+  if (!total && paid <= 0) return "Advance Pending";
+  if (total > 0 && paid <= 0) return "Advance Pending";
+  if (total > 0 && paid >= total) return "Paid";
+  if (total > 0 && paid > 0 && paid < total) return "Partially Paid";
+  return "Advance Received";
+}
 
 // ======================================================
 // LOAD ORDERS
@@ -107,13 +58,12 @@ window.searchOrders = function () {
 
 async function loadOrders(filter = "") {
 
-  const tbody =
-    document.getElementById("orders-body");
+  const tbody = document.getElementById("orders-body");
+  if (!tbody) return;
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="8"
-          style="text-align:center;padding:40px;">
+      <td colspan="9" style="text-align:center;padding:40px;color:#64748b;">
         Loading...
       </td>
     </tr>
@@ -122,175 +72,99 @@ async function loadOrders(filter = "") {
   let query = supabase
     .from("orders")
     .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+    .order("created_at", { ascending: false });
 
-  // SEARCH FILTER
   if (filter) {
+    const search = filter
+      .replace(/,/g, "")
+      .replace(/[%_'"\\]/g, "");
 
-  const search =
-  filter.replace(/,/g, "");
-
-query = query.or(
-  `order_id.ilike.%${search}%,full_name.ilike.%${search}%,delivery_city.ilike.%${search}%`
-);
+    if (search) {
+      query = query.or(
+        `order_id.ilike.%${search}%,` +
+        `full_name.ilike.%${search}%,` +
+        `delivery_city.ilike.%${search}%`
+      );
+    }
   }
 
   const { data, error } = await query;
 
   if (error) {
-
-    console.error(error);
-
+    console.error("Orders fetch error:", error);
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="color:red;">
-          ${error.message}
+        <td colspan="9" style="color:red;text-align:center;padding:30px;">
+          ⚠️ ${error.message}
         </td>
       </tr>
     `;
-
     return;
   }
 
   if (!data || data.length === 0) {
-
     tbody.innerHTML = `
       <tr>
-        <td colspan="8"
-            style="text-align:center;padding:40px;">
+        <td colspan="9" style="text-align:center;padding:40px;color:#64748b;">
           No orders found
         </td>
       </tr>
     `;
-
     return;
   }
 
   let html = "";
 
   data.forEach(order => {
-
-    const orderId = order.id;
+    const orderId     = order.id;
+    const finalTotal  = Number(order.final_total  || 0);
+    const advancePaid = Number(order.advance_paid || 0);
+    const dueAmount   = Math.max(0, finalTotal - advancePaid);
+    const payStatus   = getPaymentStatus(order);
+    const curStatus   = (order.status || "pending").toLowerCase();
 
     html += `
       <tr>
-
-        <!-- ORDER ID -->
+        <td><strong>${order.order_id || ""}</strong></td>
+        <td>${order.full_name || ""}</td>
+        <td>${order.delivery_city || "-"}</td>
         <td>
-          <strong>${order.order_id}</strong>
-        </td>
-
-        <!-- CUSTOMER -->
-        <td>
-          ${order.full_name || ""}
-        </td>
-
-        <!-- CITY -->
-        <td>
-          ${order.delivery_city || "-"}
-        </td>
-
-        <!-- STATUS -->
-        <td>
-
-          <span
-            class="status-badge"
-            data-order-id="${orderId}"
-          >
-            ${order.status || "pending"}
+          <span class="status-badge" data-order-id="${orderId}" data-status="${curStatus}">
+            ${curStatus}
           </span>
-
+          <div class="payment-status">${payStatus}</div>
         </td>
-
-        <!-- DATE -->
+        <td>${new Date(order.created_at).toLocaleDateString("en-IN")}</td>
         <td>
-
-          ${new Date(order.created_at)
-            .toLocaleDateString("en-IN")}
-
-        </td>
-
-        <!-- ACTIONS -->
-        <td>
-
-          <select
-            class="status-select"
-            data-order-id="${orderId}"
-          >
-
-            ${statusOptions.map(status => `
-
-              <option
-                value="${status}"
-                ${(order.status || "")
-                  .toLowerCase() === status
-                    ? "selected"
-                    : ""}
-              >
-                ${status}
-              </option>
-
+          <select class="status-select" data-order-id="${orderId}">
+            ${statusOptions.map(s => `
+              <option value="${s}" ${curStatus === s ? "selected" : ""}>${s}</option>
             `).join("")}
-
           </select>
-
-          <button
-            class="remark-btn"
-            data-order-id="${orderId}"
-          >
-            Remark
-          </button>
-
+          <button class="remark-btn" data-order-id="${orderId}">💬 Remark</button>
         </td>
-
-        <!-- FINAL TOTAL -->
         <td>
-
-          <input
-            type="number"
-            class="final-total-input"
+          <input type="number" class="table-input final-total-input"
             data-order-id="${orderId}"
             value="${order.final_total || ""}"
-            placeholder="Final Total"
-          >
-
-          <button
-            class="save-final-btn"
-            data-order-id="${orderId}"
-          >
-            Save
-          </button>
-
+            placeholder="Enter total">
+          <button class="save-btn save-final-btn" data-order-id="${orderId}">Save</button>
         </td>
-
-        <!-- DUE AMOUNT -->
         <td>
-
-          <input
-            type="number"
-            class="due-amount-input"
-            data-order-id="${orderId}"
-            value="${order.due_amount || ""}"
-            placeholder="Due Amount"
-          >
-
-          <button
-            class="save-due-btn"
-            data-order-id="${orderId}"
-          >
-            Save
-          </button>
-
+          <input type="number" class="table-input" value="${dueAmount}" readonly>
         </td>
-
+        <td>
+          <input type="number" class="table-input advance-paid-input"
+            data-order-id="${orderId}"
+            value="${order.advance_paid || ""}"
+            placeholder="Advance paid">
+          <button class="save-btn save-advance-btn" data-order-id="${orderId}">Save</button>
+        </td>
       </tr>
     `;
   });
 
   tbody.innerHTML = html;
-
   attachTableListeners();
 }
 
@@ -298,87 +172,49 @@ query = query.or(
 // TABLE LISTENERS
 // ======================================================
 
-let listenersAttached = false;
-
 function attachTableListeners() {
+  const tbody = document.getElementById("orders-body");
+  if (!tbody) return;
 
-  if (listenersAttached) return;
+  const fresh = tbody.cloneNode(true);
+  tbody.parentNode.replaceChild(fresh, tbody);
 
-  listenersAttached = true;
-
-  const tbody =
-    document.getElementById("orders-body");
-
-  // STATUS CHANGE
-  tbody.addEventListener("change", async (e) => {
-
-    if (
-      e.target.classList.contains("status-select")
-    ) {
-
-      const orderId =
-        e.target.getAttribute("data-order-id");
-
-      const newStatus =
-        e.target.value;
-
+  fresh.addEventListener("change", async (e) => {
+    if (e.target.classList.contains("status-select")) {
       await updateOrderStatus(
-        orderId,
-        newStatus
+        e.target.getAttribute("data-order-id"),
+        e.target.value
       );
     }
   });
 
-  // BUTTON CLICKS
-  tbody.addEventListener("click", async (e) => {
+  fresh.addEventListener("click", async (e) => {
 
-    // REMARK
-    if (
-      e.target.classList.contains("remark-btn")
-    ) {
-
-      const orderId =
-        e.target.getAttribute("data-order-id");
-
-      await addRemark(orderId);
+    if (e.target.classList.contains("remark-btn")) {
+      await addRemark(e.target.getAttribute("data-order-id"));
     }
 
-    // FINAL TOTAL
-    if (
-      e.target.classList.contains("save-final-btn")
-    ) {
-
-      const orderId =
-        e.target.getAttribute("data-order-id");
-
-      const input = document.querySelector(
-        `.final-total-input[data-order-id="${orderId}"]`
-      );
-
-      await updateFinalTotal(
-        orderId,
-        input.value
-      );
+    if (e.target.classList.contains("save-final-btn")) {
+      const id    = e.target.getAttribute("data-order-id");
+      const input = fresh.querySelector(`.final-total-input[data-order-id="${id}"]`);
+      setButtonLoading(e.target, true);
+      await updateFinalTotal(id, input.value);
+      setButtonLoading(e.target, false);
     }
 
-    // DUE AMOUNT
-    if (
-      e.target.classList.contains("save-due-btn")
-    ) {
-
-      const orderId =
-        e.target.getAttribute("data-order-id");
-
-      const input = document.querySelector(
-        `.due-amount-input[data-order-id="${orderId}"]`
-      );
-
-      await updateDueAmount(
-        orderId,
-        input.value
-      );
+    if (e.target.classList.contains("save-advance-btn")) {
+      const id    = e.target.getAttribute("data-order-id");
+      const input = fresh.querySelector(`.advance-paid-input[data-order-id="${id}"]`);
+      setButtonLoading(e.target, true);
+      await updateAdvancePaid(id, input.value);
+      setButtonLoading(e.target, false);
     }
   });
+}
+
+function setButtonLoading(btn, isLoading) {
+  btn.disabled    = isLoading;
+  btn.textContent = isLoading ? "Saving..." : "Save";
 }
 
 // ======================================================
@@ -386,34 +222,24 @@ function attachTableListeners() {
 // ======================================================
 
 async function updateOrderStatus(id, status) {
-
   const { error } = await supabase
     .from("orders")
-    .update({
-      status: status,
-      last_updated: new Date().toISOString()
-    })
+    .update({ status, last_updated: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
-
     console.error(error);
-
     alert("Failed to update status");
-
     return;
   }
 
-  // UPDATE BADGE INSTANTLY
-  const badge = document.querySelector(
-    `.status-badge[data-order-id="${id}"]`
-  );
-
+  const badge = document.querySelector(`.status-badge[data-order-id="${id}"]`);
   if (badge) {
     badge.textContent = status;
+    badge.setAttribute("data-status", status);
   }
 
-  alert("✅ Status updated");
+  alert("Status updated");
 }
 
 // ======================================================
@@ -421,32 +247,19 @@ async function updateOrderStatus(id, status) {
 // ======================================================
 
 async function addRemark(id) {
-
-  const remark = prompt(
-    "Enter latest remark/update:"
-  );
-
-  if (!remark || !remark.trim()) {
-    return;
-  }
+  const remark = prompt("Enter latest remark/update:");
+  if (!remark || !remark.trim()) return;
 
   const { error } = await supabase
     .from("orders")
-    .update({
-      remark: remark,
-      last_updated: new Date().toISOString()
-    })
+    .update({ remark: remark.trim(), last_updated: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
-
     console.error(error);
-
     alert("Failed to save remark");
-
   } else {
-
-    alert("✅ Remark saved");
+    alert("Remark saved");
   }
 }
 
@@ -455,50 +268,69 @@ async function addRemark(id) {
 // ======================================================
 
 async function updateFinalTotal(id, amount) {
+  const finalTotal = Number(amount || 0);
+
+  const { data: cur, error: fetchErr } = await supabase
+    .from("orders")
+    .select("advance_paid")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr) {
+    console.error(fetchErr);
+    alert("Failed to fetch order data");
+    return;
+  }
+
+  const advancePaid = Number(cur?.advance_paid || 0);
+  const dueAmount   = Math.max(0, finalTotal - advancePaid);
 
   const { error } = await supabase
     .from("orders")
-    .update({
-      final_total: amount,
-      last_updated: new Date().toISOString()
-    })
+    .update({ final_total: finalTotal, due_amount: dueAmount, last_updated: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
-
     console.error(error);
-
     alert("Failed to update final total");
-
   } else {
-
-    alert("✅ Final total updated");
+    alert("Final total updated");
+    await loadOrders(document.getElementById("order-search")?.value?.trim() || "");
   }
 }
 
 // ======================================================
-// UPDATE DUE AMOUNT
+// UPDATE ADVANCE PAID
 // ======================================================
 
-async function updateDueAmount(id, amount) {
+async function updateAdvancePaid(id, amount) {
+  const { data: ord, error: fetchErr } = await supabase
+    .from("orders")
+    .select("final_total")
+    .eq("id", id)
+    .single();
+
+  if (fetchErr) {
+    console.error(fetchErr);
+    alert("Failed to fetch order");
+    return;
+  }
+
+  const finalTotal  = Number(ord.final_total || 0);
+  const advancePaid = Number(amount || 0);
+  const dueAmount   = Math.max(0, finalTotal - advancePaid);
 
   const { error } = await supabase
     .from("orders")
-    .update({
-      due_amount: amount,
-      last_updated: new Date().toISOString()
-    })
+    .update({ advance_paid: advancePaid, due_amount: dueAmount, last_updated: new Date().toISOString() })
     .eq("id", id);
 
   if (error) {
-
     console.error(error);
-
-    alert("Failed to update due amount");
-
+    alert("Failed to update advance");
   } else {
-
-    alert("✅ Due amount updated");
+    alert("Advance payment updated");
+    await loadOrders(document.getElementById("order-search")?.value?.trim() || "");
   }
 }
 
@@ -507,114 +339,108 @@ async function updateDueAmount(id, amount) {
 // ======================================================
 
 async function loadReviews() {
+  const container = document.getElementById("reviews-container");
+  if (!container) return;
 
-  const container =
-    document.getElementById("reviews-container");
-
-  container.innerHTML = `
-    <p>Loading reviews...</p>
-  `;
+  container.innerHTML = `<p style="color:#64748b;padding:20px;">Loading reviews...</p>`;
 
   const { data, error } = await supabase
     .from("reviews")
     .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+    .order("created_at", { ascending: false });
 
   if (error) {
-
-    container.innerHTML = `
-      <p style="color:red;">
-        ${error.message}
-      </p>
-    `;
-
+    console.error("Reviews fetch error:", error);
+    container.innerHTML = `<p style="color:red;padding:20px;">⚠️ ${error.message}</p>`;
     return;
   }
 
   if (!data || data.length === 0) {
-
-    container.innerHTML =
-      "<p>No reviews yet.</p>";
-
+    container.innerHTML = `<p style="color:#64748b;padding:20px;">No reviews yet.</p>`;
     return;
   }
 
-  container.innerHTML = data.map(review => `
+  const searchVal = (document.getElementById("review-search")?.value || "").toLowerCase().trim();
+  const filterVal = document.getElementById("review-filter")?.value || "all";
 
-    <div class="review-card">
+  const filtered = data.filter(r => {
+    const name        = (r.full_name || "").toLowerCase();
+    const matchSearch = !searchVal || name.includes(searchVal);
+    const matchFilter =
+      filterVal === "all" ||
+      (filterVal === "approved" && r.is_approved) ||
+      (filterVal === "pending"  && !r.is_approved);
+    return matchSearch && matchFilter;
+  });
 
-      <h3>
-        ${review.full_name || "Anonymous"}
-      </h3>
+  if (filtered.length === 0) {
+    container.innerHTML = `<p style="color:#64748b;padding:20px;">No reviews match your filter.</p>`;
+    return;
+  }
 
-      <p>
-        ${review.message || review.comment || ""}
-      </p>
+  container.innerHTML = filtered.map(r => {
+    const approved = Boolean(r.is_approved);
+    const date     = r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN") : "";
 
-      <div style="margin-top:10px;">
-
-        <button
-          onclick="toggleApprove(
-            '${review.id}',
-            ${review.is_approved}
-          )"
-        >
-          ${review.is_approved
-            ? "✅ Approved"
-            : "Approve"}
-        </button>
-
-        <button
-          onclick="deleteReview('${review.id}')"
-          class="delete-btn"
-        >
-          Delete
-        </button>
-
+    return `
+      <div class="review-card">
+        <h3>${r.full_name || "Anonymous"}</h3>
+        <div class="review-meta">📅 ${date}</div>
+        <p>${r.message || r.comment || ""}</p>
+        <div class="review-actions">
+          <button
+            class="approve-btn ${approved ? "approved" : "pending"}"
+            data-review-id="${r.id}"
+            data-approved="${approved}"
+          >${approved ? "✅ Approved" : "⏳ Approve"}</button>
+          <button class="delete-btn" data-review-id="${r.id}">🗑️ Delete</button>
+        </div>
       </div>
+    `;
+  }).join("");
 
-    </div>
-
-  `).join("");
+  attachReviewListeners();
 }
 
 // ======================================================
-// TOGGLE APPROVE
+// REVIEW LISTENERS
 // ======================================================
 
-window.toggleApprove = async (
-  id,
-  current
-) => {
+function attachReviewListeners() {
+  const container = document.getElementById("reviews-container");
+  if (!container) return;
 
+  const fresh = container.cloneNode(true);
+  container.parentNode.replaceChild(fresh, container);
+
+  fresh.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("approve-btn")) {
+      const id      = e.target.getAttribute("data-review-id");
+      const current = e.target.getAttribute("data-approved") === "true";
+      await toggleApprove(id, current);
+    }
+
+    if (e.target.classList.contains("delete-btn")) {
+      await deleteReview(e.target.getAttribute("data-review-id"));
+    }
+  });
+}
+
+async function toggleApprove(id, current) {
   const { error } = await supabase
     .from("reviews")
-    .update({
-      is_approved: !current
-    })
+    .update({ is_approved: !current })
     .eq("id", id);
 
   if (error) {
-
-    alert("Failed to update");
-
+    alert("Failed to update review");
   } else {
-
-    loadReviews();
+    await loadReviews();
   }
-};
+}
 
-// ======================================================
-// DELETE REVIEW
-// ======================================================
-
-window.deleteReview = async (id) => {
-
-  if (!confirm("Delete this review?")) {
-    return;
-  }
+async function deleteReview(id) {
+  if (!confirm("Delete this review? This cannot be undone.")) return;
 
   const { error } = await supabase
     .from("reviews")
@@ -622,28 +448,63 @@ window.deleteReview = async (id) => {
     .eq("id", id);
 
   if (error) {
-
-    alert("Failed to delete");
-
+    alert("Failed to delete review");
   } else {
-
-    loadReviews();
+    await loadReviews();
   }
+}
+
+// ======================================================
+// TAB SWITCHING
+// Defined AFTER loadOrders / loadReviews so they are in scope
+// ======================================================
+
+window.switchTab = function (tab) {
+  document.querySelectorAll(".tab")
+    .forEach(t => t.classList.remove("active"));
+
+  document.getElementById(`${tab}-tab`).classList.add("active");
+
+  document.getElementById("orders-section").style.display =
+    tab === "orders" ? "block" : "none";
+
+  document.getElementById("reviews-section").style.display =
+    tab === "reviews" ? "block" : "none";
+
+  if (tab === "orders")  loadOrders();
+  if (tab === "reviews") loadReviews();
 };
 
 // ======================================================
 // LOGOUT
 // ======================================================
 
-window.logout = function() {
-
-  if (
-    confirm("Are you sure you want to logout?")
-  ) {
-
+window.logout = function () {
+  if (confirm("Are you sure you want to logout?")) {
     localStorage.removeItem("sb_admin");
-
-    window.location.href =
-      "/admin-login.html";
+    window.location.href = "/admin-login.html";
   }
 };
+
+// ======================================================
+// SEARCH LISTENERS
+// Placed at the bottom — all functions defined above
+// ======================================================
+
+document.getElementById("order-search")
+  ?.addEventListener("input", function () {
+    loadOrders(this.value.trim());
+  });
+
+document.getElementById("review-search")
+  ?.addEventListener("input", () => loadReviews());
+
+document.getElementById("review-filter")
+  ?.addEventListener("change", () => loadReviews());
+
+// Expose for HTML onclick attributes
+window.loadOrders  = loadOrders;
+window.loadReviews = loadReviews;
+
+// Initial load
+loadOrders();

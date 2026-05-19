@@ -23,8 +23,7 @@
       <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan logo"></div>
     </a>
     <div class="nav-actions">
-      <!-- <a href="#order-form" class="nav-btn btn-primary">Place Order</a> -->
-       <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
+      <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
       <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
         <i class="fa-brands fa-whatsapp"></i> WhatsApp
       </a>
@@ -34,8 +33,7 @@
     </button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
-    <!-- <a href="#order-form" class="nav-btn btn-primary">Place Order</a> -->
-      <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
+    <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
     <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
       <i class="fa-brands fa-whatsapp"></i> WhatsApp
     </a>
@@ -224,113 +222,186 @@
     <div class="text-center">
       <span class="section-tag">Get Started</span>
       <h2 class="section-title">Submit Order Request</h2>
-      <p class="section-subtitle">Share your product links or screenshots. We will contact you on WhatsApp for confirmation and payment.</p>
+      <p class="section-subtitle">Just 4 quick steps. We'll confirm everything on WhatsApp before placing your order.</p>
     </div>
 
     <div class="form-card">
-      <!--
-        FIX: Removed Web3Forms action/method attributes and all Web3Forms hidden inputs.
-             Form is now handled entirely by main.js via Supabase.
-      -->
-      <form id="orderForm" novalidate>
 
-        <div class="form-grid">
-          <div class="input-group">
-            <label for="fullName">Full Name *</label>
-            <input type="text" id="fullName" name="fi-sender-fullName" required placeholder="Your full name">
-            <div class="field-error-msg" id="err-name">Please enter your name.</div>
+      <!-- ── STEP PROGRESS BAR ── -->
+      <div class="form-progress">
+        <div class="steps-row">
+          <div class="step-item active" id="si-1">
+            <div class="step-dot"><i class="fa-solid fa-user"></i></div>
+            <span class="step-label">Contact</span>
           </div>
-          <div class="input-group">
-            <label for="whatsapp">WhatsApp Number *</label>
-            <input type="tel" id="whatsapp" name="fi-text-whatsapp" required placeholder="+975 17XXXXXX">
-            <div class="field-error-msg" id="err-phone">Enter a valid Bhutan number (e.g. +975 17113302).</div>
+          <div class="step-item" id="si-2">
+            <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
+            <span class="step-label">Delivery</span>
           </div>
-        </div>
-
-        <div class="input-group">
-          <label for="deliveryCity">Delivery City *</label>
-          <select id="deliveryCity" name="fi-text-city" required>
-            <option value="" disabled selected>Select your city</option>
-            <option>Thimphu</option>
-            <option>Phuntsholing</option>
-            <option>Paro</option>
-          </select>
-          <div class="field-error-msg" id="err-city">Please select your city.</div>
-        </div>
-
-        <div class="input-group">
-          <label for="address">Delivery Address *</label>
-          <textarea id="address" name="fi-text-address" rows="3" required placeholder="House number, area, landmark…"></textarea>
-          <div class="field-error-msg" id="err-address">Please enter your delivery address.</div>
-        </div>
-
-        <!-- PRODUCTS -->
-        <div class="input-group">
-          <label>Products *</label>
-          <div id="productsContainer"></div>
-          <button type="button" class="add-product-btn" onclick="addProductRow()">
-            <i class="fa-solid fa-plus"></i> Add Another Product
-          </button>
-        </div>
-
-        <!-- FILE UPLOAD -->
-        <div class="input-group">
-          <label>Upload Screenshots (Optional)</label>
-          <div class="file-upload-area">
-            <!--
-              FIX: name kept as "fi-file-screenshot" — matches the querySelector in main.js.
-            -->
-            <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)">
-            <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-            <p><strong>Click to upload</strong> or drag &amp; drop</p>
-            <p>JPG, PNG — max 5 MB per file</p>
+          <div class="step-item" id="si-3">
+            <div class="step-dot"><i class="fa-solid fa-box-open"></i></div>
+            <span class="step-label">Products</span>
           </div>
-          <div class="file-list" id="fileList"></div>
-          <div class="field-error-msg" id="err-files"></div>
-        </div>
-
-        <div class="pricing-box">
-          <strong>Delivery &amp; Pricing Info</strong>
-          <ul>
-            <li>Service fee varies by product type and price</li>
-            <li>Currency exchange adjustment may apply</li>
-            <li>Estimated shipping fee (₹50–₹150) added at confirmation</li>
-            <li>Fixed delivery fee applies based on your location</li>
-            <li>Weekly delivery — typically collected on weekends</li>
-          </ul>
-          <div class="pricing-steps">
-            <div class="pricing-step">
-              <div class="pricing-step-num">1</div>
-              <p>Submit your request</p>
-            </div>
-            <div class="pricing-step">
-              <div class="pricing-step-num">2</div>
-              <p>WhatsApp confirmation &amp; payment</p>
-            </div>
-            <div class="pricing-step">
-              <div class="pricing-step-num">3</div>
-              <p>We order &amp; collect from India</p>
-            </div>
-            <div class="pricing-step">
-              <div class="pricing-step-num">4</div>
-              <p>Delivered to your door</p>
-            </div>
+          <div class="step-item" id="si-4">
+            <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+            <span class="step-label">Review</span>
           </div>
         </div>
+      </div>
 
-        <div class="notice-box">
-          <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>
-          Certain restricted, commercial, oversized, or prohibited items may not be eligible for delivery.
-        </div>
+      <!-- ── FORM PANELS ── -->
+      <div class="form-body">
+        <form id="orderForm" novalidate>
 
-        <div class="btn-row">
-          <button type="submit" class="btn-submit" id="submitBtn">Submit Order Request</button>
-          <button type="button" class="btn-clear" onclick="clearForm()">Clear Form</button>
-        </div>
-        <p class="form-footer-note">You will be prompted to confirm your order on WhatsApp after submission.</p>
-        <p class="form-footer-note" style="margin-top:4px;">Orders are processed only after payment confirmation.</p>
-      </form>
-    </div>
+          <!-- ══ STEP 1 · CONTACT ══ -->
+          <div class="step-panel active" id="step-1">
+            <p class="step-heading">Who are we delivering to?</p>
+            <p class="step-hint">We'll reach you on WhatsApp to confirm your order and payment.</p>
+
+            <div class="input-group">
+              <label for="fullName">Full Name <span class="req">*</span></label>
+              <input type="text" id="fullName" name="fi-sender-fullName" placeholder="e.g. Tenzin Wangchuk" autocomplete="name" />
+              <div class="field-error-msg" id="err-name"><i class="fa-solid fa-circle-exclamation"></i> Please enter your full name.</div>
+            </div>
+
+            <div class="input-group">
+              <label for="whatsapp">WhatsApp Number <span class="req">*</span></label>
+              <div class="phone-wrap">
+                <div class="phone-prefix"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>&nbsp;+975</div>
+                <input type="tel" id="whatsapp" name="fi-text-whatsapp" placeholder="17 11 33 02" autocomplete="tel" class="phone-input" />
+              </div>
+              <div class="field-error-msg" id="err-phone"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid 8-digit Bhutan number.</div>
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="btn-next" onclick="goStep(2)">
+                Next — Delivery Location <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ══ STEP 2 · DELIVERY ══ -->
+          <div class="step-panel" id="step-2">
+            <p class="step-heading">Where should we deliver?</p>
+            <p class="step-hint">Pick your city, then give us your specific address so we find you easily.</p>
+
+            <div class="city-cards" id="cityCards">
+              <div class="city-card" onclick="selectCity('Thimphu', 350, this)">
+                <span class="city-icon">🏙️</span>
+                <span class="city-name">Thimphu</span>
+                <span class="city-fee">₹350 delivery fee</span>
+              </div>
+              <div class="city-card" onclick="selectCity('Phuntsholing', 150, this)">
+                <span class="city-icon">🌉</span>
+                <span class="city-name">Phuntsholing</span>
+                <span class="city-fee">₹150 delivery fee</span>
+              </div>
+              <div class="city-card" onclick="selectCity('Paro', 400, this)">
+                <span class="city-icon">✈️</span>
+                <span class="city-name">Paro</span>
+                <span class="city-fee">₹400 delivery fee</span>
+              </div>
+            </div>
+            <!-- Hidden field keeps city value for main.js to read -->
+            <input type="hidden" id="deliveryCity" name="fi-text-city" />
+            <div class="field-error-msg" id="err-city" style="margin-bottom:18px;margin-top:-10px;">
+              <i class="fa-solid fa-circle-exclamation"></i> Please select your city.
+            </div>
+
+            <div class="input-group">
+              <label for="address">Delivery Address <span class="req">*</span></label>
+              <textarea id="address" name="fi-text-address" rows="3" placeholder="House number, area or building name, landmark…"></textarea>
+              <div class="field-error-msg" id="err-address"><i class="fa-solid fa-circle-exclamation"></i> Please enter your delivery address.</div>
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+              <button type="button" class="btn-next" onclick="goStep(3)">Next — Add Products <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- ══ STEP 3 · PRODUCTS ══ -->
+          <div class="step-panel" id="step-3">
+            <p class="step-heading">What would you like to order?</p>
+            <p class="step-hint">Paste a product link or describe the item. Add size, colour or variant in the notes field.</p>
+
+            <div class="products-container" id="productsContainer">
+              <!-- First row auto-injected on DOMContentLoaded -->
+            </div>
+
+            <button type="button" class="add-product-btn" onclick="addProductRow()">
+              <i class="fa-solid fa-plus"></i> Add Another Product
+            </button>
+
+            <!-- Screenshot upload -->
+            <div class="input-group" style="margin-bottom:0;">
+              <div class="upload-section-label">
+                <i class="fa-solid fa-image" style="color:var(--primary);"></i>
+                Upload Screenshots
+                <span class="upload-optional">Optional</span>
+              </div>
+              <div class="file-upload-area">
+                <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)" />
+                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
+                <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
+              </div>
+              <div class="file-list" id="fileList"></div>
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+              <button type="button" class="btn-next" onclick="goStep(4)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- ══ STEP 4 · REVIEW ══ -->
+          <div class="step-panel" id="step-4">
+            <p class="step-heading">Review &amp; Submit</p>
+            <p class="step-hint">Check everything looks right. You can still go back and edit any section.</p>
+
+            <div class="review-grid" id="reviewGrid">
+              <!-- Populated by buildReview() -->
+            </div>
+
+            <div class="pricing-summary">
+              <div class="pricing-summary-title">
+                <i class="fa-solid fa-receipt" style="color:var(--primary);"></i> Pricing is confirmed on WhatsApp
+              </div>
+              <div class="pricing-summary-rows">
+                <div class="pricing-row">
+                  <span class="pricing-row-label">Service fee (8–15% of product price)</span>
+                  <span class="pricing-row-val">Confirmed on WhatsApp</span>
+                </div>
+                <div class="pricing-row">
+                  <span class="pricing-row-label">Estimated shipping (India → Jaigaon)</span>
+                  <span class="pricing-row-val">₹50–₹150</span>
+                </div>
+                <div class="pricing-row">
+                  <span class="pricing-row-label">Delivery fee to your city</span>
+                  <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="notice-box">
+              <i class="fa-solid fa-triangle-exclamation" style="color:#ffb300;flex-shrink:0;margin-top:1px;"></i>
+              <span>Restricted, oversized, or prohibited items may not be eligible for delivery. We'll let you know on WhatsApp before proceeding.</span>
+            </div>
+
+            <button type="submit" class="btn-submit-final" id="submitBtn">
+              <i class="fa-solid fa-paper-plane"></i> Submit Order Request
+            </button>
+            <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment.</p>
+
+            <div class="form-nav" style="margin-top:16px;">
+              <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back to Products</button>
+            </div>
+          </div>
+
+        </form>
+      </div><!-- /form-body -->
+    </div><!-- /form-card -->
   </div>
 </section>
 
@@ -517,9 +588,231 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<!--
-  FIX: Added type="module" so ES module import syntax in main.js works correctly.
--->
+<!-- ── FORM STEP JS (global scope, loaded before module) ── -->
+
+<!-- FORM STEP NAVIGATION & REVIEW - CLEAN VERSION -->
+<!-- FORM STEP NAVIGATION & REVIEW - FIXED VERSION -->
+<script>
+/* =============================================
+   FORM MULTI-STEP NAVIGATION + REVIEW
+   Fixed: validatePhone included locally
+   ============================================= */
+
+let currentStep = 1;
+let selectedCity = '';
+let selectedDeliveryFee = 0;
+
+/* ─── PHONE VALIDATION (Copied from main.js) ─── */
+function validatePhone(val) {
+  if (!val) return false;
+  // Strip spaces, dashes, and optional leading +975 or 975
+  var digits = val.replace(/[\s\-]/g, '').replace(/^\+?975/, '');
+  // Valid Bhutan mobile numbers
+  return /^(17|77|16|02|07|03|72|75|74|73)\d{6}$/.test(digits);
+}
+
+/* ─── GO TO STEP ───────────────────────────── */
+function goStep(target) {
+  if (target > currentStep && !validateStep(currentStep)) {
+    return;
+  }
+
+  // Hide all panels
+  document.querySelectorAll('.step-panel').forEach(panel => {
+    panel.classList.remove('active', 'step-reverse');
+  });
+
+  // Show target panel
+  const nextPanel = document.getElementById('step-' + target);
+  nextPanel.classList.add('active');
+  if (target < currentStep) nextPanel.classList.add('step-reverse');
+
+  // Update progress bar
+  for (let i = 1; i <= 4; i++) {
+    const stepItem = document.getElementById('si-' + i);
+    stepItem.classList.remove('active', 'completed');
+    if (i < target) stepItem.classList.add('completed');
+    if (i === target) stepItem.classList.add('active');
+  }
+
+  if (target === 4) buildReview();
+
+  currentStep = target;
+  document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ─── VALIDATION ───────────────────────────── */
+function validateStep(step) {
+  let ok = true;
+
+  if (step === 1) {
+    const name = document.getElementById('fullName');
+    const phone = document.getElementById('whatsapp');
+    ok = setValid(name, name.value.trim().length >= 2, 'err-name') && ok;
+    ok = setValid(phone, validatePhone(phone.value), 'err-phone') && ok;
+  }
+
+  if (step === 2) {
+    ok = validateCity() && ok;
+    const addr = document.getElementById('address');
+    ok = setValid(addr, addr.value.trim().length >= 5, 'err-address') && ok;
+  }
+
+  if (step === 3) {
+    const linkInputs = document.querySelectorAll('input[name="product_links"]');
+    let hasProduct = false;
+
+    linkInputs.forEach(input => {
+      if (input.value.trim().length > 8) hasProduct = true;
+    });
+
+    if (!hasProduct) {
+      showToast('Please add at least one product link.', 3000);
+      ok = false;
+    }
+  }
+
+  return ok;
+}
+
+function setValid(el, condition, errId) {
+  const errEl = document.getElementById(errId);
+  if (!condition) {
+    el.classList.add('field-error');
+    if (errEl) errEl.classList.add('show');
+    return false;
+  } else {
+    el.classList.remove('field-error');
+    if (errEl) errEl.classList.remove('show');
+    return true;
+  }
+}
+
+function validateCity() {
+  const errEl = document.getElementById('err-city');
+  if (!selectedCity) {
+    errEl.classList.add('show');
+    return false;
+  }
+  errEl.classList.remove('show');
+  return true;
+}
+
+/* ─── CITY SELECTION ───────────────────────── */
+function selectCity(city, fee, el) {
+  selectedCity = city;
+  selectedDeliveryFee = fee;
+  document.getElementById('deliveryCity').value = city;
+
+  document.querySelectorAll('.city-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('err-city').classList.remove('show');
+}
+
+/* ─── BUILD REVIEW (Step 4) ─────────────────── */
+function buildReview() {
+  const grid = document.getElementById('reviewGrid');
+  const name = document.getElementById('fullName').value.trim();
+  const phone = document.getElementById('whatsapp').value.trim();
+  const address = document.getElementById('address').value.trim();
+
+  const productRows = document.querySelectorAll('.product-row');
+  let productHtml = '';
+
+  productRows.forEach((row, index) => {
+    const linkInput = row.querySelector('input[name="product_links"]');
+    const qtyInput = row.querySelector('input[name="quantities"]');
+
+    const link = linkInput ? linkInput.value.trim() : '';
+    const qty = qtyInput ? qtyInput.value : '1';
+
+    if (link) {
+      productHtml += `
+        <div style="margin-bottom:8px; padding:6px 0; border-bottom:1px solid #eee;">
+          <strong>Item ${index + 1}:</strong> ${escHtml(link)} 
+          <span style="color:var(--primary)">× ${qty}</span>
+        </div>`;
+    }
+  });
+
+  const fileCount = document.getElementById('fileList').children.length || 0;
+
+  grid.innerHTML = `
+    <div class="review-block">
+      <div class="review-block-icon"><i class="fa-solid fa-user"></i></div>
+      <div class="review-block-info">
+        <div class="review-block-title">Contact</div>
+        <div class="review-block-val">${escHtml(name || '—')}</div>
+        <div class="review-block-sub">+975 ${escHtml(phone || '—')}</div>
+      </div>
+      <button class="review-edit-btn" onclick="goStep(1)">Edit</button>
+    </div>
+
+    <div class="review-block">
+      <div class="review-block-icon"><i class="fa-solid fa-location-dot"></i></div>
+      <div class="review-block-info">
+        <div class="review-block-title">Delivery</div>
+        <div class="review-block-val">${escHtml(selectedCity || '—')}</div>
+        <div class="review-block-sub">${escHtml(address || '—')}</div>
+      </div>
+      <button class="review-edit-btn" onclick="goStep(2)">Edit</button>
+    </div>
+
+    <div class="review-block">
+      <div class="review-block-icon"><i class="fa-solid fa-box-open"></i></div>
+      <div class="review-block-info">
+        <div class="review-block-title">Products</div>
+        <div class="review-block-val" style="font-weight:400;">${productHtml || '<em>No products added yet</em>'}</div>
+      </div>
+      <button class="review-edit-btn" onclick="goStep(3)">Edit</button>
+    </div>
+
+    ${fileCount > 0 ? `
+    <div class="review-block">
+      <div class="review-block-icon"><i class="fa-solid fa-images"></i></div>
+      <div class="review-block-info">
+        <div class="review-block-title">Screenshots</div>
+        <div class="review-block-val">${fileCount} file${fileCount > 1 ? 's' : ''} uploaded</div>
+      </div>
+    </div>` : ''}
+  `;
+
+  const feeEl = document.getElementById('reviewDeliveryFee');
+  if (feeEl) feeEl.textContent = selectedDeliveryFee ? '₹' + selectedDeliveryFee : '—';
+}
+
+/* ─── HTML ESCAPE ─────────────────────────── */
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ─── CLEAR FORM ──────────────────────────── */
+window.clearForm = function() {
+  document.getElementById('orderForm').reset();
+  document.getElementById('productsContainer').innerHTML = '';
+  document.getElementById('fileList').innerHTML = '';
+  selectedCity = '';
+  selectedDeliveryFee = 0;
+
+  document.querySelectorAll('.city-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.field-error-msg').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('input, textarea').forEach(el => el.classList.remove('field-error'));
+
+  addProductRow(); // from main.js
+  goStep(1);
+};
+
+/* ─── INIT ─────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  // main.js already calls addProductRow()
+});
+</script>
+
+<!-- ── MAIN MODULE (Supabase logic unchanged) ── -->
 <script type="module" src="/js/main.js"></script>
 </body>
 </html>

@@ -27,21 +27,15 @@
   --warning: #f59e0b;
   --danger: #ef4444;
 
-  --shadow:
-    0 10px 25px rgba(15, 23, 42, 0.08);
+  --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 
   --radius: 16px;
 }
 
 body {
-  font-family:
-    Inter,
-    Arial,
-    sans-serif;
-
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg);
   color: var(--text);
-
   padding: 24px;
   min-height: 100vh;
 }
@@ -52,17 +46,12 @@ body {
 
 .topbar {
   background: var(--card);
-
   padding: 20px 24px;
-
   border-radius: var(--radius);
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   box-shadow: var(--shadow);
-
   margin-bottom: 24px;
   gap: 16px;
 }
@@ -76,14 +65,11 @@ body {
   border: none;
   background: var(--danger);
   color: white;
-
   padding: 12px 18px;
-
   border-radius: 12px;
-
   font-weight: 600;
-
   transition: 0.25s ease;
+  cursor: pointer;
 }
 
 .logout-btn:hover {
@@ -98,27 +84,18 @@ body {
 .tabs {
   display: flex;
   gap: 12px;
-
   margin-bottom: 24px;
-
   flex-wrap: wrap;
 }
 
 .tab {
   background: white;
-
   padding: 14px 22px;
-
   border-radius: 14px;
-
   font-weight: 600;
-
   cursor: pointer;
-
   transition: 0.25s ease;
-
   border: 1px solid var(--border);
-
   color: var(--muted);
 }
 
@@ -138,56 +115,46 @@ body {
 
 .search-bar {
   background: white;
-
   padding: 18px;
-
   border-radius: var(--radius);
-
   display: flex;
   gap: 14px;
-
   align-items: center;
-
   margin-bottom: 20px;
-
   box-shadow: var(--shadow);
+  flex-wrap: wrap;
 }
 
-.search-bar input {
+.search-bar input,
+.search-bar select {
   flex: 1;
-
+  min-width: 160px;
   padding: 14px 16px;
-
   border-radius: 12px;
-
   border: 1px solid var(--border);
-
   outline: none;
-
   font-size: 15px;
-
   transition: 0.25s ease;
+  background: white;
+  font-family: inherit;
 }
 
-.search-bar input:focus {
+.search-bar input:focus,
+.search-bar select:focus {
   border-color: var(--primary);
-  box-shadow:
-    0 0 0 4px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
 .search-bar button {
   background: var(--primary);
   color: white;
-
   border: none;
-
   padding: 14px 20px;
-
   border-radius: 12px;
-
   font-weight: 600;
-
   transition: 0.25s ease;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .search-bar button:hover {
@@ -201,18 +168,14 @@ body {
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
-
   border-radius: var(--radius);
-
   box-shadow: var(--shadow);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-
   background: white;
-
   min-width: 1050px;
 }
 
@@ -222,24 +185,17 @@ thead {
 
 th {
   color: white;
-
   text-align: left;
-
   padding: 18px 16px;
-
   font-size: 14px;
   font-weight: 600;
-
   white-space: nowrap;
 }
 
 td {
   padding: 18px 16px;
-
   border-bottom: 1px solid var(--border);
-
   vertical-align: middle;
-
   font-size: 14px;
 }
 
@@ -252,23 +208,61 @@ tbody tr:hover {
 }
 
 /* =========================================================
-   STATUS BADGES
+   STATUS BADGES — FIX #7: color per status
 ========================================================= */
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  padding: 8px 14px;
-
+  padding: 6px 12px;
   border-radius: 999px;
-
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-
+  text-transform: capitalize;
+  /* default */
   background: #fef3c7;
   color: #92400e;
+}
+
+.status-badge[data-status="pending"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge[data-status="ordered"] {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-badge[data-status="purchased"] {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.status-badge[data-status="shipped"] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge[data-status="jaigaon"] {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.status-badge[data-status="phuentsholing"] {
+  background: #fef9c3;
+  color: #713f12;
+}
+
+.status-badge[data-status="delivery"] {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge[data-status="delivered"] {
+  background: #bbf7d0;
+  color: #14532d;
 }
 
 /* =========================================================
@@ -277,18 +271,13 @@ tbody tr:hover {
 
 select {
   width: 100%;
-
   padding: 11px 12px;
-
   border-radius: 10px;
-
   border: 1px solid var(--border);
-
   outline: none;
-
   background: white;
-
   font-size: 14px;
+  font-family: inherit;
 }
 
 select:focus {
@@ -306,17 +295,15 @@ button {
 
 .remark-btn {
   border: none;
-
   background: #475569;
   color: white;
-
   padding: 10px 14px;
-
   border-radius: 10px;
-
   font-weight: 600;
-
   transition: 0.25s ease;
+  margin-top: 6px;
+  display: block;
+  width: 100%;
 }
 
 .remark-btn:hover {
@@ -325,21 +312,65 @@ button {
 
 .delete-btn {
   border: none;
-
   background: var(--danger);
   color: white;
-
   padding: 10px 14px;
-
   border-radius: 10px;
-
   font-weight: 600;
-
   transition: 0.25s ease;
 }
 
 .delete-btn:hover {
   opacity: 0.9;
+}
+
+/* =========================================================
+   TABLE INPUTS — FIX #13: consistent styling for all inputs
+========================================================= */
+
+.table-input {
+  width: 120px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.table-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.table-input[readonly] {
+  background: #f3f4f6;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.save-btn {
+  border: none;
+  background: var(--primary);
+  color: white;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: 0.25s ease;
+  margin-top: 6px;
+  display: block;
+  width: 100%;
+}
+
+.save-btn:hover {
+  background: var(--primary-dark);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* =========================================================
@@ -353,13 +384,9 @@ button {
 
 .review-card {
   background: white;
-
   padding: 22px;
-
   border-radius: var(--radius);
-
   box-shadow: var(--shadow);
-
   transition: 0.25s ease;
 }
 
@@ -368,12 +395,51 @@ button {
 }
 
 .review-card h3 {
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.review-card .review-meta {
+  font-size: 12px;
+  color: var(--muted);
   margin-bottom: 10px;
 }
 
 .review-card p {
   color: var(--muted);
   line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.review-card .review-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.approve-btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: 0.25s ease;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.approve-btn.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.approve-btn.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.approve-btn:hover {
+  filter: brightness(0.95);
 }
 
 /* =========================================================
@@ -382,6 +448,14 @@ button {
 
 .status-select {
   min-width: 150px;
+  margin-bottom: 6px;
+}
+
+.payment-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 4px;
 }
 
 /* =========================================================
@@ -445,7 +519,8 @@ button {
     padding: 14px;
   }
 
-  .search-bar input {
+  .search-bar input,
+  .search-bar select {
     padding: 12px;
   }
 

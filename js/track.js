@@ -19,17 +19,28 @@ const trackingSteps = [
   { key: "delivered",     label: "Delivered" }
 ];
 
-// ==================== TRACKING PAYMENT STATUS ====================
-// const estimatedMap = {
-//   "pending":      "Awaiting advance payment",
-//   "ordered":      "5-7 days",
-//   "purchased":    "4-6 days",
-//   "shipped":      "2-4 days",
-//   "jaigaon":      "1-2 days",
-//   "phuentsholing":"1 day",
-//   "delivery":     "Today",
-//   "delivered":    "Completed"
-// };
+function getPaymentStatus(order) {
+
+  const total =
+    Number(order.final_total || 0);
+
+  const paid =
+    Number(order.advance_paid || 0);
+
+  if (!total) {
+    return "Advance Pending";
+  }
+
+  if (paid <= 0) {
+    return "Advance Pending";
+  }
+
+  if (paid >= total) {
+    return "Paid";
+  }
+
+  return "Partially Paid";
+}
 
 const estimatedMap = {
   "pending":      "-",
@@ -119,21 +130,37 @@ function renderOrderTracking(d) {
 
   //order status table
   resultDiv.innerHTML = `
-    <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
+  <div style="background:#f8fafc; border:1.5px solid var(--border); border-radius:16px; padding:28px; margin-top:20px;">
 
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
-        <h3 style="margin:0;">${d.order_id}</h3>
-        <span class="status-badge">${d.status || 'Pending'}</span>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+      <h3 style="margin:0;">${d.order_id}</h3>
+      <span class="status-badge">${d.status || 'Pending'}</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; font-size:0.97rem;">
+
+      <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
+      <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
+      <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
+
+      // <div><strong>Order Status:</strong> ${d.status}</div>
+
+      <!-- ✅ FIXED PAYMENT SECTION -->
+      <div>
+        <strong>Payment Status:</strong>
+        <span style="font-weight:600; color:var(--primary);">
+          ${getPaymentStatus(d)}
+        </span>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; font-size:0.97rem;">
-        <div><strong>Date:</strong> ${formatBTTime(d.created_at)}</div>
-        <div><strong>City:</strong> ${d.delivery_city || '—'}</div>
-        <div><strong>Customer:</strong> ${d.full_name || '—'}</div>
-        <div><strong>Order Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
-        <div><strong>Payment Status:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
-        <div><strong>Due Amount:</strong> <span style="color:var(--success); font-weight:600;">${d.status}</span></div>
+      <div>
+        <strong>Due Amount:</strong>
+        <span style="font-weight:700; color:#dc2626;">
+          ${d.due_amount ? `Nu. ${d.due_amount}` : "Advance Pending"}
+        </span>
       </div>
+
+    </div>
 
       <div style="margin-bottom:28px;">
         <strong>Estimated Delivery:</strong> ${getEstimated(d)}
