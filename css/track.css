@@ -1,233 +1,187 @@
-/* =========================================================
-   RESET
-========================================================= */
-*, *::before, *::after {
+/* ========== GLOBAL RESET & VARIABLES ========== */
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* =========================================================
-   ROOT VARIABLES
-========================================================= */
 :root {
-  --primary: #1a56db;
-  --primary-dark: #1044b8;
-  --primary-light: #e8f0fe;
-
-  --secondary: #0c1a2e;
-
-  --light: #f7f9fc;
-
-  --border: #e2e8f0;
-
-  --text: #1a2540;
-  --muted: #64748b;
-
-  --success: #22c55e;
-  --success-bg: #dcfce7;
-
-  --radius: 16px;
-  --radius-lg: 24px;
-
-  --font-display: 'Sora', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --primary-light: #3b82f6;
+  --secondary: #7c3aed;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
 }
 
-/* =========================================================
-   BODY
-========================================================= */
 body {
-  font-family: var(--font-body);
-  background: var(--light);
-  color: var(--text);
-  line-height: 1.65;
-
-  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(145deg, #eef2ff 0%, #f9fafb 100%);
+  color: var(--gray-800);
+  line-height: 1.5;
 }
 
-/* =========================================================
-   CONTAINER
-========================================================= */
 .container {
-  width: 100%;
-  max-width: 1140px;
-
-  margin: auto;
-  padding: 0 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-/* =========================================================
-   NAVBAR
-========================================================= */
+/* ========== NAVIGATION ========== */
 nav {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  z-index: 200;
-
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  z-index: 10;
+  padding: 0.5rem 0;
 }
 
 .nav-content {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-
-  gap: 16px;
-
-  padding: 16px 0;
-}
-
-/* =========================================================
-   LOGO
-========================================================= */
-.logo {
-  display: flex;
   align-items: center;
-  gap: 12px;
-
-  text-decoration: none;
-
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  font-weight: 800;
-
-  color: var(--secondary);
-}
-
-.logo-icon {
-  width: 80px;
-  height: 48px;
-
-  border-radius: 13px;
-  overflow: hidden;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  background: #fff;
-
-  padding: 4px;
+  gap: 1rem;
 }
 
 .logo-icon img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: contain;
+  height: 40px;
+  width: auto;
+  transition: transform 0.2s;
   display: block;
 }
 
-/* =========================================================
-   TRACK CARD
-========================================================= */
+.logo-icon img:hover {
+  transform: scale(1.02);
+}
+
+.back-home {
+  color: var(--gray-600);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-full);
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.back-home i {
+  font-size: 0.85rem;
+}
+
+.back-home:hover {
+  background: var(--gray-100);
+  color: var(--primary);
+}
+
+/* ========== TRACK CARD ========== */
 .track-card {
-  width: 100%;
-  max-width: 720px;
-
-  margin: 60px auto;
-  padding: 40px 32px;
-
-  background: #fff;
-
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-lg);
-
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-
-  overflow: hidden;
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  padding: 2.5rem;
+  margin: 2.5rem 0;
+  transition: transform 0.2s;
 }
 
-/* =========================================================
-   TEXT OVERFLOW FIX
-========================================================= */
-.track-card p,
-.track-card span,
-.track-card div,
-.track-card a {
-  overflow-wrap: break-word;
-  word-break: break-word;
+.track-header {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-/* =========================================================
-   IMAGES
-========================================================= */
-.track-card img {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
+.track-header i {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+}
 
+.track-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.track-header p {
+  color: var(--gray-600);
+}
+
+/* ========== INPUT & BUTTON ========== */
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
   display: block;
-
-  border-radius: 14px;
-  object-fit: cover;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--gray-700);
 }
 
-/* =========================================================
-   INPUT
-========================================================= */
-.input-group input {
+.input-group label i {
+  color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+#orderId {
   width: 100%;
-
-  padding: 18px 20px;
-
-  border: 2px solid var(--border);
-  border-radius: 12px;
-
-  background: #fff;
-
-  font-size: 1.05rem;
-  font-family: var(--font-body);
-
-  text-transform: uppercase;
-
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  padding: 0.9rem 1.2rem;
+  font-size: 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  transition: all 0.2s;
+  font-family: monospace;
+  font-size: 1rem;
 }
 
-.input-group input:focus {
+#orderId:focus {
   outline: none;
-
   border-color: var(--primary);
-
-  box-shadow: 0 0 0 4px var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
-/* =========================================================
-   BUTTON
-========================================================= */
 .btn-primary {
   width: 100%;
-
-  margin-top: 16px;
-  padding: 16px 24px;
-
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
   border: none;
-  border-radius: 999px;
-
-  background: var(--primary);
-  color: #fff;
-
+  padding: 0.9rem;
+  border-radius: var(--radius-xl);
+  font-weight: 600;
   font-size: 1rem;
-  font-weight: 700;
-  font-family: var(--font-body);
-
   cursor: pointer;
-
-  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-md);
 }
 
-.btn-primary:hover {
-  background: var(--primary-dark);
-
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-primary:disabled {
@@ -235,434 +189,302 @@ nav {
   cursor: not-allowed;
 }
 
-/* =========================================================
-   STATUS BADGE
-========================================================= */
-.status-badge {
-  display: inline-flex;
+/* ========== RESULT PANEL ========== */
+.result-container {
+  margin-top: 2rem;
+  animation: fadeUp 0.4s ease-out;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  padding: 1.5rem;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
 
-  margin-top: 12px;
+.order-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-  padding: 8px 18px;
+.order-title i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
 
-  border-radius: 999px;
+.order-title h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
 
-  background: var(--success-bg);
-  color: var(--success);
+.status-badge {
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
 
-  font-size: 0.95rem;
+.status-badge.pending { background: #fef3c7; color: #b45309; }
+.status-badge.ordered { background: #dbeafe; color: #1e40af; }
+.status-badge.purchased { background: #d1fae5; color: #065f46; }
+.status-badge.shipped { background: #e0f2fe; color: #0f5b7a; }
+.status-badge.jaigaon { background: #fce7f3; color: #9d174d; }
+.status-badge.phuentsholing { background: #fef3c7; color: #b45309; }
+.status-badge.delivery { background: #fef3c7; color: #b45309; }
+.status-badge.delivered { background: #d1fae5; color: #065f46; }
+
+/* info grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item i {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.info-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-600);
   font-weight: 600;
 }
 
-/* =========================================================
-   TIMELINE
-========================================================= */
-.tracking-timeline {
-  position: relative;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin: 32px 0 12px;
-  padding: 10px 0;
-
-  width: 100%;
+.payment-status {
+  font-weight: 700;
+  color: var(--success);
 }
 
-/* LINE */
+.due-amount {
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* product & screenshot */
+.product-section, .screenshot-section {
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--gray-200);
+}
+
+.product-section a {
+  color: var(--primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.screenshot-section img {
+  max-width: 100%;
+  border-radius: var(--radius-xl);
+  margin-top: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========== FIXED TIMELINE (MOBILE READY) ========== */
+.timeline-section {
+  margin: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.tracking-timeline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  min-width: 600px;  /* forces scroll on mobile, keeps steps readable */
+  padding: 1rem 0 0.5rem;
+}
+
+/* Gray progress background line */
 .tracking-timeline::before {
   content: '';
-
   position: absolute;
-
-  top: 38px;
-  left: 45px;
-  right: 45px;
-
-  height: 5px;
-
-  background: #e2e8f0;
-
-  border-radius: 999px;
-
-  z-index: 1;
+  top: 28px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gray-200);
+  z-index: 0;
 }
 
-/* =========================================================
-   STEP ITEM
-========================================================= */
+/* Colored progress fill */
+.tracking-timeline::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 0;
+  width: var(--progress, 0%);
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  z-index: 1;
+  transition: width 0.5s ease;
+}
+
 .step-item {
+  flex: 1;
+  text-align: center;
   position: relative;
   z-index: 2;
-
-  flex: 1;
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  text-align: center;
+  min-width: 70px;
 }
 
-/* =========================================================
-   STEP CIRCLE
-========================================================= */
 .step-circle {
-  width: 58px;
-  height: 58px;
-
-  margin-bottom: 10px;
-
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: 3px solid var(--gray-200);
   border-radius: 50%;
-  border: 4px solid #fff;
-
-  background: #e2e8f0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  font-size: 1.4rem;
-
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-
-  transition: all 0.3s ease;
+  margin: 0 auto 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.2s;
 }
 
-/* =========================================================
-   STEP STATES
-========================================================= */
 .step-item.completed .step-circle {
-  background: var(--success);
-  color: #fff;
-
-  border-color: #86efac;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-color: var(--primary);
+  color: white;
 }
 
 .step-item.active .step-circle {
-  background: var(--primary);
-  color: #fff;
-
-  border-color: #93c5fd;
-
-  transform: scale(1.08);
-
-  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.18);
+  border-color: var(--primary);
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.2);
+  transform: scale(1.05);
 }
 
-/* =========================================================
-   STEP LABEL
-========================================================= */
 .step-label {
-  width: 100%;
-
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1.35;
-
-  color: var(--muted);
+  color: var(--gray-600);
+  white-space: normal;
+  word-break: keep-all;
 }
 
-.step-item.completed .step-label,
+.step-item.completed .step-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .step-item.active .step-label {
-  color: var(--text);
-  font-weight: 600;
+  color: var(--gray-800);
+  font-weight: 700;
 }
 
-/* =========================================================
-   TRACKING STEPS LIST
-========================================================= */
-.tracking-steps {
-  margin-top: 28px;
+/* Adjust progress line top position on smaller screens */
+@media (max-width: 640px) {
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 0.85rem;
+  }
+  .tracking-timeline::before,
+  .tracking-timeline::after {
+    top: 20px;
+  }
 }
 
-.tracking-step {
-  position: relative;
+/* remark */
+.remark-section {
+  margin: 1.5rem;
+  padding: 1rem;
+  background: #fffbeb;
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius-xl);
+}
 
+/* refresh button */
+.refresh-btn {
   display: flex;
-  align-items: flex-start;
-
-  gap: 14px;
-
-  margin-bottom: 22px;
-}
-
-.tracking-step:last-child {
-  margin-bottom: 0;
-}
-
-/* =========================================================
-   VERTICAL LINE
-========================================================= */
-.tracking-step::after {
-  content: '';
-
-  position: absolute;
-
-  top: 36px;
-  left: 16px;
-  bottom: -22px;
-
-  width: 3px;
-
-  background: #e2e8f0;
-
-  z-index: 1;
-}
-
-.tracking-step:last-child::after {
-  display: none;
-}
-
-/* =========================================================
-   STEP CONTENT
-========================================================= */
-.step-content {
-  flex: 1;
-}
-
-.step-content h4 {
-  margin-bottom: 4px;
-
-  font-size: 1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: calc(100% - 3rem);
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  padding: 0.8rem;
+  background: var(--gray-100);
+  border: none;
+  border-radius: var(--radius-full);
   font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.step-content p {
-  font-size: 0.92rem;
-  color: var(--muted);
+.refresh-btn:hover {
+  background: var(--gray-200);
+  color: var(--primary);
 }
 
-/* =========================================================
-   UPDATE BOX
-========================================================= */
-.latest-update,
-.update-box {
-  margin-top: 24px;
-
-  padding: 18px;
-
-  background: #fff;
-
-  border: 1px solid var(--border);
-  border-radius: 16px;
+.loading-state, .error-state {
+  text-align: center;
+  padding: 2rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-xl);
+  color: var(--gray-600);
 }
 
-/* =========================================================
-   HIDDEN
-========================================================= */
+.error-state {
+  color: var(--danger);
+}
+
 .hidden {
   display: none;
 }
 
-/* =========================================================
-   TABLET RESPONSIVE
-========================================================= */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-
-  .container {
-    padding: 0 14px;
-  }
-
-  /* NAV */
-  .nav-content {
-    padding: 12px 0;
-  }
-
-  .logo {
-    font-size: 1.05rem;
-    gap: 10px;
-  }
-
-  .logo-icon {
-    width: 60px;
-    height: 38px;
-  }
-
-  /* CARD */
   .track-card {
-    max-width: 100%;
-
-    margin: 20px auto;
-    padding: 22px 16px;
-
-    border-radius: 20px;
+    padding: 1.5rem;
   }
-
-  /* INPUT */
-  .input-group input {
-    padding: 16px;
-    font-size: 0.96rem;
-  }
-
-  /* BUTTON */
-  .btn-primary {
-    padding: 14px 18px;
-    font-size: 0.95rem;
-  }
-
-  /* TIMELINE */
-  .tracking-timeline {
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    justify-content: flex-start;
-
-    gap: 18px;
-
-    padding: 10px 4px 16px;
-
-    scroll-behavior: smooth;
-
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .tracking-timeline::-webkit-scrollbar {
-    display: none;
-  }
-
-  .tracking-timeline::before {
-    left: 45px;
-    width: 700px;
-    right: auto;
-
-    top: 33px;
-    height: 4px;
-  }
-
-  /* STEP */
-  .step-item {
-    min-width: 74px;
-    flex-shrink: 0;
-  }
-
-  .step-circle {
-    width: 48px;
-    height: 48px;
-
-    font-size: 1.05rem;
-
-    margin-bottom: 8px;
-
-    border-width: 3px;
-  }
-
-  .step-item.active .step-circle {
-    transform: scale(1.04);
-
-    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.14);
-  }
-
-  .step-label {
-    width: 74px;
-
-    font-size: 0.72rem;
-    line-height: 1.25;
-  }
-
-  /* STATUS */
-  .status-badge {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-  }
-
-  /* TRACK STEPS */
-  .tracking-steps {
-    margin-top: 24px;
-  }
-
-  .tracking-step {
-    gap: 12px;
-  }
-
-  .step-content h4 {
-    font-size: 0.94rem;
-  }
-
-  .step-content p {
-    font-size: 0.84rem;
-  }
-
-  /* UPDATE BOX */
-  .latest-update,
-  .update-box {
-    width: 100%;
-
-    padding: 14px;
-    border-radius: 14px;
-  }
-}
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-@media (max-width: 480px) {
-
-  .container {
-    padding: 0 12px;
-  }
-
-  .track-card {
-    padding: 18px 14px;
-  }
-
-  .logo {
-    font-size: 0.95rem;
-  }
-
-  .logo-icon {
-    width: 56px;
-    height: 34px;
-  }
-
-  .input-group input {
-    padding: 14px;
-    font-size: 0.92rem;
-  }
-
-  .btn-primary {
-    padding: 13px 16px;
-    font-size: 0.92rem;
-  }
-
-  .tracking-timeline {
-    gap: 16px;
-  }
-
-  .step-item {
-    min-width: 70px;
-  }
-
-  .step-circle {
-    width: 44px;
-    height: 44px;
-
-    font-size: 1rem;
-  }
-
-  .step-label {
-    width: 70px;
-
-    font-size: 0.68rem;
-  }
-
-  .step-content h4 {
-    font-size: 0.88rem;
-  }
-
-  .step-content p {
-    font-size: 0.8rem;
-  }
-
-  .status-badge {
-    font-size: 0.76rem;
-    padding: 6px 10px;
+  .info-grid {
+    grid-template-columns: 1fr;
   }
 }
