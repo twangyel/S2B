@@ -569,7 +569,9 @@
     <button class="popup-close-btn" onclick="closePopup()">Close</button>
   </div>
 </div>
-
+<button id="installBtn" onclick="installApp()" style="display:none;">
+  Install App
+</button>
 <!-- ── REVIEW MODAL ── -->
 <div class="modal-backdrop" id="reviewModal">
   <div class="modal-box">
@@ -830,6 +832,28 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+</script>
+
+<script>
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Optional: show your own install button
+  const btn = document.getElementById("installBtn");
+  if (btn) btn.style.display = "block";
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+    });
+  }
+}
 </script>
 
 <!-- ── MAIN MODULE (Supabase logic unchanged) ── -->
