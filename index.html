@@ -9,12 +9,10 @@
   <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="/manifest.json">
-
-<meta name="theme-color" content="#111827">
-
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#111827">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -229,30 +227,41 @@
     <div class="text-center">
       <span class="section-tag">Get Started</span>
       <h2 class="section-title">Submit Order Request</h2>
-      <p class="section-subtitle">Just 4 quick steps. We'll confirm everything on WhatsApp before placing your order.</p>
+      <p class="section-subtitle">Just 5 quick steps. We'll confirm everything on WhatsApp before placing your order.</p>
     </div>
 
     <div class="form-card">
 
       <!-- ── STEP PROGRESS BAR ── -->
+      <!-- 5 steps: Contact · Delivery · Products · Payment · Review -->
       <div class="form-progress">
         <div class="steps-row">
+
           <div class="step-item active" id="si-1">
             <div class="step-dot"><i class="fa-solid fa-user"></i></div>
             <span class="step-label">Contact</span>
           </div>
+
           <div class="step-item" id="si-2">
             <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
             <span class="step-label">Delivery</span>
           </div>
+
           <div class="step-item" id="si-3">
             <div class="step-dot"><i class="fa-solid fa-box-open"></i></div>
             <span class="step-label">Products</span>
           </div>
+
           <div class="step-item" id="si-4">
+            <div class="step-dot"><i class="fa-solid fa-credit-card"></i></div>
+            <span class="step-label">Payment</span>
+          </div>
+
+          <div class="step-item" id="si-5">
             <div class="step-dot"><i class="fa-solid fa-check"></i></div>
             <span class="step-label">Review</span>
           </div>
+
         </div>
       </div>
 
@@ -309,7 +318,6 @@
                 <span class="city-fee">₹400 delivery fee</span>
               </div>
             </div>
-            <!-- Hidden field keeps city value for main.js to read -->
             <input type="hidden" id="deliveryCity" name="fi-text-city" />
             <div class="field-error-msg" id="err-city" style="margin-bottom:18px;margin-top:-10px;">
               <i class="fa-solid fa-circle-exclamation"></i> Please select your city.
@@ -333,7 +341,7 @@
             <p class="step-hint">Paste a product link or describe the item. Add size, colour or variant in the notes field.</p>
 
             <div class="products-container" id="productsContainer">
-              <!-- First row auto-injected on DOMContentLoaded -->
+              <!-- First row auto-injected on DOMContentLoaded by main.js -->
             </div>
 
             <button type="button" class="add-product-btn" onclick="addProductRow()">
@@ -353,22 +361,59 @@
                 <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
                 <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
               </div>
+              <!-- FIX: #err-files now exists so handleFileSelect doesn't throw -->
+              <div class="field-error-msg" id="err-files"></div>
               <div class="file-list" id="fileList"></div>
             </div>
 
             <div class="form-nav">
               <button type="button" class="btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <button type="button" class="btn-next" onclick="goStep(4)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
+              <button type="button" class="btn-next" onclick="goStep(4)">Next — Payment <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
 
-          <!-- ══ STEP 4 · REVIEW ══ -->
+          <!-- ══ STEP 4 · PAYMENT METHOD ══ -->
           <div class="step-panel" id="step-4">
+            <p class="step-heading">How would you like to pay?</p>
+            <p class="step-hint">Select your preferred payment method. Final amount confirmed on WhatsApp.</p>
+
+            <!-- FIX: onclick now calls selectPayment(), which is defined in main.js -->
+            <div class="payment-cards" id="paymentCards">
+              <div class="payment-card" onclick="selectPayment('Full Payment', this)">
+                <span class="payment-icon">💰</span>
+                <span class="payment-name">Full Payment</span>
+                <span class="payment-desc">Pay 100% upfront via bank transfer / mobile money</span>
+              </div>
+              <div class="payment-card" onclick="selectPayment('Partial Payment (50/50)', this)">
+                <span class="payment-icon">📊</span>
+                <span class="payment-name">Partial Payment (50/50)</span>
+                <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
+              </div>
+              <div class="payment-card" onclick="selectPayment('Cash on Delivery', this)">
+                <span class="payment-icon">💵</span>
+                <span class="payment-name">Cash on Delivery</span>
+                <span class="payment-desc">Pay when you receive the order (COD fee applies)</span>
+              </div>
+            </div>
+            <input type="hidden" id="paymentMethod" name="payment_method" />
+            <div class="field-error-msg" id="err-payment">
+              <i class="fa-solid fa-circle-exclamation"></i> Please select a payment method.
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+              <!-- FIX: goes to step 5 (Review), not step 5 was previously mislabelled -->
+              <button type="button" class="btn-next" onclick="goStep(5)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <!-- ══ STEP 5 · REVIEW & SUBMIT ══ -->
+          <div class="step-panel" id="step-5">
             <p class="step-heading">Review &amp; Submit</p>
             <p class="step-hint">Check everything looks right. You can still go back and edit any section.</p>
 
             <div class="review-grid" id="reviewGrid">
-              <!-- Populated by buildReview() -->
+              <!-- Populated by buildReview() in main.js when goStep(5) is called -->
             </div>
 
             <div class="pricing-summary">
@@ -386,7 +431,13 @@
                 </div>
                 <div class="pricing-row">
                   <span class="pricing-row-label">Delivery fee to your city</span>
+                  <!-- FIX: populated by buildReview() -->
                   <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
+                </div>
+                <div class="pricing-row">
+                  <span class="pricing-row-label">Payment method</span>
+                  <!-- FIX: populated by buildReview() -->
+                  <span class="pricing-row-val" id="reviewPaymentMethod">—</span>
                 </div>
               </div>
             </div>
@@ -399,10 +450,10 @@
             <button type="submit" class="btn-submit-final" id="submitBtn">
               <i class="fa-solid fa-paper-plane"></i> Submit Order Request
             </button>
-            <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment.</p>
+            <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment confirmation.</p>
 
             <div class="form-nav" style="margin-top:16px;">
-              <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back to Products</button>
+              <button type="button" class="btn-back" onclick="goStep(4)"><i class="fa-solid fa-arrow-left"></i> Back to Payment</button>
             </div>
           </div>
 
@@ -595,230 +646,7 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<!-- ── FORM STEP JS (global scope, loaded before module) ── -->
-
-<!-- FORM STEP NAVIGATION & REVIEW - CLEAN VERSION -->
-<!-- FORM STEP NAVIGATION & REVIEW - FIXED VERSION -->
-<script>
-/* =============================================
-   FORM MULTI-STEP NAVIGATION + REVIEW
-   Fixed: validatePhone included locally
-   ============================================= */
-
-let currentStep = 1;
-let selectedCity = '';
-let selectedDeliveryFee = 0;
-
-/* ─── PHONE VALIDATION (Copied from main.js) ─── */
-function validatePhone(val) {
-  if (!val) return false;
-  // Strip spaces, dashes, and optional leading +975 or 975
-  var digits = val.replace(/[\s\-]/g, '').replace(/^\+?975/, '');
-  // Valid Bhutan mobile numbers
-  return /^(17|77|16|02|07|03|72|75|74|73)\d{6}$/.test(digits);
-}
-
-/* ─── GO TO STEP ───────────────────────────── */
-function goStep(target) {
-  if (target > currentStep && !validateStep(currentStep)) {
-    return;
-  }
-
-  // Hide all panels
-  document.querySelectorAll('.step-panel').forEach(panel => {
-    panel.classList.remove('active', 'step-reverse');
-  });
-
-  // Show target panel
-  const nextPanel = document.getElementById('step-' + target);
-  nextPanel.classList.add('active');
-  if (target < currentStep) nextPanel.classList.add('step-reverse');
-
-  // Update progress bar
-  for (let i = 1; i <= 4; i++) {
-    const stepItem = document.getElementById('si-' + i);
-    stepItem.classList.remove('active', 'completed');
-    if (i < target) stepItem.classList.add('completed');
-    if (i === target) stepItem.classList.add('active');
-  }
-
-  if (target === 4) buildReview();
-
-  currentStep = target;
-  document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
-}
-
-/* ─── VALIDATION ───────────────────────────── */
-function validateStep(step) {
-  let ok = true;
-
-  if (step === 1) {
-    const name = document.getElementById('fullName');
-    const phone = document.getElementById('whatsapp');
-    ok = setValid(name, name.value.trim().length >= 2, 'err-name') && ok;
-    ok = setValid(phone, validatePhone(phone.value), 'err-phone') && ok;
-  }
-
-  if (step === 2) {
-    ok = validateCity() && ok;
-    const addr = document.getElementById('address');
-    ok = setValid(addr, addr.value.trim().length >= 5, 'err-address') && ok;
-  }
-
-  if (step === 3) {
-    const linkInputs = document.querySelectorAll('input[name="product_links"]');
-    let hasProduct = false;
-
-    linkInputs.forEach(input => {
-      if (input.value.trim().length > 8) hasProduct = true;
-    });
-
-    if (!hasProduct) {
-      showToast('Please add at least one product link.', 3000);
-      ok = false;
-    }
-  }
-
-  return ok;
-}
-
-function setValid(el, condition, errId) {
-  const errEl = document.getElementById(errId);
-  if (!condition) {
-    el.classList.add('field-error');
-    if (errEl) errEl.classList.add('show');
-    return false;
-  } else {
-    el.classList.remove('field-error');
-    if (errEl) errEl.classList.remove('show');
-    return true;
-  }
-}
-
-function validateCity() {
-  const errEl = document.getElementById('err-city');
-  if (!selectedCity) {
-    errEl.classList.add('show');
-    return false;
-  }
-  errEl.classList.remove('show');
-  return true;
-}
-
-/* ─── CITY SELECTION ───────────────────────── */
-function selectCity(city, fee, el) {
-  selectedCity = city;
-  selectedDeliveryFee = fee;
-  document.getElementById('deliveryCity').value = city;
-
-  document.querySelectorAll('.city-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('err-city').classList.remove('show');
-}
-
-/* ─── BUILD REVIEW (Step 4) ─────────────────── */
-function buildReview() {
-  const grid = document.getElementById('reviewGrid');
-  const name = document.getElementById('fullName').value.trim();
-  const phone = document.getElementById('whatsapp').value.trim();
-  const address = document.getElementById('address').value.trim();
-
-  const productRows = document.querySelectorAll('.product-row');
-  let productHtml = '';
-
-  productRows.forEach((row, index) => {
-    const linkInput = row.querySelector('input[name="product_links"]');
-    const qtyInput = row.querySelector('input[name="quantities"]');
-
-    const link = linkInput ? linkInput.value.trim() : '';
-    const qty = qtyInput ? qtyInput.value : '1';
-
-    if (link) {
-      productHtml += `
-        <div style="margin-bottom:8px; padding:6px 0; border-bottom:1px solid #eee;">
-          <strong>Item ${index + 1}:</strong> ${escHtml(link)} 
-          <span style="color:var(--primary)">× ${qty}</span>
-        </div>`;
-    }
-  });
-
-  const fileCount = document.getElementById('fileList').children.length || 0;
-
-  grid.innerHTML = `
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-user"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Contact</div>
-        <div class="review-block-val">${escHtml(name || '—')}</div>
-        <div class="review-block-sub">+975 ${escHtml(phone || '—')}</div>
-      </div>
-      <button class="review-edit-btn" onclick="goStep(1)">Edit</button>
-    </div>
-
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-location-dot"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Delivery</div>
-        <div class="review-block-val">${escHtml(selectedCity || '—')}</div>
-        <div class="review-block-sub">${escHtml(address || '—')}</div>
-      </div>
-      <button class="review-edit-btn" onclick="goStep(2)">Edit</button>
-    </div>
-
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-box-open"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Products</div>
-        <div class="review-block-val" style="font-weight:400;">${productHtml || '<em>No products added yet</em>'}</div>
-      </div>
-      <button class="review-edit-btn" onclick="goStep(3)">Edit</button>
-    </div>
-
-    ${fileCount > 0 ? `
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-images"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Screenshots</div>
-        <div class="review-block-val">${fileCount} file${fileCount > 1 ? 's' : ''} uploaded</div>
-      </div>
-    </div>` : ''}
-  `;
-
-  const feeEl = document.getElementById('reviewDeliveryFee');
-  if (feeEl) feeEl.textContent = selectedDeliveryFee ? '₹' + selectedDeliveryFee : '—';
-}
-
-/* ─── HTML ESCAPE ─────────────────────────── */
-function escHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/* ─── CLEAR FORM ──────────────────────────── */
-window.clearForm = function() {
-  document.getElementById('orderForm').reset();
-  document.getElementById('productsContainer').innerHTML = '';
-  document.getElementById('fileList').innerHTML = '';
-  selectedCity = '';
-  selectedDeliveryFee = 0;
-
-  document.querySelectorAll('.city-card').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.field-error-msg').forEach(el => el.classList.remove('show'));
-  document.querySelectorAll('input, textarea').forEach(el => el.classList.remove('field-error'));
-
-  addProductRow(); // from main.js
-  goStep(1);
-};
-
-/* ─── INIT ─────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function () {
-  // main.js already calls addProductRow()
-});
-</script>
-
+<!-- ── SERVICE WORKER ── -->
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
@@ -832,8 +660,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 </script>
 
-
-<!-- ── MAIN MODULE (Supabase logic unchanged) ── -->
+<!-- ── MAIN MODULE (all logic lives here) ── -->
 <script type="module" src="/js/main.js"></script>
 </body>
 </html>

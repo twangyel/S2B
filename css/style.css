@@ -707,6 +707,39 @@ textarea { resize: vertical; }
 .file-chip-remove { cursor: pointer; opacity: 0.6; transition: opacity 0.15s; }
 .file-chip-remove:hover { opacity: 1; }
 
+/* Additional styles for payment cards */
+    .payment-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .payment-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+    }
+    .payment-card.selected {
+      border-color: #4f72ff;
+      background: rgba(79, 114, 255, 0.05);
+    }
+    .payment-icon { font-size: 28px; }
+    .payment-name { font-weight: 700; flex: 0 0 140px; }
+    .payment-desc { font-size: 0.85rem; color: #64748b; }
+    .field-error-msg {
+      display: none;
+      color: #dc2626;
+      font-size: 0.8rem;
+      margin-top: 6px;
+    }
+    .field-error-msg.show { display: flex; align-items: center; gap: 6px; }
+
 /* ── Review screen ── */
 .review-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
 

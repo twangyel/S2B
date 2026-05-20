@@ -2,19 +2,19 @@
 //  Shop2Bhutan — main.js
 //  Script tag in index.html must have type="module"
 //
-//  CRITICAL FIXES APPLIED:
-//  1. allorigins.win proxy replaced with Microlink-only preview
-//     (no more third-party URL logging of customer product links)
-//  2. is_verified_buyer now verified server-side via Supabase
-//     lookup — can no longer be spoofed by typing any Order ID
-//  3. Phone validation tightened to actual Bhutan number format
-//  4. escHtml / escapeHtml consolidated into one function
-//  5. generateOrderId suffix extended to 6 chars (lower collision risk)
-//  6. sanitize strips control characters in addition to markdown chars
-//  7. DOMContentLoaded used consistently for all init code
-//  8. product_links / quantities stored as JSONB arrays, not strings
-//  9. loadReviews after submitReview shows pending-approval message
-//     instead of re-fetching (new review is is_approved:false anyway)
+//  FIXES APPLIED (v2):
+//  1. selectPayment() defined — was missing, breaking step 4 entirely
+//  2. #err-files element added in HTML; handler no longer crashes on null
+//  3. Progress bar loop fixed: now iterates i <= 5 (was i <= 4)
+//  4. buildReview() now triggered at target === 5 (was === 4)
+//  5. reviewPaymentMethod now populated in buildReview()
+//  6. clearForm() defined once here only; removed from index.html
+//  7. escHtml() defined once here only; removed from index.html
+//  8. validatePhone() defined once here only; removed from index.html
+//  9. calcEstimate() city-sync dead code removed (target was hidden input)
+// 10. quantities stored as integers, not strings
+// 11. screenshot_urls stored as a proper array (jsonb), not joined string
+// 12. removeProduct() now scopes to productsContainer, not whole document
 //
 //  RLS REMINDER (nothing to fix in JS — must be done in Supabase):
 //  → orders table  : anon INSERT only. SELECT/UPDATE/DELETE blocked.
@@ -27,8 +27,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ==========================================================
 //  SUPABASE
 //  The anon key is intentionally public (browser-visible).
-//  Security relies entirely on Supabase RLS policies — see
-//  the RLS REMINDER comment at the top of this file.
+//  Security relies entirely on Supabase RLS policies.
 // ==========================================================
 const supabase = createClient(
   "https://deecrnfbvgbzyybqhywy.supabase.co",
@@ -36,9 +35,10 @@ const supabase = createClient(
 );
 
 /* ==========================================================
-   SHARED HTML-ESCAPE HELPER
-   (was duplicated as escHtml + escapeHtml — now one function)
+   SHARED HELPERS — defined once, exposed on window for inline scripts
    ========================================================== */
+
+// HTML escape — single authoritative copy
 function escHtml(s) {
   return (s || '')
     .replace(/&/g,  '&amp;')
@@ -46,6 +46,48 @@ function escHtml(s) {
     .replace(/</g,  '&lt;')
     .replace(/>/g,  '&gt;');
 }
+window.escHtml = escHtml;
+
+// Sanitize user text before storing
+function sanitize(str) {
+  return (str || '')
+    .replace(/[*_~`]/g, '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim();
+}
+
+// Phone validation — single authoritative copy
+function validatePhone(val) {
+  if (!val) return false;
+  var digits = val.replace(/[\s\-]/g, '').replace(/^\+?975/, '');
+  return /^(17|77|16|02|07|03|72|75|74|73)\d{6}$/.test(digits);
+}
+window.validatePhone = validatePhone;
+
+function showErr(id, show) {
+  var el = document.getElementById(id);
+  if (el) el.classList[show ? 'add' : 'remove']('show');
+}
+
+function getInitials(name) {
+  return (name || 'A')
+    .split(' ')
+    .map(function(w) { return w[0]; })
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+/* ==========================================================
+   TOAST
+   ========================================================== */
+function showToast(msg, duration) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, duration || 2500);
+}
+window.showToast = showToast;
 
 /* ==========================================================
    HAMBURGER
@@ -64,16 +106,6 @@ document.querySelectorAll('.mobile-menu .nav-btn').forEach(function(btn) {
 document.addEventListener('click', function(e) {
   if (!mainNav.contains(e.target)) mobileMenu.classList.remove('open');
 });
-
-/* ==========================================================
-   TOAST
-   ========================================================== */
-function showToast(msg, duration) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, duration || 2500);
-}
 
 /* ==========================================================
    FAQ ACCORDION
@@ -104,55 +136,40 @@ function calcEstimate() {
   var rate       = price < 2000 ? 0.15 : price <= 5999 ? 0.10 : 0.08;
   var serviceFee = Math.round(price * rate);
   var shipping   = SHIPPING_ESTIMATE;
-  var total      = Math.round(price + serviceFee + shipping + (isNaN(dlcharge) ? 0 : dlcharge));
+  var dlAmt      = isNaN(dlcharge) ? 0 : dlcharge;
+  var total      = Math.round(price + serviceFee + shipping + dlAmt);
 
   document.getElementById('estBase').textContent          = '₹ ' + Math.round(price).toLocaleString('en-IN');
   document.getElementById('estServiceCharge').textContent = '₹ ' + serviceFee.toLocaleString('en-IN');
   document.getElementById('estShipping').textContent      = '~₹ ' + shipping.toLocaleString('en-IN');
-  document.getElementById('dchargeDisplay').textContent   = '₹ ' + Math.round(isNaN(dlcharge) ? 0 : dlcharge).toLocaleString('en-IN');
+  document.getElementById('dchargeDisplay').textContent   = '₹ ' + Math.round(dlAmt).toLocaleString('en-IN');
   document.getElementById('estTotal').textContent         = '₹ ' + total.toLocaleString('en-IN');
-
-  // FIX: sync estimator city to the order form city dropdown
-  // Only pre-fills if the user hasn't already selected a city in the form
-  var estCity  = document.getElementById('dcharge');
-  var formCity = document.getElementById('deliveryCity');
-  if (formCity && formCity.value === '' && estCity) {
-    var selectedText = estCity.options[estCity.selectedIndex].text;
-    for (var i = 0; i < formCity.options.length; i++) {
-      if (formCity.options[i].text === selectedText) {
-        formCity.value = formCity.options[i].value || selectedText;
-        break;
-      }
-    }
-  }
 }
-
 window.calcEstimate = calcEstimate;
 
 /* ==========================================================
    FILE UPLOAD DISPLAY
-   Now shows image thumbnails in addition to filenames.
-   Revokes object URLs when the list is cleared to avoid leaks.
    ========================================================== */
-var _objectUrls = []; // track so we can revoke on clear
+var _objectUrls = [];
 
 function handleFileSelect(input) {
   var list  = document.getElementById('fileList');
-  var errEl = document.getElementById('err-files');
+  var errEl = document.getElementById('err-files'); // element now exists in HTML
 
-  // Revoke any previously created object URLs
   _objectUrls.forEach(function(u) { URL.revokeObjectURL(u); });
   _objectUrls = [];
   list.innerHTML = '';
-  errEl.classList.remove('show');
+  if (errEl) errEl.classList.remove('show');
 
   var MAX   = 5 * 1024 * 1024;
   var valid = true;
 
   Array.from(input.files).forEach(function(f) {
     if (f.size > MAX) {
-      errEl.textContent = f.name + ' exceeds 5 MB limit.';
-      errEl.classList.add('show');
+      if (errEl) {
+        errEl.textContent = f.name + ' exceeds 5 MB limit.';
+        errEl.classList.add('show');
+      }
       valid = false;
       return;
     }
@@ -160,7 +177,6 @@ function handleFileSelect(input) {
     var chip = document.createElement('div');
     chip.className = 'file-chip';
 
-    // Thumbnail preview for images
     if (f.type.startsWith('image/')) {
       var objUrl = URL.createObjectURL(f);
       _objectUrls.push(objUrl);
@@ -183,7 +199,6 @@ function handleFileSelect(input) {
     input.value = '';
   }
 }
-
 window.handleFileSelect = handleFileSelect;
 
 /* ==========================================================
@@ -205,6 +220,9 @@ function buildProductRow() {
         '<i class="fa-solid fa-trash"></i>',
       '</button>',
     '</div>',
+    '<div class="product-notes-wrap">',
+      '<input type="text" name="product_notes" placeholder="Size, colour, variant… (optional)" style="margin-top:8px;">',
+    '</div>',
     '<div class="url-warning"><i class="fa-solid fa-triangle-exclamation"></i> <span>Double-check this link — it doesn\'t look like a supported store URL.</span></div>',
     '<div class="product-preview"></div>',
   ].join('');
@@ -222,7 +240,9 @@ function addProductRow() {
 }
 
 function removeProduct(btn) {
-  var rows = document.querySelectorAll('.product-row');
+  // FIX: scope to productsContainer only, not whole document
+  var container = document.getElementById('productsContainer');
+  var rows = container.querySelectorAll('.product-row');
   if (rows.length > 1) btn.closest('.product-row').remove();
 }
 
@@ -242,10 +262,8 @@ function isSupported(url) {
 
 /* ==========================================================
    PRODUCT PREVIEW
-   CRITICAL FIX: allorigins.win removed entirely.
-   Now uses Microlink as primary (has a privacy policy + rate limit),
-   with a URL-slug fallback if Microlink fails or is slow.
-   No customer product URLs are sent to unknown third-party proxies.
+   Uses Microlink as primary with URL-slug fallback.
+   No customer URLs sent to unknown third-party proxies.
    ========================================================== */
 var debounceMap = {};
 
@@ -274,7 +292,6 @@ function onLinkInput(input) {
 
   debounceMap[id] = setTimeout(function() { fetchPreview(input, val); }, 900);
 }
-
 window.onLinkInput = onLinkInput;
 
 function fetchPreview(input, url) {
@@ -291,7 +308,6 @@ function fetchPreview(input, url) {
 
   var done = false;
 
-  // Only fallback: URL slug extraction (no external proxy, fully private)
   function showFallback() {
     if (done) return;
     done = true;
@@ -306,7 +322,6 @@ function fetchPreview(input, url) {
     renderPreview(preview, slug || brandFallback + ' product', '', brandFallback, true);
   }
 
-  // Primary: Microlink (privacy policy at microlink.io/privacy, no PII logging)
   fetch(
     'https://api.microlink.io/?url=' + encodeURIComponent(url) +
     '&palette=false&audio=false&video=false&iframe=false'
@@ -328,7 +343,6 @@ function fetchPreview(input, url) {
     })
     .catch(showFallback);
 
-  // Hard timeout — show fallback after 6 s regardless
   setTimeout(showFallback, 6000);
 }
 
@@ -362,43 +376,260 @@ function renderPreview(preview, title, imgUrl, source, isFallback) {
 }
 
 /* ==========================================================
-   CLEAR FORM
+   MULTI-STEP FORM STATE
+   ========================================================== */
+var currentStep         = 1;
+var selectedCity        = '';
+var selectedDeliveryFee = 0;
+var selectedPaymentMethod = '';
+
+window.currentStep           = currentStep;
+window.selectedCity          = selectedCity;
+window.selectedDeliveryFee   = selectedDeliveryFee;
+window.selectedPaymentMethod = selectedPaymentMethod;
+
+/* ==========================================================
+   PAYMENT SELECTION — FIX: was missing entirely
+   ========================================================== */
+function selectPayment(method, el) {
+  selectedPaymentMethod = method;
+  window.selectedPaymentMethod = method;
+  document.getElementById('paymentMethod').value = method;
+  document.querySelectorAll('.payment-card').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  showErr('err-payment', false);
+}
+window.selectPayment = selectPayment;
+
+/* ==========================================================
+   CITY SELECTION
+   ========================================================== */
+function selectCity(city, fee, el) {
+  selectedCity        = city;
+  selectedDeliveryFee = fee;
+  window.selectedCity          = city;
+  window.selectedDeliveryFee   = fee;
+  document.getElementById('deliveryCity').value = city;
+  document.querySelectorAll('.city-card').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  showErr('err-city', false);
+}
+window.selectCity = selectCity;
+
+/* ==========================================================
+   STEP VALIDATION
+   ========================================================== */
+function setValid(el, condition, errId) {
+  var errEl = document.getElementById(errId);
+  if (!condition) {
+    el.classList.add('field-error');
+    if (errEl) errEl.classList.add('show');
+    return false;
+  } else {
+    el.classList.remove('field-error');
+    if (errEl) errEl.classList.remove('show');
+    return true;
+  }
+}
+
+function validateStep(step) {
+  var ok = true;
+
+  if (step === 1) {
+    var name  = document.getElementById('fullName');
+    var phone = document.getElementById('whatsapp');
+    ok = setValid(name,  name.value.trim().length >= 2,    'err-name')  && ok;
+    ok = setValid(phone, validatePhone(phone.value),         'err-phone') && ok;
+  }
+
+  if (step === 2) {
+    if (!selectedCity) {
+      showErr('err-city', true);
+      ok = false;
+    } else {
+      showErr('err-city', false);
+    }
+    var addr = document.getElementById('address');
+    ok = setValid(addr, addr.value.trim().length >= 5, 'err-address') && ok;
+  }
+
+  if (step === 3) {
+    var linkInputs = document.querySelectorAll('input[name="product_links"]');
+    var hasProduct = false;
+    linkInputs.forEach(function(input) {
+      if (input.value.trim().length > 8) hasProduct = true;
+    });
+    if (!hasProduct) {
+      showToast('Please add at least one product link.', 3000);
+      ok = false;
+    }
+  }
+
+  if (step === 4) {
+    if (!selectedPaymentMethod) {
+      showErr('err-payment', true);
+      ok = false;
+    } else {
+      showErr('err-payment', false);
+    }
+  }
+
+  return ok;
+}
+window.validateStep = validateStep;
+
+/* ==========================================================
+   GO TO STEP — FIX: progress bar now loops to 5 (was 4)
+   ========================================================== */
+function goStep(target) {
+  if (target > currentStep && !validateStep(currentStep)) return;
+
+  document.querySelectorAll('.step-panel').forEach(function(panel) {
+    panel.classList.remove('active', 'step-reverse');
+  });
+
+  var nextPanel = document.getElementById('step-' + target);
+  nextPanel.classList.add('active');
+  if (target < currentStep) nextPanel.classList.add('step-reverse');
+
+  // FIX: loop to 5, not 4
+  for (var i = 1; i <= 5; i++) {
+    var stepItem = document.getElementById('si-' + i);
+    if (!stepItem) continue;
+    stepItem.classList.remove('active', 'completed');
+    if (i < target)  stepItem.classList.add('completed');
+    if (i === target) stepItem.classList.add('active');
+  }
+
+  // FIX: buildReview triggered at step 5 (was 4)
+  if (target === 5) buildReview();
+
+  currentStep = target;
+  window.currentStep = target;
+  document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
+}
+window.goStep = goStep;
+
+/* ==========================================================
+   BUILD REVIEW — FIX: now populates reviewPaymentMethod too
+   ========================================================== */
+function buildReview() {
+  var grid    = document.getElementById('reviewGrid');
+  var name    = document.getElementById('fullName').value.trim();
+  var phone   = document.getElementById('whatsapp').value.trim();
+  var address = document.getElementById('address').value.trim();
+
+  var productRows = document.querySelectorAll('.product-row');
+  var productHtml = '';
+
+  productRows.forEach(function(row, index) {
+    var linkInput  = row.querySelector('input[name="product_links"]');
+    var qtyInput   = row.querySelector('input[name="quantities"]');
+    var notesInput = row.querySelector('input[name="product_notes"]');
+
+    var link  = linkInput  ? linkInput.value.trim()  : '';
+    var qty   = qtyInput   ? qtyInput.value           : '1';
+    var notes = notesInput ? notesInput.value.trim()  : '';
+
+    if (link) {
+      productHtml += [
+        '<div style="margin-bottom:8px;padding:6px 0;border-bottom:1px solid #eee;">',
+          '<strong>Item ' + (index + 1) + ':</strong> ' + escHtml(link),
+          ' <span style="color:var(--primary)">× ' + escHtml(qty) + '</span>',
+          notes ? ' <span style="color:#888;font-size:0.88em">(' + escHtml(notes) + ')</span>' : '',
+        '</div>',
+      ].join('');
+    }
+  });
+
+  var fileCount = document.getElementById('fileList').children.length || 0;
+
+  grid.innerHTML = [
+    '<div class="review-block">',
+      '<div class="review-block-icon"><i class="fa-solid fa-user"></i></div>',
+      '<div class="review-block-info">',
+        '<div class="review-block-title">Contact</div>',
+        '<div class="review-block-val">' + escHtml(name || '—') + '</div>',
+        '<div class="review-block-sub">+975 ' + escHtml(phone || '—') + '</div>',
+      '</div>',
+      '<button class="review-edit-btn" onclick="goStep(1)">Edit</button>',
+    '</div>',
+
+    '<div class="review-block">',
+      '<div class="review-block-icon"><i class="fa-solid fa-location-dot"></i></div>',
+      '<div class="review-block-info">',
+        '<div class="review-block-title">Delivery</div>',
+        '<div class="review-block-val">' + escHtml(selectedCity || '—') + '</div>',
+        '<div class="review-block-sub">' + escHtml(address || '—') + '</div>',
+      '</div>',
+      '<button class="review-edit-btn" onclick="goStep(2)">Edit</button>',
+    '</div>',
+
+    '<div class="review-block">',
+      '<div class="review-block-icon"><i class="fa-solid fa-box-open"></i></div>',
+      '<div class="review-block-info">',
+        '<div class="review-block-title">Products</div>',
+        '<div class="review-block-val" style="font-weight:400;">' + (productHtml || '<em>No products added yet</em>') + '</div>',
+      '</div>',
+      '<button class="review-edit-btn" onclick="goStep(3)">Edit</button>',
+    '</div>',
+
+    '<div class="review-block">',
+      '<div class="review-block-icon"><i class="fa-solid fa-credit-card"></i></div>',
+      '<div class="review-block-info">',
+        '<div class="review-block-title">Payment</div>',
+        '<div class="review-block-val">' + escHtml(selectedPaymentMethod || '—') + '</div>',
+      '</div>',
+      '<button class="review-edit-btn" onclick="goStep(4)">Edit</button>',
+    '</div>',
+
+    fileCount > 0 ? [
+      '<div class="review-block">',
+        '<div class="review-block-icon"><i class="fa-solid fa-images"></i></div>',
+        '<div class="review-block-info">',
+          '<div class="review-block-title">Screenshots</div>',
+          '<div class="review-block-val">' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded</div>',
+        '</div>',
+      '</div>',
+    ].join('') : '',
+  ].join('');
+
+  // FIX: populate reviewDeliveryFee and reviewPaymentMethod
+  var feeEl = document.getElementById('reviewDeliveryFee');
+  if (feeEl) feeEl.textContent = selectedDeliveryFee ? '₹' + selectedDeliveryFee : '—';
+
+  var pmEl = document.getElementById('reviewPaymentMethod');
+  if (pmEl) pmEl.textContent = selectedPaymentMethod || '—';
+}
+window.buildReview = buildReview;
+
+/* ==========================================================
+   CLEAR FORM — single authoritative definition
    ========================================================== */
 function clearForm() {
   document.getElementById('orderForm').reset();
   document.getElementById('fileList').innerHTML = '';
-  // Revoke any file preview object URLs
   _objectUrls.forEach(function(u) { URL.revokeObjectURL(u); });
   _objectUrls = [];
   document.getElementById('productsContainer').innerHTML = '';
   addProductRow();
   document.querySelectorAll('.field-error-msg').forEach(function(el) { el.classList.remove('show'); });
   document.querySelectorAll('.product-preview').forEach(function(el) { el.style.display = 'none'; });
+  document.querySelectorAll('input, textarea').forEach(function(el) { el.classList.remove('field-error'); });
+  document.querySelectorAll('.city-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.querySelectorAll('.payment-card').forEach(function(c) { c.classList.remove('selected'); });
+  selectedCity          = '';
+  selectedDeliveryFee   = 0;
+  selectedPaymentMethod = '';
+  window.selectedCity          = '';
+  window.selectedDeliveryFee   = 0;
+  window.selectedPaymentMethod = '';
+  goStep(1);
 }
-
 window.clearForm = clearForm;
 
 /* ==========================================================
-   VALIDATION HELPERS
-   CRITICAL FIX: Phone regex tightened to actual Bhutan mobile
-   number format. Bhutan numbers are 8 digits, starting with
-   17, 77, 16, 02, or similar prefixes. The old regex accepted
-   any 7-8 digit number after +975.
-   ========================================================== */
-function validatePhone(val) {
-  // Strip spaces, dashes, and optional leading +975 or 975
-  var digits = val.replace(/[\s\-]/g, '').replace(/^\+?975/, '');
-  // Valid Bhutan mobile: 8 digits, starting with 17, 77, 16, 02, 07, 03
-  return /^(17|77|16|02|07|03|72|75|74|73)\d{6}$/.test(digits);
-}
-
-function showErr(id, show) {
-  document.getElementById(id).classList[show ? 'add' : 'remove']('show');
-}
-
-/* ==========================================================
    ORDER ID GENERATION
-   Extended suffix to 6 chars (~2.2 billion combinations)
    ========================================================== */
 function generateOrderId() {
   var now    = new Date();
@@ -407,17 +638,6 @@ function generateOrderId() {
   var day    = String(now.getDate()).padStart(2, '0');
   var suffix = Math.random().toString(36).toUpperCase().slice(2, 8);
   return 'S2B-' + year + month + day + '-' + suffix;
-}
-
-/* ==========================================================
-   SANITIZE HELPER
-   Now also strips control characters (0x00–0x1F, 0x7F)
-   ========================================================== */
-function sanitize(str) {
-  return (str || '')
-    .replace(/[*_~`]/g, '')
-    .replace(/[\x00-\x1F\x7F]/g, '')
-    .trim();
 }
 
 /* ==========================================================
@@ -432,7 +652,6 @@ document.getElementById('popupOrderId').addEventListener('click', function() {
     self.style.opacity = '0.6';
     setTimeout(function() { self.style.opacity = ''; }, 600);
   }).catch(function() {
-    // Fallback for browsers without Clipboard API
     var el = document.createElement('textarea');
     el.value = text;
     el.style.cssText = 'position:fixed;opacity:0;';
@@ -466,8 +685,8 @@ async function uploadFile(file, orderId) {
 
 /* ==========================================================
    FORM SUBMISSION
-   FIX: product_links and quantities now stored as JSONB arrays
-   in Supabase (change column types to jsonb in your schema).
+   FIX: quantities stored as integers (not strings)
+   FIX: screenshot_urls stored as array (not joined string)
    ========================================================== */
 var form      = document.getElementById('orderForm');
 var submitBtn = document.getElementById('submitBtn');
@@ -475,13 +694,12 @@ var submitBtn = document.getElementById('submitBtn');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  // ── Read field values ──
-  const nameVal    = sanitize(document.getElementById('fullName').value);
-  const phoneVal   = sanitize(document.getElementById('whatsapp').value);
-  const cityVal    = sanitize(document.getElementById('deliveryCity').value);
-  const addressVal = sanitize(document.getElementById('address').value);
+  const nameVal       = sanitize(document.getElementById('fullName').value);
+  const phoneVal      = sanitize(document.getElementById('whatsapp').value);
+  const cityVal       = sanitize(document.getElementById('deliveryCity').value);
+  const addressVal    = sanitize(document.getElementById('address').value);
+  const paymentMethod = document.getElementById('paymentMethod').value || '';
 
-  // ── Collect all product rows ──
   const linkInputs = form.querySelectorAll('input[name="product_links"]');
   const qtyInputs  = form.querySelectorAll('input[name="quantities"]');
   const links = [];
@@ -490,17 +708,18 @@ form.addEventListener('submit', async function(e) {
     const link = inp.value.trim();
     if (link) {
       links.push(link);
-      qtys.push(qtyInputs[i] ? (qtyInputs[i].value.trim() || '1') : '1');
+      // FIX: store as integer
+      qtys.push(parseInt(qtyInputs[i] ? (qtyInputs[i].value || '1') : '1', 10) || 1);
     }
   });
 
-  // ── Validate ──
   var hasError = false;
   showErr('err-name',    !nameVal);
   showErr('err-phone',   !validatePhone(phoneVal));
   showErr('err-city',    !cityVal);
   showErr('err-address', !addressVal);
-  if (!nameVal || !validatePhone(phoneVal) || !cityVal || !addressVal) hasError = true;
+  showErr('err-payment', !paymentMethod);
+  if (!nameVal || !validatePhone(phoneVal) || !cityVal || !addressVal || !paymentMethod) hasError = true;
 
   if (links.length === 0) {
     showToast('Please add at least one product link.');
@@ -509,14 +728,10 @@ form.addEventListener('submit', async function(e) {
 
   if (hasError) return;
 
-  // ── UI: loading state ──
   submitBtn.disabled    = true;
   submitBtn.textContent = 'Submitting…';
 
-  // ── Generate order ID ──
-  const orderId = generateOrderId();
-
-  // ── Upload files if any ──
+  const orderId      = generateOrderId();
   const fileInput    = document.getElementById('fileInput');
   const uploadedUrls = [];
 
@@ -533,26 +748,23 @@ form.addEventListener('submit', async function(e) {
   }
 
   try {
-    // ── Supabase insert ──
-    // product_links and quantities are stored as JSONB arrays.
-    // Make sure these columns are type "jsonb" (or "text[]") in your Supabase schema.
     const { error } = await supabase.from('orders').insert([{
       order_id:         orderId,
       full_name:        nameVal,
       whatsapp:         phoneVal,
       delivery_city:    cityVal,
       delivery_address: addressVal,
-      product_links:    links,           // JSONB array — was: links.join('\n')
-      quantities:       qtys,            // JSONB array — was: qtys.join(', ')
-      screenshot_url:   uploadedUrls.join(', '),
+      product_links:    links,          // jsonb array
+      quantities:       qtys,           // jsonb array of integers
+      screenshot_url:  uploadedUrls,   // FIX: jsonb array (was comma-joined string)
+      payment_method:   paymentMethod,  // now stored in DB too
       status:           'pending',
     }]);
 
     if (error) throw error;
 
-    // ── Build WhatsApp confirmation message ──
     const productsText = links.map(function(link, i) {
-      return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || '1') + ')';
+      return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || 1) + ')';
     }).join('\n');
 
     const fileCount      = fileInput ? fileInput.files.length : 0;
@@ -561,15 +773,16 @@ form.addEventListener('submit', async function(e) {
       : '';
 
     const message =
-      'Hello Shop2Bhutan,\n\n'          +
-      '🆔 Order ID: '  + orderId    + '\n\n' +
-      '📦 New Order Request\n\n'         +
-      '👤 Name: '      + nameVal    + '\n'   +
-      '📱 WhatsApp: '  + phoneVal   + '\n'   +
-      '🏙️ City: '      + cityVal    + '\n'   +
-      '📍 Address: '   + addressVal + '\n\n' +
-      '🛒 Products:\n' + productsText        +
-      screenshotNote   + '\n\n'             +
+      'Hello Shop2Bhutan,\n\n'               +
+      '🆔 Order ID: '    + orderId        + '\n\n' +
+      '📦 New Order Request\n\n'               +
+      '👤 Name: '        + nameVal        + '\n'   +
+      '📱 WhatsApp: '    + phoneVal       + '\n'   +
+      '🏙️ City: '        + cityVal        + '\n'   +
+      '💳 Payment: '     + paymentMethod  + '\n'   +
+      '📍 Address: '     + addressVal     + '\n\n' +
+      '🛒 Products:\n'   + productsText           +
+      screenshotNote + '\n\n'                      +
       'Please confirm availability, total price (including service charge), and next steps.';
 
     document.getElementById('whatsappConfirmBtn').href =
@@ -578,7 +791,6 @@ form.addEventListener('submit', async function(e) {
     const popupOrderEl = document.getElementById('popupOrderId');
     if (popupOrderEl) popupOrderEl.textContent = orderId;
     document.getElementById('copyNote').textContent = 'Tap the ID above to copy it';
-
     document.getElementById('successPopup').classList.add('open');
 
   } catch (err) {
@@ -592,18 +804,10 @@ form.addEventListener('submit', async function(e) {
 
 /* ==========================================================
    SUCCESS POPUP
-   FIX: clearForm() moved out of closePopup() — closing the
-   popup no longer silently wipes the form. The form resets
-   only when the user explicitly submits a new order (the form
-   is already cleared as part of the post-submit flow above
-   via the DOMContentLoaded init).
    ========================================================== */
 function closePopup() {
   document.getElementById('successPopup').classList.remove('open');
-  // Do NOT call clearForm() here — let the user review the page
-  // before their data disappears. Form is cleared on next submit.
 }
-
 window.closePopup = closePopup;
 
 /* ==========================================================
@@ -627,11 +831,7 @@ window.closeReviewForm = closeReviewForm;
 
 /* ==========================================================
    SUBMIT REVIEW
-   CRITICAL FIX: is_verified_buyer is no longer set client-side
-   based on whether an Order ID was typed.
-   Instead we query Supabase to check if that order_id actually
-   exists in the orders table before trusting it. A user who
-   types a random string gets is_verified_buyer: false.
+   is_verified_buyer verified server-side via Supabase lookup.
    ========================================================== */
 async function submitReview() {
   const name     = document.getElementById('reviewName').value.trim();
@@ -650,9 +850,6 @@ async function submitReview() {
   btn.textContent = 'Submitting…';
 
   try {
-    // CRITICAL FIX: Verify the order ID actually exists before
-    // granting the Verified Buyer badge. If orderId is blank or
-    // doesn't match any row, isVerified stays false.
     let isVerified = false;
     if (orderId) {
       const { data: orderCheck, error: checkErr } = await supabase
@@ -661,31 +858,25 @@ async function submitReview() {
         .eq('order_id', orderId)
         .maybeSingle();
 
-      if (!checkErr && orderCheck) {
-        isVerified = true;
-      }
+      if (!checkErr && orderCheck) isVerified = true;
     }
 
     const { error } = await supabase
       .from('reviews')
       .insert([{
-        full_name:          name,
-        city:               location || 'Bhutan',
-        rating:             parseInt(rating),
-        message:            message,
-        order_id:           orderId || null,
-        is_verified_buyer:  isVerified,  // FIXED: server-verified, not user-claimed
-        is_approved:        false,
+        full_name:         name,
+        city:              location || 'Bhutan',
+        rating:            parseInt(rating),
+        message:           message,
+        order_id:          orderId || null,
+        is_verified_buyer: isVerified,
+        is_approved:       false,
       }]);
 
     if (error) throw error;
 
     showToast('Review submitted! It will appear after approval.');
     closeReviewForm();
-
-    // FIX: do NOT reload reviews here — the new review has is_approved:false
-    // so it won't show up and the grid would just flash "Loading…" then
-    // show the same reviews as before. Instead we just leave the grid as-is.
 
   } catch (err) {
     console.error('FULL REVIEW ERROR:', err);
@@ -695,7 +886,6 @@ async function submitReview() {
     btn.textContent = 'Submit Review';
   }
 }
-
 window.submitReview = submitReview;
 
 /* ==========================================================
@@ -713,7 +903,7 @@ function loadReviews() {
     .eq('is_approved', true)
     .order('created_at', { ascending: false })
     .limit(6)
-    .then(({ data, error }) => {
+    .then(function({ data, error }) {
       if (error) {
         console.error(error);
         grid.innerHTML = '<p style="color:var(--muted);text-align:center;">Unable to load reviews right now.</p>';
@@ -725,45 +915,37 @@ function loadReviews() {
         return;
       }
 
-      grid.innerHTML = data.map(r => `
-        <div class="testi-card">
-          <div class="testi-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-          <p class="testi-text">${escHtml(r.message)}</p>
-          <div class="testi-author">
-            <div class="testi-avatar">${getInitials(r.full_name)}</div>
-            <div>
-              <div class="testi-name">
-                ${escHtml(r.full_name)}
-                ${r.is_verified_buyer
-                  ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Buyer</span>'
-                  : ''}
-              </div>
-              <div class="testi-location">${escHtml(r.city || 'Bhutan')}</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
+      grid.innerHTML = data.map(function(r) {
+        return [
+          '<div class="testi-card">',
+            '<div class="testi-stars">',
+              '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating),
+            '</div>',
+            '<p class="testi-text">' + escHtml(r.message) + '</p>',
+            '<div class="testi-author">',
+              '<div class="testi-avatar">' + getInitials(r.full_name) + '</div>',
+              '<div>',
+                '<div class="testi-name">',
+                  escHtml(r.full_name),
+                  r.is_verified_buyer
+                    ? ' <span class="verified-badge"><i class="fa-solid fa-circle-check"></i> Verified Buyer</span>'
+                    : '',
+                '</div>',
+                '<div class="testi-location">' + escHtml(r.city || 'Bhutan') + '</div>',
+              '</div>',
+            '</div>',
+          '</div>',
+        ].join('');
+      }).join('');
     });
 }
-
 window.loadReviews = loadReviews;
 
 /* ==========================================================
-   HELPERS
-   ========================================================== */
-function getInitials(name) {
-  return (name || 'A')
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-/* ==========================================================
-   INIT — all startup code in one place
+   INIT
    ========================================================== */
 document.addEventListener('DOMContentLoaded', function() {
-  addProductRow();  // render first product row
-  loadReviews();    // fetch approved reviews
+  addProductRow();
+  loadReviews();
 });
+
