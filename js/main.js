@@ -64,6 +64,13 @@ function validatePhone(val) {
 }
 window.validatePhone = validatePhone;
 
+//validate email
+function validateEmail(val) {
+  if (!val) return true; // optional field — allow empty
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+}
+window.validateEmail = validateEmail;
+
 function showErr(id, show) {
   var el = document.getElementById(id);
   if (el) el.classList[show ? 'add' : 'remove']('show');
@@ -438,8 +445,10 @@ function validateStep(step) {
   if (step === 1) {
     var name  = document.getElementById('fullName');
     var phone = document.getElementById('whatsapp');
+    var email = document.getElementById('email_address'); // new email field
     ok = setValid(name,  name.value.trim().length >= 2,    'err-name')  && ok;
     ok = setValid(phone, validatePhone(phone.value),         'err-phone') && ok;
+    ok = setValid(email, validateEmail(email.value),        'err-email') && ok;
   }
 
   if (step === 2) {
@@ -696,6 +705,7 @@ form.addEventListener('submit', async function(e) {
 
   const nameVal       = sanitize(document.getElementById('fullName').value);
   const phoneVal      = sanitize(document.getElementById('whatsapp').value);
+  const emailVal      = sanitize(document.getElementById('email_address').value); // new email field
   const cityVal       = sanitize(document.getElementById('deliveryCity').value);
   const addressVal    = sanitize(document.getElementById('address').value);
   const paymentMethod = document.getElementById('paymentMethod').value || '';
@@ -747,19 +757,46 @@ form.addEventListener('submit', async function(e) {
     }
   }
 
+  //Insert Users into users table
+  // STEP A: check user by whatsapp
+let { data: user, error: userErr } = await supabase
+  .from('users')
+  .select('*')
+  .eq('whatsapp', phoneVal)
+  .maybeSingle();
+
+if (userErr) {
+  throw userErr;
+}
+
+// STEP B: if user not found → create user
+if (!user) {
+  const { data: newUser, error: insertErr } = await supabase
+    .from('users')
+    .insert([
+      {
+        full_name: nameVal,
+        whatsapp: phoneVal
+      }
+    ])
+    .select()
+    .single();
+
+  if (insertErr) throw insertErr;
+
+  user = newUser;
+}
+
   try {
-    const { error } = await supabase.from('orders').insert([{
-      order_id:         orderId,
-      full_name:        nameVal,
-      whatsapp:         phoneVal,
-      delivery_city:    cityVal,
-      delivery_address: addressVal,
-      product_links:    links,          // jsonb array
-      quantities:       qtys,           // jsonb array of integers
-      screenshot_url:  uploadedUrls,   // FIX: jsonb array (was comma-joined string)
-      payment_method:   paymentMethod,  // now stored in DB too
-      status:           'pending',
-    }]);
+ const { error } = await supabase.from('orders').insert([{
+  order_id: orderId,
+  user_id: user.id,   // ✅ FIXED (was null)
+  delivery_city: cityVal,
+  delivery_address: addressVal,
+  screenshot_url: uploadedUrls,
+  order_status: 'pending',
+  total_amount: 0
+}]);
 
     if (error) throw error;
 
@@ -807,6 +844,7 @@ form.addEventListener('submit', async function(e) {
    ========================================================== */
 function closePopup() {
   document.getElementById('successPopup').classList.remove('open');
+  clearForm(); // ← add this
 }
 window.closePopup = closePopup;
 

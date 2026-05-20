@@ -20,11 +20,11 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- ORDERS SECTION -->
+<!-- ORDERS SECTION (refactored columns) -->
 <section id="orders-section" class="section">
   <div class="controls-bar">
     <div class="search-group">
-      <input type="text" id="order-search" placeholder="🔍 Order ID, Name, City...">
+      <input type="text" id="order-search" placeholder="🔍 Order ID, Customer, City...">
       <button id="orders-refresh-btn" class="btn">⟳ Refresh</button>
     </div>
     <div class="search-group">
@@ -41,21 +41,12 @@
     <table>
       <thead>
         <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          <th>City</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Final (₹)</th>
-          <th>Advance (₹)</th>
-          <th>Due (₹)</th>
-          <th>Remark</th>
-          <th>Actions</th>
+          <th>Order ID</th><th>Order Date</th><th>Customer Name</th><th>City</th>
+          <th>Delivery Address</th><th>Order Status</th><th>Total Amount (₹)</th>
+          <th>Advance Payment (₹)</th><th>Due (₹)</th><th>Remark</th><th>Action</th>
         </tr>
       </thead>
-      <tbody id="orders-body">
-        <tr><td colspan="10" style="text-align:center">Loading orders...</td></tr>
-      </tbody>
+      <tbody id="orders-body"><tr><td colspan="11" style="text-align:center">Loading orders...</td></tr></tbody>
     </table>
   </div>
   <div id="orders-pagination" class="pagination"></div>
