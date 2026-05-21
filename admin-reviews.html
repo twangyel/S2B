@@ -5,6 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Shop2Bhutan Admin Panel</title>
   <link rel="stylesheet" href="/css/admin_reviews.css">
+  <style>
+    /* ── Modal ── */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal.open { display: flex; }
+    .modal-content {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .modal-content h3 { margin: 0 0 16px; font-size: 1.1rem; }
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+    }
+    .modal-field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .modal-field input {
+      padding: 8px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .modal-total {
+      background: #f0f7ff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #1a56db;
+      margin-bottom: 16px;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-buttons button {
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      border: none;
+    }
+    #modal-cancel-btn {
+      background: #e5e7eb;
+      color: #333;
+    }
+    #modal-save-quotation-btn {
+      background: #1a56db;
+      color: #fff;
+    }
+
+    /* ── Action cell layout ── */
+    .action-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 140px;
+    }
+    .action-cell select { width: 100%; }
+    .action-cell button { width: 100%; }
+
+    /* ── Payment cell ── */
+    .payment-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .payment-cell input {
+      width: 90px;
+    }
+
+    /* ── Remark cell ── */
+    .remark-cell {
+      max-width: 160px;
+      word-break: break-word;
+    }
+    .remark-text {
+      display: block;
+      font-size: 0.82rem;
+      color: #444;
+      margin-bottom: 3px;
+    }
+
+    /* ── Loading spinner ── */
+    .loading-spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid #ccc;
+      border-top-color: #1a56db;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
@@ -14,13 +129,24 @@
 </div>
 
 <div class="tabs">
-  <div id="orders-tab" class="tab active" data-tab="orders">📦 Orders</div>
-  <div id="reviews-tab" class="tab" data-tab="reviews">⭐ Reviews</div>
+  <div id="orders-tab"     class="tab active" data-tab="orders">📦 Orders</div>
+  <div id="reviews-tab"    class="tab"         data-tab="reviews">⭐ Reviews</div>
+  <div id="quotations-tab" class="tab"         data-tab="quotations">📄 Quotations</div>
 </div>
+<h2>Update Payment</h2>
+
+<input id="advance_paid" placeholder="Advance Paid">
+<select id="status">
+  <option>Pending</option>
+  <option>Partially Paid</option>
+  <option>Paid</option>
+</select>
+
+<button onclick="updatePayment()">Update</button>
 
 <div id="toast" class="toast"></div>
 
-<!-- ORDERS SECTION (refactored columns) -->
+<!-- ═══════════════════ ORDERS SECTION ═══════════════════ -->
 <section id="orders-section" class="section">
   <div class="controls-bar">
     <div class="search-group">
@@ -37,26 +163,37 @@
       <button id="export-orders-btn" class="btn btn-primary">📎 Export Orders (CSV)</button>
     </div>
   </div>
+
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
-          <th>Order ID</th><th>Order Date</th><th>Customer Name</th><th>City</th>
-          <th>Delivery Address</th><th>Order Status</th><th>Total Amount (₹)</th>
-          <th>Advance Payment (₹)</th><th>Due (₹)</th><th>Remark</th><th>Action</th>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>City</th>
+          <th>Delivery Address</th>
+          <th>Status</th>
+          <th>Total (₹)</th>
+          <th>Advance (₹)</th>
+          <th>Due (₹)</th>
+          <th>Remark</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="orders-body"><tr><td colspan="11" style="text-align:center">Loading orders...</td></tr></tbody>
+      <tbody id="orders-body">
+        <tr><td colspan="11" style="text-align:center">Loading orders…</td></tr>
+      </tbody>
     </table>
   </div>
   <div id="orders-pagination" class="pagination"></div>
 </section>
 
-<!-- REVIEWS SECTION -->
+<!-- ═══════════════════ REVIEWS SECTION ═══════════════════ -->
 <section id="reviews-section" class="section" style="display:none;">
   <div class="controls-bar">
     <div class="search-group">
-      <input type="text" id="review-search" placeholder="Search by name...">
+      <input type="text" id="review-search" placeholder="Search by name…">
       <select id="review-filter">
         <option value="all">All Reviews</option>
         <option value="approved">Approved</option>
@@ -76,6 +213,68 @@
   <div id="reviews-container" class="reviews-grid"></div>
   <div id="reviews-pagination" class="pagination"></div>
 </section>
+
+<!-- ═══════════════════ QUOTATIONS SECTION ═══════════════════ -->
+<section id="quotations-section" class="section" style="display:none;">
+  <div class="controls-bar">
+    <div class="search-group">
+      <button id="refresh-quotations-btn" class="btn">⟳ Refresh</button>
+      <button id="export-quotations-btn"  class="btn btn-primary">📎 Export Quotations (CSV)</button>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Quotation ID</th>
+          <th>Order ID</th>
+          <th>Product Price (₹)</th>
+          <th>Shipping (₹)</th>
+          <th>Service (₹)</th>
+          <th>Delivery (₹)</th>
+          <th>Total (₹)</th>
+          <th>Status</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody id="quotations-body">
+        <tr><td colspan="9" style="text-align:center">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="quotations-pagination" class="pagination"></div>
+</section>
+
+<!-- ═══════════════════ QUOTATION MODAL ═══════════════════ -->
+<div id="quotationModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <h3>📄 Create Quotation — Order <span id="modal-order-id-display"></span></h3>
+
+    <div class="modal-field">
+      <label for="modal-product-price">Product Price (₹)</label>
+      <input type="number" id="modal-product-price" placeholder="0.00" min="0" step="any">
+    </div>
+    <div class="modal-field">
+      <label for="modal-shipping-fee">Shipping Fee (₹)</label>
+      <input type="number" id="modal-shipping-fee" placeholder="0.00" min="0" step="any">
+    </div>
+    <div class="modal-field">
+      <label for="modal-service-fee">Service Fee (₹)</label>
+      <input type="number" id="modal-service-fee" placeholder="0.00" min="0" step="any">
+    </div>
+    <div class="modal-field">
+      <label for="modal-delivery-fee">Delivery Fee (₹)</label>
+      <input type="number" id="modal-delivery-fee" placeholder="0.00" min="0" step="any">
+    </div>
+
+    <div class="modal-total" id="modal-total-display">Total: ₹0.00</div>
+
+    <div class="modal-buttons">
+      <button id="modal-cancel-btn">Cancel</button>
+      <button id="modal-save-quotation-btn">Save Quotation</button>
+    </div>
+  </div>
+</div>
 
 <script type="module" src="/js/admin_reviews.js"></script>
 </body>

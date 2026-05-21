@@ -21,6 +21,9 @@
     </div>
   </nav>
 
+  <h2>Order Tracking</h2>
+<div id="timeline"></div>
+
   <div class="container">
     <div class="track-card">
       <div style="text-align:center; margin-bottom:32px;">
@@ -40,6 +43,23 @@
       <div id="result" class="hidden"></div>
     </div>
   </div>
+
+  <!-- //Quotation -->
+  <div id="quotation-box" class="hidden">
+  <h2>Quotation Details</h2>
+
+  <p>Product Price: <span id="product_price"></span></p>
+  <p>Shipping Fee: <span id="shipping_fee"></span></p>
+  <p>Service Fee: <span id="service_fee"></span></p>
+  <p>Delivery Fee: <span id="delivery_fee"></span></p>
+
+  <hr>
+
+  <h3>Total: ₹<span id="total_amount"></span></h3>
+
+  <button onclick="acceptQuotation()">Accept</button>
+  <button onclick="rejectQuotation()">Reject</button>
+</div>
 
   <script type="module" src="/js/track.js"></script>
 </body>

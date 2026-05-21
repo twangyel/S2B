@@ -228,4 +228,146 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') window.searchOrder();
     });
   }
+
+  //LOAD QUOTATION FROM SUPABASE
+  async function loadQuotation(orderId) {
+  const { data, error } = await supabase
+    .from("quotations")
+    .select("*")
+    .eq("order_id", orderId)
+    .single();
+
+  if (data) {
+    document.getElementById("product_price").innerText = data.product_price;
+    document.getElementById("shipping_fee").innerText = data.shipping_fee;
+    document.getElementById("service_fee").innerText = data.service_fee;
+    document.getElementById("delivery_fee").innerText = data.delivery_fee;
+
+    const total =
+      data.product_price +
+      data.shipping_fee +
+      data.service_fee +
+      data.delivery_fee;
+
+    document.getElementById("total_amount").innerText = total;
+  }
+}
+
+//ACCEPT QUOTATION
+async function acceptQuotation(orderId) {
+
+  // 1. Update quotation status
+  const { data: quotation } = await supabase
+    .from("quotations")
+    .update({ status: "Accepted" })
+    .eq("order_id", orderId)
+    .select()
+    .single();
+
+  // 2. Create payment automatically
+  const total =
+    quotation.product_price +
+    quotation.shipping_fee +
+    quotation.service_fee +
+    quotation.delivery_fee;
+
+  await supabase.from("payments").insert({
+    order_id: orderId,
+    final_total: total,
+    advance_paid: 0,
+    due_amount: total,
+    payment_status: "Pending"
+  });
+
+  //REJECT QUOTATION
+  async function rejectQuotation(orderId) {
+  await supabase
+    .from("quotations")
+    .update({ status: "Rejected" })
+    .eq("order_id", orderId);
+
+  await supabase
+    .from("orders")
+    .update({ status: "Quotation Rejected" })
+    .eq("id", orderId);
+
+  alert("Quotation rejected.");
+}
+
+  // 3. Update order status
+  await supabase
+    .from("orders")
+    .update({ status: "Quotation Accepted" })
+    .eq("id", orderId);
+
+  alert("Quotation accepted. Payment initiated.");
+}
+
+//FETHC PAYMENT DATA
+async function loadPayment(orderId) {
+  const { data } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("order_id", orderId)
+    .single();
+
+  if (data) {
+    document.getElementById("total").innerText = data.final_total;
+    document.getElementById("paid").innerText = data.advance_paid;
+    document.getElementById("due").innerText = data.due_amount;
+    document.getElementById("status").innerText = data.payment_status;
+  }
+}
+
+//TRACKING EVENTS
+//AFTER A QUOTATION IS SENT
+await supabase.from("tracking_events").insert({
+  order_id: orderId,
+  status: "Quotation Sent",
+  note: "Admin created quotation"
+});
+
+//AFTER PAYMENT CREATED
+await supabase.from("tracking_events").insert({
+  order_id: orderId,
+  status: "Payment Initiated",
+  note: "Payment record created"
+});
+
+//WHEN PAYMENT CONFIRMED
+await supabase.from("tracking_events").insert({
+  order_id: orderId,
+  status: "Payment Confirmed",
+  note: "Advance payment received"
+});
+
+//SHIPPING UPDATE
+await supabase.from("tracking_events").insert({
+  order_id: orderId,
+  status: "Shipped",
+  note: "Order shipped from India warehouse"
+});
+
+//LOAD TRACKING TIMELINE
+async function loadTracking(orderId) {
+
+  const { data } = await supabase
+    .from("tracking_events")
+    .select("*")
+    .eq("order_id", orderId)
+    .order("created_at", { ascending: true });
+
+  const container = document.getElementById("timeline");
+  container.innerHTML = "";
+
+  data.forEach(event => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <p><b>${event.status}</b></p>
+      <small>${event.note || ""}</small>
+      <hr>
+    `;
+    container.appendChild(div);
+  });
+}
 });
