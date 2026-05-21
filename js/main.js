@@ -445,7 +445,7 @@ function validateStep(step) {
   if (step === 1) {
     var name  = document.getElementById('fullName');
     var phone = document.getElementById('whatsapp');
-    var email = document.getElementById('email_address'); // new email field
+    var email = document.getElementById('email'); // new email field
     ok = setValid(name,  name.value.trim().length >= 2,    'err-name')  && ok;
     ok = setValid(phone, validatePhone(phone.value),         'err-phone') && ok;
     ok = setValid(email, validateEmail(email.value),        'err-email') && ok;
@@ -697,39 +697,51 @@ async function uploadFile(file, orderId) {
    FIX: quantities stored as integers (not strings)
    FIX: screenshot_urls stored as array (not joined string)
    ========================================================== */
+/* ==========================================================
+   FORM SUBMISSION — FIXED EMAIL HANDLING
+   ========================================================== */
 var form      = document.getElementById('orderForm');
 var submitBtn = document.getElementById('submitBtn');
 
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  const nameVal       = sanitize(document.getElementById('fullName').value);
-  const phoneVal      = sanitize(document.getElementById('whatsapp').value);
-  const emailVal      = sanitize(document.getElementById('email_address').value); // new email field
+  const nameVal   = sanitize(document.getElementById('fullName').value.trim());
+  const phoneVal  = sanitize(document.getElementById('whatsapp').value.trim());
+  const emailVal  = sanitize(document.getElementById('email').value.trim());
+
+  console.log('🔍 Email Debug:', { raw: document.getElementById('email').value, sanitized: emailVal });
+
   const cityVal       = sanitize(document.getElementById('deliveryCity').value);
   const addressVal    = sanitize(document.getElementById('address').value);
-  const paymentMethod = document.getElementById('paymentMethod').value || '';
+  const paymentMethod = document.getElementById('paymentMethod').value || ''; // SUBMIT INTO PAYMENTS TABLE
 
-  const linkInputs = form.querySelectorAll('input[name="product_links"]');
+  const linkInputs = form.querySelectorAll('input[name="product_links"]'); //Product lInk
   const qtyInputs  = form.querySelectorAll('input[name="quantities"]');
   const links = [];
   const qtys  = [];
+
   linkInputs.forEach(function(inp, i) {
     const link = inp.value.trim();
     if (link) {
       links.push(link);
-      // FIX: store as integer
       qtys.push(parseInt(qtyInputs[i] ? (qtyInputs[i].value || '1') : '1', 10) || 1);
     }
   });
 
-  var hasError = false;
+  // === VALIDATION ===
+  let hasError = false;
   showErr('err-name',    !nameVal);
   showErr('err-phone',   !validatePhone(phoneVal));
+  showErr('err-email',   !validateEmail(emailVal));
   showErr('err-city',    !cityVal);
   showErr('err-address', !addressVal);
   showErr('err-payment', !paymentMethod);
-  if (!nameVal || !validatePhone(phoneVal) || !cityVal || !addressVal || !paymentMethod) hasError = true;
+
+  if (!nameVal || !validatePhone(phoneVal) || !validateEmail(emailVal) || 
+      !cityVal || !addressVal || !paymentMethod) {
+    hasError = true;
+  }
 
   if (links.length === 0) {
     showToast('Please add at least one product link.');
@@ -745,6 +757,7 @@ form.addEventListener('submit', async function(e) {
   const fileInput    = document.getElementById('fileInput');
   const uploadedUrls = [];
 
+  // Upload files if any
   if (fileInput && fileInput.files.length > 0) {
     for (const file of fileInput.files) {
       try {
@@ -752,87 +765,127 @@ form.addEventListener('submit', async function(e) {
         uploadedUrls.push(url);
       } catch (err) {
         console.error('File upload failed for', file.name, err);
-        showToast('⚠️ Could not upload ' + file.name + ' — continuing without it.', 4000);
+        showToast('⚠️ Could not upload ' + file.name + ' — continuing.', 4000);
       }
     }
   }
 
-  //Insert Users into users table
-  // STEP A: check user by whatsapp
-let { data: user, error: userErr } = await supabase
-  .from('users')
-  .select('*')
-  .eq('whatsapp', phoneVal)
-  .maybeSingle();
+try {
+    // ==================== USER CREATION / LOOKUP ====================
+    let { data: user, error: userErr } = await supabase
+      .from('users')
+      .select('id, full_name, email')
+      .eq('whatsapp', phoneVal)
+      .maybeSingle();
 
-if (userErr) {
-  throw userErr;
-}
+    if (userErr) throw userErr;
 
-// STEP B: if user not found → create user
-if (!user) {
-  const { data: newUser, error: insertErr } = await supabase
-    .from('users')
-    .insert([
-      {
-        full_name: nameVal,
-        whatsapp: phoneVal
-      }
-    ])
-    .select()
-    .single();
+    // If not found by whatsapp, try by email
+    if (!user && emailVal) {
+      const { data: userByEmail, error: emailErr } = await supabase
+        .from('users')
+        .select('id, full_name, email')
+        .eq('email', emailVal)
+        .maybeSingle();
 
-  if (insertErr) throw insertErr;
+      if (emailErr) throw emailErr;
+      if (userByEmail) user = userByEmail;
+    }
 
-  user = newUser;
-}
+    // Create new user if not found by either
+    if (!user) {
+      const { data: newUser, error: insertErr } = await supabase
+        .from('users')
+        .insert([{
+          full_name: nameVal,
+          whatsapp: phoneVal,
+          email: emailVal || null,
+        }])
+        .select()
+        .single();
 
-  try {
- const { error } = await supabase.from('orders').insert([{
-  order_id: orderId,
-  user_id: user.id,   // ✅ FIXED (was null)
-  delivery_city: cityVal,
-  delivery_address: addressVal,
-  screenshot_url: uploadedUrls,
-  order_status: 'pending',
-  total_amount: 0
-}]);
+      if (insertErr) throw insertErr;
+      user = newUser;
+    }
+    // Update email if user exists but has no email yet
+    else if ((!user.email || user.email === '') && emailVal) {
+      await supabase
+        .from('users')
+        .update({ email: emailVal })
+        .eq('id', user.id);
+    }
 
-    if (error) throw error;
+    // ==================== INSERT ORDER INTO ORDERS TABLE ====================
+    const { data: orderInsertData, error: orderError } = await supabase.from('orders').insert([{
+      order_id: orderId,
+      user_id: user.id,
+      delivery_city: cityVal,
+      delivery_address: addressVal,
+      product_links: links,
+      quantities: qtys,
+      screenshot_url: uploadedUrls,
+      order_status: 'pending',
+      total_amount: 0
+    }]).select();  // ← ADD .select() to get the inserted row back
 
+        console.log('=== DEBUG ===');
+    console.log('orderInsertData:', orderInsertData);
+    console.log('orderInsertData[0]:', orderInsertData?.[0]);
+    console.log('orderInsertData[0].id:', orderInsertData?.[0]?.id);
+    console.log('orderInsertData[0].order_id:', orderInsertData?.[0]?.order_id);
+    console.log('=== END DEBUG ===');
+
+    if (orderError) throw orderError;
+
+    const orderUuid = orderInsertData[0].id;  // ← GET the uuid
+
+     // ==================== INSERT PAYMENT (initial) ====================
+    const { error: paymentError } = await supabase.from('payments').insert([{
+      order_id: orderId,              // ← FIXED: use text orderId, not uuid
+      user_id: user.id,
+      product_price: 0,
+      shipping_fee: 0,
+      service_fee: 0,
+      delivery_fee: selectedDeliveryFee || 0,
+      total_amount: selectedDeliveryFee || 0,
+      payment_method: paymentMethod,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    }]);
+
+    if (paymentError) throw paymentError;
+
+
+    // ==================== WHATSAPP MESSAGE ====================
     const productsText = links.map(function(link, i) {
       return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || 1) + ')';
     }).join('\n');
 
-    const fileCount      = fileInput ? fileInput.files.length : 0;
-    const screenshotNote = fileCount > 0
-      ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded via form.'
+    const fileCount = fileInput ? fileInput.files.length : 0;
+    const screenshotNote = fileCount > 0 
+      ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded.' 
       : '';
 
-    const message =
-      'Hello Shop2Bhutan,\n\n'               +
-      '🆔 Order ID: '    + orderId        + '\n\n' +
-      '📦 New Order Request\n\n'               +
-      '👤 Name: '        + nameVal        + '\n'   +
-      '📱 WhatsApp: '    + phoneVal       + '\n'   +
-      '🏙️ City: '        + cityVal        + '\n'   +
-      '💳 Payment: '     + paymentMethod  + '\n'   +
-      '📍 Address: '     + addressVal     + '\n\n' +
-      '🛒 Products:\n'   + productsText           +
-      screenshotNote + '\n\n'                      +
-      'Please confirm availability, total price (including service charge), and next steps.';
+    const message = 
+      'Hello Shop2Bhutan,\n\n' +
+      '🆔 Order ID: ' + orderId + '\n\n' +
+      '👤 Name: ' + nameVal + '\n' +
+      '📱 WhatsApp: ' + phoneVal + '\n' +
+      '✉️ Email: ' + (emailVal || 'Not provided') + '\n' +
+      '🏙️ City: ' + cityVal + '\n' +
+      '💳 Payment: ' + paymentMethod + '\n' +
+      '📍 Address: ' + addressVal + '\n\n' +
+      '🛒 Products:\n' + productsText + screenshotNote;
 
     document.getElementById('whatsappConfirmBtn').href =
       'https://wa.me/97577113302?text=' + encodeURIComponent(message);
 
-    const popupOrderEl = document.getElementById('popupOrderId');
-    if (popupOrderEl) popupOrderEl.textContent = orderId;
-    document.getElementById('copyNote').textContent = 'Tap the ID above to copy it';
+    document.getElementById('popupOrderId').textContent = orderId;
     document.getElementById('successPopup').classList.add('open');
 
   } catch (err) {
-    console.error('FULL SUPABASE ERROR:', err);
-    showToast('❌ Failed to submit order: ' + (err.message || 'Unknown error'), 4000);
+    console.error('FULL SUBMISSION ERROR:', err);
+    showToast('❌ Failed to submit order: ' + (err.message || 'Unknown error'), 5000);
   } finally {
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Submit Order Request';

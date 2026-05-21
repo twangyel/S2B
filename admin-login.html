@@ -3,137 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login | Shop2Bhutan</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .login-card {
-      background: white;
-      border-radius: 2rem;
-      padding: 2.5rem;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    }
-    .login-card h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-      color: #0f172a;
-    }
-    .login-card p {
-      color: #475569;
-      margin-bottom: 2rem;
-    }
-    input {
-      width: 100%;
-      padding: 0.9rem 1rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 1rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      transition: 0.2s;
-    }
-    input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-    }
-    button {
-      width: 100%;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.9rem;
-      border-radius: 1rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #2563eb;
-    }
-    .error {
-      color: #dc2626;
-      background: #fee2e2;
-      padding: 0.75rem;
-      border-radius: 0.75rem;
-      margin-top: 1rem;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    .logo {
-      text-align: center;
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-  </style>
+  <title>Admin Panel | Shop2Bhutan</title>
+  <link rel="stylesheet" href="/css/login.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="login-card">
-    <div class="logo">🛍️</div>
-    <h1>Admin sign in</h1>
-    <p>Shop2Bhutan • Order management</p>
-    <form id="login-form">
-      <input type="email" id="email" placeholder="admin@shop2bhutan.com" required autocomplete="email">
-      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-      <button type="submit">Log in</button>
-    </form>
-    <div id="error-message" class="error" style="display: none;"></div>
-  </div>
+  <nav>
+    <div class="container nav-content">
+      <a href="https://shop2bt.vercel.app/" class="logo">
+        <div class="logo-icon">
+          <img src="/image/logo.png" alt="Shop2Bhutan Logo" />
+        </div>
+      </a>
+    </div>
+  </nav>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <main class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="avatar-ring">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h1>Admin Sign In</h1>
+        <p class="subtitle">Shop2Bhutan Order Management</p>
+      </div>
 
-    const supabase = createClient(
-      "https://deecrnfbvgbzyybqhywy.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
-    );
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="admin@shop2bhutan.com" 
+              required 
+              autocomplete="email"
+              aria-describedby="email-hint"
+            >
+          </div>
+          <span id="email-hint" class="hint-text">Use your admin email address</span>
+        </div>
 
-    const form = document.getElementById('login-form');
-    const errorDiv = document.getElementById('error-message');
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input 
+              type="password" 
+              id="password" 
+              placeholder="Enter your password" 
+              required 
+              autocomplete="current-password"
+            >
+            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+              <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-    // check if already logged in
-    const session = localStorage.getItem('sb_admin_session');
-    if (session) {
-      // verify token still valid? optional, but redirect to admin
-      window.location.href = '/admin-reviews.html';
-    }
+        <div class="form-options">
+          <label class="checkbox-wrapper">
+            <input type="checkbox" id="remember">
+            <span class="checkmark"></span>
+            <span class="checkbox-label">Remember me</span>
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorDiv.style.display = 'none';
+        <button type="submit" class="submit-btn">
+          <span class="btn-text">Sign In</span>
+          <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+          <span class="spinner" style="display: none;"></span>
+        </button>
+      </form>
 
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+      <div id="error-message" class="error-banner" role="alert" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" x2="12" y1="8" y2="12"/>
+          <line x1="12" x2="12.01" y1="16" y2="16"/>
+        </svg>
+        <span class="error-text"></span>
+      </div>
+    </div>
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+    <footer class="login-footer">
+      <p>© 2026 Shop2Bhutan. All rights reserved.</p>
+    </footer>
+  </main>
 
-      if (error) {
-        errorDiv.textContent = error.message || 'Login failed. Check credentials.';
-        errorDiv.style.display = 'block';
-        return;
-      }
-
-      // store session access token
-      localStorage.setItem('sb_admin_session', data.session.access_token);
-      window.location.href = '/admin-reviews.html';
-    });
-  </script>
+  <script type="module" src="/js/admin_login.js"></script>
+  
 </body>
 </html>

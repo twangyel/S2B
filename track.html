@@ -3,64 +3,387 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Track Order - Shop2Bhutan</title>
+  <title>Track Order | Shop2Bhutan</title>
+  <meta name="description" content="Track your Shop2Bhutan order and review your quotation." />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/track.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+    h1, h2, h3 { font-family: 'Sora', sans-serif; }
+    .track-card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    .status-line { position: relative; padding-left: 28px; }
+    .status-line::before { content: ''; position: absolute; left: 8px; top: 28px; bottom: -8px; width: 2px; background: #e2e8f0; }
+    .status-line:last-child::before { display: none; }
+    .status-dot { position: absolute; left: 0; top: 4px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #e2e8f0; background: white; }
+    .status-line.completed .status-dot { border-color: #10b981; background: #10b981; }
+    .status-line.completed .status-dot::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; border: 2px solid white; }
+    .status-line.active .status-dot { border-color: #6366f1; background: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+  </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-  <nav>
-    <div class="container nav-content">
-      <a href="https://shop2bt.vercel.app/" class="logo">
-        <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan Logo" /></div>
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <img src="/image/logo.png" alt="Shop2Bhutan" class="h-8 w-auto" />
       </a>
-      <a href="https://shop2bt.vercel.app/" style="color:var(--muted); text-decoration:none; font-weight:500;">
-        ← Back to Home
+      <a href="https://wa.me/97577113302" target="_blank" class="text-sm font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
+        <i class="fa-brands fa-whatsapp mr-1"></i> Support
       </a>
     </div>
   </nav>
 
-  <h2>Order Tracking</h2>
-<div id="timeline"></div>
-
-  <div class="container">
-    <div class="track-card">
-      <div style="text-align:center; margin-bottom:32px;">
-        <h2 style="font-size:2.2rem; margin-bottom:12px;">Track Your Order</h2>
-        <p style="color:var(--muted);">Enter your Order ID to check real-time status</p>
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    
+    <!-- Search -->
+    <div class="track-card p-6 mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 mb-1">Track Your Order</h1>
+      <p class="text-sm text-gray-500 mb-4">Enter your Order ID to view quotation, status, and updates.</p>
+      <div class="flex gap-3">
+        <div class="relative flex-1">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="track-input" placeholder="e.g. S2B-260521-A3F9K2" 
+            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono uppercase">
+        </div>
+        <button onclick="trackOrder()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+          Track
+        </button>
       </div>
-
-      <div class="input-group">
-        <label for="orderId" style="display:block; margin-bottom:8px; font-weight:500;">Order ID</label>
-        <input type="text" id="orderId" placeholder="e.g. S2B-250517-042" autocomplete="off" />
-      </div>
-
-      <button onclick="searchOrder()" class="btn-primary" id="searchBtn">
-        <i class="fa-solid fa-magnifying-glass"></i> Check Status
-      </button>
-
-      <div id="result" class="hidden"></div>
+      <p id="track-error" class="hidden text-red-600 text-sm mt-3"><i class="fas fa-circle-exclamation mr-1"></i> Order not found. Please check your Order ID.</p>
     </div>
-  </div>
 
-  <!-- //Quotation -->
-  <div id="quotation-box" class="hidden">
-  <h2>Quotation Details</h2>
+    <!-- Results -->
+    <div id="track-results" class="hidden space-y-6">
+      
+      <!-- Order Header -->
+      <div class="track-card p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Order ID</div>
+            <div class="text-lg font-mono font-bold text-gray-900" id="res-order-id">—</div>
+          </div>
+          <span id="res-order-status" class="px-3 py-1 rounded-full text-xs font-bold border">—</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-gray-400 text-xs mb-0.5">Customer</div>
+            <div class="font-semibold text-gray-900" id="res-name">—</div>
+          </div>
+          <div>
+            <div class="text-gray-400 text-xs mb-0.5">WhatsApp</div>
+            <div class="font-medium text-gray-700" id="res-phone">—</div>
+          </div>
+          <div>
+            <div class="text-gray-400 text-xs mb-0.5">City</div>
+            <div class="font-medium text-gray-700" id="res-city">—</div>
+          </div>
+          <div>
+            <div class="text-gray-400 text-xs mb-0.5">Payment Method</div>
+            <div class="font-medium text-gray-700" id="res-payment">—</div>
+          </div>
+        </div>
+      </div>
 
-  <p>Product Price: <span id="product_price"></span></p>
-  <p>Shipping Fee: <span id="shipping_fee"></span></p>
-  <p>Service Fee: <span id="service_fee"></span></p>
-  <p>Delivery Fee: <span id="delivery_fee"></span></p>
+      <!-- Quotation Panel -->
+      <div id="quote-panel" class="hidden track-card p-6 border-l-4 border-indigo-500">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-gray-900"><i class="fas fa-file-invoice-dollar text-indigo-600 mr-2"></i>Your Quotation</h2>
+          <span id="quote-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold border">—</span>
+        </div>
+        
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Product Price</span>
+            <span class="font-semibold text-gray-900" id="q-product">₹ 0</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Shipping Fee</span>
+            <span class="font-semibold text-gray-900" id="q-shipping">₹ 0</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Service Fee</span>
+            <span class="font-semibold text-gray-900" id="q-service">₹ 0</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-gray-600">Delivery Fee</span>
+            <span class="font-semibold text-gray-900" id="q-delivery">₹ 0</span>
+          </div>
+          <div class="flex justify-between py-3 bg-indigo-50 rounded-lg px-3 mt-2">
+            <span class="font-bold text-indigo-900">Total Amount</span>
+            <span class="font-bold text-indigo-700 text-lg" id="q-total">₹ 0</span>
+          </div>
+        </div>
 
-  <hr>
+        <div id="q-note-wrap" class="hidden mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+          <div class="text-xs font-semibold text-amber-800 uppercase mb-1">Note from Admin</div>
+          <p class="text-sm text-amber-700" id="q-note">—</p>
+        </div>
 
-  <h3>Total: ₹<span id="total_amount"></span></h3>
+        <!-- Action Buttons -->
+        <div id="quote-actions" class="hidden flex gap-3 mt-6">
+          <button onclick="respondQuote('accepted')" class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+            <i class="fas fa-check mr-2"></i>Accept & Pay
+          </button>
+          <button onclick="respondQuote('rejected')" class="flex-1 py-3 bg-white text-red-600 border-2 border-red-200 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors">
+            <i class="fas fa-times mr-2"></i>Reject
+          </button>
+        </div>
 
-  <button onclick="acceptQuotation()">Accept</button>
-  <button onclick="rejectQuotation()">Reject</button>
-</div>
+        <div id="quote-accepted-msg" class="hidden mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
+          <i class="fas fa-check-circle text-emerald-600 text-2xl mb-2"></i>
+          <div class="font-bold text-emerald-800">Quotation Accepted</div>
+          <p class="text-sm text-emerald-600 mt-1">Please complete payment via WhatsApp to proceed.</p>
+          <a id="wa-pay-btn" href="#" target="_blank" class="inline-block mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors">
+            <i class="fa-brands fa-whatsapp mr-1"></i> Pay on WhatsApp
+          </a>
+        </div>
 
-  <script type="module" src="/js/track.js"></script>
+        <div id="quote-rejected-msg" class="hidden mt-6 p-4 bg-red-50 rounded-xl border border-red-100 text-center">
+          <i class="fas fa-times-circle text-red-500 text-2xl mb-2"></i>
+          <div class="font-bold text-red-800">Quotation Rejected</div>
+          <p class="text-sm text-red-600 mt-1">Please contact us if you have any concerns.</p>
+        </div>
+      </div>
+
+      <!-- Tracking Timeline -->
+      <div id="tracking-panel" class="hidden track-card p-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4"><i class="fas fa-truck-fast text-indigo-600 mr-2"></i>Tracking Status</h2>
+        <div id="tracking-timeline" class="space-y-0"></div>
+      </div>
+
+      <!-- No Quotation Yet -->
+      <div id="no-quote-panel" class="hidden track-card p-6 text-center py-12">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+          <i class="fas fa-clock text-gray-300 text-2xl"></i>
+        </div>
+        <h3 class="text-gray-900 font-semibold mb-1">Quotation Pending</h3>
+        <p class="text-gray-500 text-sm">Your order is being reviewed. Check back soon for your price quote.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(
+      "https://deecrnfbvgbzyybqhywy.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+    );
+
+    let currentOrder = null;
+    let currentQuote = null;
+
+    async function trackOrder() {
+      const input = document.getElementById('track-input');
+      const orderTextId = input.value.trim().toUpperCase();
+      const errorEl = document.getElementById('track-error');
+      const results = document.getElementById('track-results');
+
+      if (!orderTextId) return;
+
+      errorEl.classList.add('hidden');
+      results.classList.add('hidden');
+
+      try {
+        // Fetch order by text order_id
+        const { data: orders, error: orderErr } = await supabase
+          .from('orders')
+          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, payment_method, created_at, users(full_name, whatsapp, email)')
+          .eq('order_id', orderTextId)
+          .limit(1);
+
+        if (orderErr) throw orderErr;
+        if (!orders || orders.length === 0) {
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        const order = orders[0];
+        currentOrder = order;
+        const user = order.users || {};
+
+        // Fetch quotation by UUID order_id
+        const { data: quotes } = await supabase
+          .from('quotations')
+          .select('*')
+          .eq('order_id', order.id)
+          .maybeSingle();
+
+        currentQuote = quotes;
+
+        // Fetch tracking events by UUID order_id
+        const { data: tracking } = await supabase
+          .from('tracking_events')
+          .select('*')
+          .eq('order_id', order.id)
+          .order('created_at', { ascending: true });
+
+        // Populate header
+        document.getElementById('res-order-id').textContent = order.order_id;
+        document.getElementById('res-name').textContent = user.full_name || '—';
+        document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+        document.getElementById('res-city').textContent = order.delivery_city || '—';
+        document.getElementById('res-payment').textContent = order.payment_method || '—';
+
+        const statusColors = {
+          pending:    'bg-amber-50 text-amber-700 border-amber-200',
+          quoted:     'bg-indigo-50 text-indigo-700 border-indigo-200',
+          confirmed:  'bg-blue-50 text-blue-700 border-blue-200',
+          ordered:    'bg-sky-50 text-sky-700 border-sky-200',
+          shipped:    'bg-purple-50 text-purple-700 border-purple-200',
+          delivered:  'bg-emerald-50 text-emerald-700 border-emerald-200',
+          cancelled:  'bg-red-50 text-red-700 border-red-200'
+        };
+        const statusEl = document.getElementById('res-order-status');
+        statusEl.textContent = (order.order_status || 'pending').charAt(0).toUpperCase() + (order.order_status || 'pending').slice(1);
+        statusEl.className = `px-3 py-1 rounded-full text-xs font-bold border ${statusColors[order.order_status] || statusColors.pending}`;
+
+        // Quotation panel
+        const quotePanel = document.getElementById('quote-panel');
+        const noQuotePanel = document.getElementById('no-quote-panel');
+        const trackingPanel = document.getElementById('tracking-panel');
+
+        if (quotes) {
+          quotePanel.classList.remove('hidden');
+          noQuotePanel.classList.add('hidden');
+
+          document.getElementById('q-product').textContent = '₹ ' + Math.round(quotes.product_price || 0).toLocaleString('en-IN');
+          document.getElementById('q-shipping').textContent = '₹ ' + Math.round(quotes.shipping_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-service').textContent = '₹ ' + Math.round(quotes.service_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-delivery').textContent = '₹ ' + Math.round(quotes.delivery_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-total').textContent = '₹ ' + Math.round(quotes.total_amount || 0).toLocaleString('en-IN');
+
+          if (quotes.note) {
+            document.getElementById('q-note-wrap').classList.remove('hidden');
+            document.getElementById('q-note').textContent = quotes.note;
+          } else {
+            document.getElementById('q-note-wrap').classList.add('hidden');
+          }
+
+          const qStatus = quotes.status || 'pending';
+          const qBadge = document.getElementById('quote-status-badge');
+          const qColors = {
+            pending:  'bg-amber-50 text-amber-700 border-amber-200',
+            accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            rejected: 'bg-red-50 text-red-700 border-red-200'
+          };
+          qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
+          qBadge.className = `px-2.5 py-1 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
+
+          if (qStatus === 'pending') {
+            document.getElementById('quote-actions').classList.remove('hidden');
+            document.getElementById('quote-accepted-msg').classList.add('hidden');
+            document.getElementById('quote-rejected-msg').classList.add('hidden');
+          } else if (qStatus === 'accepted') {
+            document.getElementById('quote-actions').classList.add('hidden');
+            document.getElementById('quote-accepted-msg').classList.remove('hidden');
+            document.getElementById('quote-rejected-msg').classList.add('hidden');
+            
+            const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${Math.round(quotes.total_amount || 0)}\n\nPlease share payment details.`;
+            document.getElementById('wa-pay-btn').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
+          } else {
+            document.getElementById('quote-actions').classList.add('hidden');
+            document.getElementById('quote-accepted-msg').classList.add('hidden');
+            document.getElementById('quote-rejected-msg').classList.remove('hidden');
+          }
+        } else {
+          quotePanel.classList.add('hidden');
+          noQuotePanel.classList.remove('hidden');
+        }
+
+        // Tracking timeline - only show if quotation accepted
+        if (tracking && tracking.length > 0 && quotes && quotes.status === 'accepted') {
+          trackingPanel.classList.remove('hidden');
+          const timeline = document.getElementById('tracking-timeline');
+          timeline.innerHTML = tracking.map((t, i) => {
+            const isLast = i === tracking.length - 1;
+            const statusClass = isLast ? 'active' : 'completed';
+            const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+            return `
+              <div class="status-line ${statusClass} pb-6">
+                <div class="status-dot"></div>
+                <div class="font-semibold text-gray-900 text-sm">${t.status || 'Update'}</div>
+                ${t.location ? `<div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-location-dot mr-1"></i>${t.location}</div>` : ''}
+                ${t.note ? `<div class="text-xs text-gray-600 mt-1">${t.note}</div>` : ''}
+                <div class="text-xs text-gray-400 mt-1">${time}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          trackingPanel.classList.add('hidden');
+        }
+
+        results.classList.remove('hidden');
+      } catch (err) {
+        console.error('Track error:', err);
+        showToast('Something went wrong. Please try again.');
+      }
+    }
+    window.trackOrder = trackOrder;
+
+    async function respondQuote(response) {
+      if (!currentQuote || !currentOrder) return;
+      
+      const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+      if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+      try {
+        // Update quotation status
+        const { error: qErr } = await supabase
+          .from('quotations')
+          .update({ status: response, updated_at: new Date().toISOString() })
+          .eq('id', currentQuote.id);
+
+        if (qErr) throw qErr;
+
+        // If accepted, create payment row
+        if (response === 'accepted') {
+          const { error: pErr } = await supabase.from('payments').insert([{
+            order_id: currentOrder.id,
+            product_price: currentQuote.product_price || 0,
+            shipping_fee: currentQuote.shipping_fee || 0,
+            service_fee: currentQuote.service_fee || 0,
+            delivery_fee: currentQuote.delivery_fee || 0,
+            total_amount: currentQuote.total_amount || 0,
+            payment_method: currentOrder.payment_method || 'Bank Transfer',
+            status: 'pending',
+            created_at: new Date().toISOString()
+          }]);
+
+          if (pErr) throw pErr;
+
+          // Update order status
+          await supabase.from('orders').update({ order_status: 'confirmed' }).eq('id', currentOrder.id);
+        }
+
+        showToast(response === 'accepted' ? 'Quotation accepted! Please complete payment.' : 'Quotation rejected.', 'success');
+        trackOrder(); // refresh view
+      } catch (err) {
+        console.error('Respond error:', err);
+        showToast('Failed to respond. Please try again.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = response === 'accepted' ? 'Accept & Pay' : 'Reject'; }
+      }
+    }
+    window.respondQuote = respondQuote;
+
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('opacity-100');
+      setTimeout(() => t.classList.remove('opacity-100'), 3000);
+    }
+
+    // Enter key support
+    document.getElementById('track-input')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') trackOrder();
+    });
+  </script>
 </body>
 </html>

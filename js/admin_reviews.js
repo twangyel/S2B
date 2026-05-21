@@ -1,917 +1,654 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const SUPABASE_URL     = "https://deecrnfbvgbzyybqhywy.supabase.co";
+const SUPABASE_URL = "https://deecrnfbvgbzyybqhywy.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8";
 
-// ── Auth guard ──────────────────────────────────────────────────────────────
-const sessionToken = localStorage.getItem("sb_admin_session");
-if (!sessionToken) window.location.href = "/admin-login.html";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  global: { headers: { Authorization: `Bearer ${sessionToken}` } }
-});
+let allReviews = [];
+let reviewsLoaded = false;
+let deleteTargetId = null;
 
-// Validate session on load; redirect if invalid
-supabase.auth.getUser().then(({ error }) => {
-  if (error) { localStorage.removeItem("sb_admin_session"); window.location.href = "/admin-login.html"; }
-});
+let allOrders = [];
+let allQuotations = [];
+let ordersLoaded = false;
+let quotationsLoaded = false;
+let currentOrderSubTab = 'orders';
+let authChecked = false;
 
-// Re-validate every 10 minutes to catch mid-session expiry
-setInterval(async () => {
-  const { error } = await supabase.auth.getUser();
-  if (error) { localStorage.removeItem("sb_admin_session"); window.location.href = "/admin-login.html"; }
-}, 10 * 60 * 1000);
-
-
-// ── Utilities ───────────────────────────────────────────────────────────────
-
-function showToast(msg, isError = false) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = `toast ${isError ? "error" : "success"}`;
-  t.style.display = "block";
-  setTimeout(() => (t.style.display = "none"), 3000);
-}
-
-// Full HTML escape — covers attributes too (" and ')
-function esc(str) {
-  if (str == null) return "";
-  return String(str).replace(/[&<>"']/g, c => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
-  ));
-}
-
-// Pick first non-empty value from an object by a list of candidate keys
-function pick(obj, keys, fallback = "—") {
-  for (const k of keys) {
-    const v = obj[k];
-    if (v != null && String(v).trim()) return String(v).trim();
-  }
-  return fallback;
-}
-
-// Safe float parse — returns 0 for NaN/null/undefined
-function safeFloat(v) {
-  const n = parseFloat(v);
-  return isNaN(n) ? 0 : n;
-}
-
-// Truthy paymentId: non-empty string that isn't literally "null"/"undefined"
-function validId(id) {
-  return id && id !== "null" && id !== "undefined";
-}
-
-
-// ── Schema column cache ──────────────────────────────────────────────────────
-// Detect once at startup; avoids a probe query on every update call.
-
-let _statusCol = null;
-let _notesCol  = null;
-
-async function detectOrderColumns() {
-  if (_statusCol && _notesCol) return;
-  const { data } = await supabase.from("orders").select("*").limit(1);
-  const row = data?.[0] ?? {};
-  _statusCol = "order_status" in row ? "order_status" : "status";
-  _notesCol  = "notes"        in row ? "notes"        : "remark";
-}
-
-
-// ── Supabase: Orders ────────────────────────────────────────────────────────
-
-async function fetchEnrichedOrders() {
-  const { data: ordersRaw, error: ordErr } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (ordErr) throw ordErr;
-  if (!ordersRaw?.length) return [];
-
-  // Detect which field links an order to a user
-  const sampleKeys = Object.keys(ordersRaw[0]).map(k => k.toLowerCase());
-  let userIdField = Object.keys(ordersRaw[0]).find(k =>
-    k.toLowerCase().includes("user") || k.toLowerCase().includes("customer")
-  ) ?? "user_id";
-
-  // Batch-fetch users
-  const uniqueUserIds = [...new Set(ordersRaw.map(o => o[userIdField]).filter(Boolean))];
-  const usersMap = new Map();
-  if (uniqueUserIds.length) {
-    const { data: users } = await supabase.from("users").select("*").in("id", uniqueUserIds);
-    users?.forEach(u => usersMap.set(u.id, u));
-  }
-
-  // Batch-fetch payments
-  const orderIds = ordersRaw.map(o => o.id);
-  const paymentsMap = new Map();
-  if (orderIds.length) {
-    const { data: payments } = await supabase
-      .from("payments")
-      .select("id, order_id, total_amount, advance_paid, due_amount")
-      .in("order_id", orderIds);
-    payments?.forEach(p => paymentsMap.set(p.order_id, p));
-  }
-
-  return ordersRaw.map(order => {
-    const user    = usersMap.get(order[userIdField]) ?? {};
-    const payment = paymentsMap.get(order.id) ?? {};
-
-    const totalAmount   = safeFloat(payment.total_amount);
-    const advanceAmount = safeFloat(payment.advance_paid);
-    // Use DB due_amount when present; calculate as fallback
-    const dueAmount = payment.due_amount != null
-      ? safeFloat(payment.due_amount)
-      : Math.max(0, totalAmount - advanceAmount);
-
-    return {
-      id:               order.id,
-      order_id:         order.order_id ?? `ORD-${order.id}`,
-      order_date:       order.created_at,
-      customer_name:    pick(user,  ["full_name","name","fullname"]),
-      city:             pick(user,  ["city","city_name","town","location"], null) ??
-                        pick(order, ["delivery_city","shipping_city","city"]),
-      delivery_address: pick(user,  ["delivery_address","address","street_address"], null) ??
-                        pick(order, ["delivery_address","shipping_address","address"]),
-      status:           order.order_status ?? order.status ?? "pending",
-      remark:           order.notes ?? order.remark ?? "",
-      total_amount:     totalAmount,
-      advance_paid:     advanceAmount,
-      due:              dueAmount,
-      _paymentId:       payment.id ?? null,    // null means no payment row yet → INSERT
-    };
-  });
-}
-
-
-async function updateOrderStatus(orderId, newStatus) {
-  await detectOrderColumns();
-  const { error } = await supabase
-    .from("orders")
-    .update({ [_statusCol]: newStatus, last_updated: new Date().toISOString() })
-    .eq("id", orderId);
-  if (error) throw error;
-}
-
-
-async function updateOrderRemark(orderId, remark) {
-  await detectOrderColumns();
-  const { error } = await supabase
-    .from("orders")
-    .update({ [_notesCol]: remark, last_updated: new Date().toISOString() })
-    .eq("id", orderId);
-  if (error) throw error;
-}
-
-// paymentId: real DB id (number/uuid) → UPDATE; null → INSERT new row
-async function savePayment(orderId, totalAmount, advancePaid, paymentId) {
-  const dueAmount = Math.max(0, totalAmount - advancePaid);
-  const now = new Date().toISOString();
-
-  if (validId(paymentId)) {
-    // UPDATE existing payment row
-    const { error } = await supabase
-      .from("payments")
-      .update({ total_amount: totalAmount, advance_paid: advancePaid, due_amount: dueAmount, updated_at: now })
-      .eq("id", paymentId);
-    if (error) throw error;
-  } else {
-    // INSERT new payment row — first check if one already exists for this order
-    const { data: existing } = await supabase
-      .from("payments")
-      .select("id")
-      .eq("order_id", orderId)
-      .maybeSingle();
-
-    if (existing?.id) {
-      // Race condition: row was created after we fetched — update it
-      const { error } = await supabase
-        .from("payments")
-        .update({ total_amount: totalAmount, advance_paid: advancePaid, due_amount: dueAmount, updated_at: now })
-        .eq("id", existing.id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase
-        .from("payments")
-        .insert({ order_id: orderId, total_amount: totalAmount, advance_paid: advancePaid, due_amount: dueAmount, created_at: now, updated_at: now });
-      if (error) throw error;
-    }
-  }
-}
-
-//UPDATE PAYMENT
-async function updatePayment(orderId) {
-
-  const advance = Number(document.getElementById("advance_paid").value);
-  const status = document.getElementById("status").value;
-
-  // get current payment
-  const { data: payment } = await supabase
-    .from("payments")
-    .select("*")
-    .eq("order_id", orderId)
-    .single();
-
-  const newDue = payment.final_total - advance;
-
-  const { error } = await supabase
-    .from("payments")
-    .update({
-      advance_paid: advance,
-      due_amount: newDue,
-      payment_status: status
-    })
-    .eq("order_id", orderId);
-
-  if (!error) {
-    alert("Payment updated");
-  }
-}
-
-
-// ── Supabase: Quotations ────────────────────────────────────────────────────
-
-async function insertQuotation({ orderId, productPrice, shippingFee, serviceFee, deliveryFee }) {
-  const totalAmount = productPrice + shippingFee + serviceFee + deliveryFee;
-  const now = new Date().toISOString();
-
-  const { error } = await supabase.from("quotations").insert({
-    order_id:      orderId,
-    product_price: productPrice,
-    shipping_fee:  shippingFee,
-    service_fee:   serviceFee,
-    delivery_fee:  deliveryFee,
-    total_amount:  totalAmount,
-    status:        "Sent",
-    created_at:    now,
-  });
-  if (error) throw error;
-
-  // Update order status via cached column name
-  await detectOrderColumns();
-  await supabase
-    .from("orders")
-    .update({ [_statusCol]: "Quotation Sent" })
-    .eq("id", orderId);
-}
-
-async function fetchQuotations() {
-  const { data, error } = await supabase
-    .from("quotations")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data ?? [];
-}
-
-
-// ── Supabase: Reviews ───────────────────────────────────────────────────────
-
-async function fetchReviews() {
-  const { data, error } = await supabase
-    .from("reviews")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data ?? [];
-}
-
-
-// ══════════════════════════════════════════════════════════════════════════════
-// UI STATE
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ── Orders state ─────────────────────────────────────────────────────────────
-let masterOrders   = [];
-let filteredOrders = [];
-let ordersPage     = 1;
-let ordersPageSize = 25;
-
-async function reloadOrdersAndRender() {
-  document.getElementById("orders-body").innerHTML =
-    `<tr><td colspan="11" style="text-align:center"><span class="loading-spinner"></span> Loading…</td></tr>`;
+/* ==========================================================
+   AUTH & INIT
+   ========================================================== */
+async function init() {
   try {
-    masterOrders = await fetchEnrichedOrders();
-    applyOrderSearchAndRender();
-  } catch (err) {
-    document.getElementById("orders-body").innerHTML =
-      `<tr><td colspan="11">⚠️ ${esc(err.message)}</td></tr>`;
-    showToast(err.message, true);
-  }
-}
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.replace('/admin-login.html');
+      return;
+    }
 
-function applyOrderSearchAndRender() {
-  const term = (document.getElementById("order-search")?.value ?? "").toLowerCase().trim();
-  filteredOrders = term
-    ? masterOrders.filter(o =>
-        (o.order_id       ?? "").toLowerCase().includes(term) ||
-        (o.customer_name  ?? "").toLowerCase().includes(term) ||
-        (o.city           ?? "").toLowerCase().includes(term)
-      )
-    : [...masterOrders];
-  ordersPage = 1;
-  renderOrdersTable();
-}
+    const { data: admin, error: adminError } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
 
-function renderOrdersTable() {
-  const tbody = document.getElementById("orders-body");
-  if (!tbody) return;
-  const start    = (ordersPage - 1) * ordersPageSize;
-  const pageData = filteredOrders.slice(start, start + ordersPageSize);
+    if (adminError || !admin) {
+      await supabase.auth.signOut();
+      window.location.replace('/admin-login.html');
+      return;
+    }
 
-  if (!pageData.length) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center">📭 No orders found</td></tr>`;
-    renderOrdersPagination();
-    return;
-  }
+    authChecked = true;
 
-  tbody.innerHTML = "";
-  for (const o of pageData) {
-    const statusClass   = `status-${(o.status ?? "pending").toLowerCase().replace(/\s+/g, "-")}`;
-    const formattedDate = o.order_date ? new Date(o.order_date).toLocaleDateString("en-IN") : "—";
-    // paymentId as data-attribute: always stringify; we validate with validId() on read
-    const pid = o._paymentId ?? "";
+    const navEmail = document.getElementById('admin-email-nav');
+    if (navEmail) navEmail.textContent = session.user.email;
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><strong>${esc(o.order_id)}</strong></td>
-      <td>${formattedDate}</td>
-      <td>${esc(o.customer_name)}</td>
-      <td>${esc(o.city)}</td>
-      <td>${esc(o.delivery_address)}</td>
-      <td><span class="status-badge ${statusClass}">${esc(o.status)}</span></td>
-
-      <!-- Total amount cell -->
-      <td>
-        <div class="payment-cell">
-          <input type="number" class="table-input order-total-input"
-            data-order-id="${esc(o.id)}"
-            value="${o.total_amount}" min="0" step="any">
-        </div>
-      </td>
-
-      <!-- Advance paid cell -->
-      <td>
-        <div class="payment-cell">
-          <input type="number" class="table-input order-advance-input"
-            data-order-id="${esc(o.id)}"
-            value="${o.advance_paid}" min="0" step="any">
-        </div>
-      </td>
-
-      <!-- Due (read-only, recalculated on save) -->
-      <td class="due-cell">${o.due.toFixed(2)}</td>
-
-      <!-- Remark -->
-      <td class="remark-cell">
-        <span class="remark-text">${esc(o.remark)}</span>
-        <button class="btn-tiny remark-edit-btn"
-          data-order-id="${esc(o.id)}"
-          data-remark="${esc(o.remark)}">✏️ Edit</button>
-      </td>
-
-      <!-- Actions column -->
-      <td>
-        <div class="action-cell">
-          <!-- Status update -->
-          <select class="status-select" data-order-id="${esc(o.id)}">
-            ${["pending","ordered","purchased","shipped","jaigaon","phuentsholing","delivery","delivered"]
-              .map(s => `<option value="${s}" ${o.status === s ? "selected" : ""}>${s}</option>`)
-              .join("")}
-          </select>
-          <button class="btn save-status-btn" data-order-id="${esc(o.id)}">Update Status</button>
-
-          <!-- Payment save -->
-          <button class="btn save-payment-btn"
-            data-order-id="${esc(o.id)}"
-            data-payment-id="${esc(pid)}">💾 Save Payment</button>
-
-          <!-- Quotation -->
-          <button class="btn btn-secondary create-quotation-btn"
-            data-order-id="${esc(o.id)}">📄 Quotation</button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  }
-  attachOrderEvents();
-  renderOrdersPagination();
-}
-
-function attachOrderEvents() {
-  // Use event delegation approach: removeEventListener then re-add
-  const attach = (sel, evName, fn) => {
-    document.querySelectorAll(sel).forEach(el => {
-      el.removeEventListener(evName, fn);
-      el.addEventListener(evName, fn);
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.replace('/admin-login.html');
     });
-  };
-  attach(".save-status-btn",      "click", handleStatusUpdate);
-  attach(".save-payment-btn",     "click", handlePaymentSave);
-  attach(".remark-edit-btn",      "click", handleRemarkEdit);
-  attach(".create-quotation-btn", "click", handleOpenQuotationModal);
-}
 
-async function handleStatusUpdate(e) {
-  const btn     = e.currentTarget;
-  const orderId = btn.dataset.orderId;
-  const row     = btn.closest("tr");
-  const status  = row.querySelector(".status-select").value;
-  btn.disabled  = true;
-  try {
-    await updateOrderStatus(orderId, status);
-    showToast(`Status updated → ${status}`);
-    await reloadOrdersAndRender();
+    updateTabVisuals(0);
+    setupSearch();
+    setupOrderSearch();
+
   } catch (err) {
-    showToast(`Error: ${err.message}`, true);
-    btn.disabled = false;
+    console.error('Init error:', err);
+    if (!authChecked) window.location.replace('/admin-login.html');
   }
 }
 
-async function handlePaymentSave(e) {
-  const btn       = e.currentTarget;
-  const orderId   = btn.dataset.orderId;
-  const paymentId = btn.dataset.paymentId;   // may be ""  → validId() handles it
-  const row       = btn.closest("tr");
+/* ==========================================================
+   TAB VISUALS
+   ========================================================== */
+function updateTabVisuals(index) {
+  [0, 1, 2].forEach(i => {
+    const btn = document.getElementById(`tab-${i}`);
+    const pane = document.getElementById(`content-${i}`);
+    if (!btn || !pane) return;
 
-  const totalInput   = row.querySelector(".order-total-input");
-  const advanceInput = row.querySelector(".order-advance-input");
-  const total        = safeFloat(totalInput?.value);
-  const advance      = safeFloat(advanceInput?.value);
-
-  if (advance > total) {
-    showToast("Advance cannot exceed total amount", true);
-    return;
-  }
-
-  btn.disabled = true;
-  try {
-    await savePayment(orderId, total, advance, paymentId);
-    showToast("Payment saved ✓");
-    await reloadOrdersAndRender();
-  } catch (err) {
-    showToast(`Payment error: ${err.message}`, true);
-    btn.disabled = false;
-  }
-}
-
-async function handleRemarkEdit(e) {
-  const btn     = e.currentTarget;
-  const orderId = btn.dataset.orderId;
-  const current = btn.dataset.remark ?? "";
-  const updated = prompt("Edit remark:", current);
-  if (updated === null) return;   // cancelled
-  try {
-    await updateOrderRemark(orderId, updated.trim());
-    showToast("Remark saved");
-    await reloadOrdersAndRender();
-  } catch (err) {
-    showToast(err.message, true);
-  }
-}
-
-function handleOpenQuotationModal(e) {
-  openQuotationModal(e.currentTarget.dataset.orderId);
-}
-
-function renderOrdersPagination() {
-  const container = document.getElementById("orders-pagination");
-  if (!container) return;
-  const total = Math.ceil(filteredOrders.length / ordersPageSize) || 1;
-  container.innerHTML = `
-    <button id="orders-prev-btn" ${ordersPage <= 1 ? "disabled" : ""}>◀ Prev</button>
-    <span>Page ${ordersPage} of ${total} (${filteredOrders.length} orders)</span>
-    <button id="orders-next-btn" ${ordersPage >= total ? "disabled" : ""}>Next ▶</button>
-    <span style="margin-left:10px">Jump:
-      <input type="number" id="orders-goto-page" min="1" max="${total}" style="width:60px">
-    </span>
-  `;
-  document.getElementById("orders-prev-btn").addEventListener("click", () => {
-    if (ordersPage > 1) { ordersPage--; renderOrdersTable(); }
-  });
-  document.getElementById("orders-next-btn").addEventListener("click", () => {
-    if (ordersPage < total) { ordersPage++; renderOrdersTable(); }
-  });
-  document.getElementById("orders-goto-page").addEventListener("keypress", ev => {
-    if (ev.key === "Enter") {
-      const p = parseInt(ev.target.value);
-      if (p >= 1 && p <= total) { ordersPage = p; renderOrdersTable(); }
+    if (i === index) {
+      btn.classList.add('tab-active');
+      btn.classList.replace('border-transparent', 'border-indigo-600');
+      pane.classList.remove('hidden');
+    } else {
+      btn.classList.remove('tab-active');
+      btn.classList.replace('border-indigo-600', 'border-transparent');
+      pane.classList.add('hidden');
     }
   });
 }
 
-function exportOrdersCSV() {
-  downloadCSV(filteredOrders.map(o => ({
-    "Order ID":          o.order_id,
-    "Date":              o.order_date ? new Date(o.order_date).toLocaleDateString("en-IN") : "",
-    "Customer":          o.customer_name,
-    "City":              o.city,
-    "Delivery Address":  o.delivery_address,
-    "Status":            o.status,
-    "Total (₹)":         o.total_amount,
-    "Advance (₹)":       o.advance_paid,
-    "Due (₹)":           o.due,
-    "Remark":            o.remark,
-  })), "shop2bhutan_orders.csv");
+/* ==========================================================
+   TAB SWITCHING
+   ========================================================== */
+function switchTab(index) {
+  if (!authChecked) return;
+  updateTabVisuals(index);
+  if (index === 0 && !reviewsLoaded) loadReviews();
+  if (index === 1 && !ordersLoaded) loadOrders();
+}
+window.switchTab = switchTab;
+
+/* ==========================================================
+   REVIEWS
+   ========================================================== */
+async function loadReviews() {
+  const loader = document.getElementById('reviews-loader');
+  const empty = document.getElementById('reviews-empty');
+  const wrap = document.getElementById('reviews-table-wrap');
+  const tbody = document.getElementById('reviews-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('id, full_name, city, rating, message, is_approved, order_id, is_verified_buyer, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allReviews = data || [];
+    reviewsLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allReviews.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    renderReviews(allReviews);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load reviews failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load reviews'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load reviews', 'error');
+  }
+}
+window.loadReviews = loadReviews;
+
+function refreshReviews() {
+  reviewsLoaded = false;
+  loadReviews();
+}
+window.refreshReviews = refreshReviews;
+
+function renderReviews(reviews) {
+  const tbody = document.getElementById('reviews-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = reviews.map(r => {
+    const name = r.full_name || 'Anonymous';
+    const city = r.city || '';
+    const orderId = r.order_id ? String(r.order_id).slice(0, 12) : '-';
+    const message = r.message || '';
+    const rating = Math.max(0, Math.min(5, parseInt(r.rating) || 0));
+    const isApproved = r.is_approved === true;
+    const isVerified = r.is_verified_buyer === true;
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+    const stars = Array(5).fill(0).map((_, i) =>
+      `<i class="fas fa-star ${i < rating ? 'text-yellow-400' : 'text-gray-200'} text-[10px]"></i>`
+    ).join('');
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-sm flex-shrink-0">
+              ${name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div class="font-semibold text-gray-900 text-sm">${esc(name)}</div>
+              ${city ? `<div class="text-xs text-gray-400">${esc(city)}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">${esc(orderId)}</code></td>
+        <td class="px-6 py-4"><div class="flex items-center gap-1">${stars}<span class="text-xs text-gray-400 ml-1 font-semibold">${rating}</span></div></td>
+        <td class="px-6 py-4 max-w-xs"><p class="text-gray-600 text-sm leading-relaxed line-clamp-2" title="${esc(message)}">${esc(message) || '-'}</p></td>
+        <td class="px-6 py-4">${isVerified ? `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wide"><i class="fas fa-check-circle text-[9px]"></i> Verified</span>` : `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 uppercase tracking-wide">Guest</span>`}</td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isApproved ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}"><span class="w-1.5 h-1.5 rounded-full ${isApproved ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${isApproved ? 'Approved' : 'Pending'}</span></td>
+        <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button onclick="window.toggleApproval('${r.id}', ${isApproved})" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isApproved ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-100' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100'}" title="${isApproved ? 'Unapprove' : 'Approve'}"><i class="fas ${isApproved ? 'fa-times-circle' : 'fa-check-circle'}"></i>${isApproved ? 'Unapprove' : 'Approve'}</button>
+            <button onclick="window.showDeleteModal('${r.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
 }
 
+async function toggleApproval(id, currentState) {
+  const newState = !currentState;
+  try {
+    const { error } = await supabase.from('reviews').update({ is_approved: newState }).eq('id', id);
+    if (error) throw error;
+    showToast(newState ? 'Review approved' : 'Review unapproved', 'success');
+    refreshReviews();
+  } catch (err) {
+    console.error('Toggle failed:', err);
+    showToast('Failed to update status', 'error');
+  }
+}
+window.toggleApproval = toggleApproval;
 
-// ── Quotation Modal ──────────────────────────────────────────────────────────
+/* ==========================================================
+   DELETE REVIEW
+   ========================================================== */
+function showDeleteModal(id) {
+  deleteTargetId = id;
+  const modal = document.getElementById('delete-modal');
+  const content = document.getElementById('delete-modal-content');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.showDeleteModal = showDeleteModal;
 
-let _quotationOrderId = null;
+function closeAllModals() {
+  document.querySelectorAll('.modal').forEach(modal => {
+    const content = modal.querySelector('div[id$="-content"]');
+    modal.classList.remove('opacity-100');
+    content?.classList.remove('scale-100');
+    content?.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 200);
+  });
+}
+window.closeAllModals = closeAllModals;
 
-function openQuotationModal(orderId) {
-  _quotationOrderId = orderId;
-  document.getElementById("modal-order-id-display").textContent = orderId;
-  ["modal-product-price","modal-shipping-fee","modal-service-fee","modal-delivery-fee"]
-    .forEach(id => { document.getElementById(id).value = ""; });
-  updateModalTotal();
-  document.getElementById("quotationModal").classList.add("open");
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+  const btn = document.getElementById('confirm-delete-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
+  try {
+    const { error } = await supabase.from('reviews').delete().eq('id', deleteTargetId);
+    if (error) throw error;
+    closeAllModals();
+    showToast('Review deleted', 'success');
+    refreshReviews();
+  } catch (err) {
+    console.error('Delete failed:', err);
+    showToast('Failed to delete review', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Delete'; }
+    deleteTargetId = null;
+  }
 }
 
-function closeQuotationModal() {
-  _quotationOrderId = null;
-  document.getElementById("quotationModal").classList.remove("open");
+/* ==========================================================
+   ORDERS & QUOTATIONS
+   ========================================================== */
+function switchOrderSubTab(tab) {
+  currentOrderSubTab = tab;
+  ['orders', 'quotations'].forEach(t => {
+    const btn = document.getElementById(`subtab-${t}`);
+    const panel = document.getElementById(`panel-${t}`);
+    if (!btn || !panel) return;
+    if (t === tab) {
+      btn.classList.add('subtab-active', 'border-indigo-600', 'text-indigo-700');
+      btn.classList.remove('border-transparent', 'text-gray-500');
+      panel.classList.remove('hidden');
+    } else {
+      btn.classList.remove('subtab-active', 'border-indigo-600', 'text-indigo-700');
+      btn.classList.add('border-transparent', 'text-gray-500');
+      panel.classList.add('hidden');
+    }
+  });
+  if (tab === 'orders' && !ordersLoaded) loadOrders();
+  if (tab === 'quotations' && !quotationsLoaded) loadQuotations();
+}
+window.switchOrderSubTab = switchOrderSubTab;
+
+async function loadOrders() {
+  const loader = document.getElementById('orders-loader');
+  const empty = document.getElementById('orders-empty');
+  const wrap = document.getElementById('orders-table-wrap');
+  const tbody = document.getElementById('orders-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, screenshot_url, order_status, total_amount, payment_method, created_at, users(full_name, whatsapp, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allOrders = data || [];
+    ordersLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allOrders.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    renderOrders(allOrders);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load orders failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load orders'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load orders', 'error');
+  }
+}
+window.loadOrders = loadOrders;
+
+function refreshOrders() {
+  ordersLoaded = false;
+  loadOrders();
+}
+window.refreshOrders = refreshOrders;
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('orders-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = orders.map(o => {
+    const user = o.users || {};
+    const name = user.full_name || '—';
+    const phone = user.whatsapp || '—';
+    const city = o.delivery_city || '—';
+    const productCount = (o.product_links || []).length;
+    const status = o.order_status || 'pending';
+    const hasQuote = allQuotations.some(q => q.order_id === o.id);
+
+    const statusColors = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-100',
+      quoted: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+      confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
+      ordered: 'bg-sky-50 text-sky-700 border-sky-100',
+      shipped: 'bg-purple-50 text-purple-700 border-purple-100',
+      delivered: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      cancelled: 'bg-red-50 text-red-700 border-red-100'
+    };
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-semibold">${esc(o.order_id || '—')}</code></td>
+        <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div><div class="text-xs text-gray-400 mt-0.5">+975 ${esc(phone)}</div></td>
+        <td class="px-6 py-4 text-sm text-gray-700">${esc(city)}</td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium"><i class="fas fa-box text-[10px]"></i> ${productCount} item${productCount !== 1 ? 's' : ''}</span></td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="text-xs text-gray-500">${esc(o.payment_method || '—')}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button onclick="window.openQuoteModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasQuote ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100' : 'text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-600'}" title="${hasQuote ? 'Edit Quotation' : 'Create Quotation'}"><i class="fas ${hasQuote ? 'fa-pen' : 'fa-plus'}"></i> ${hasQuote ? 'Edit Quote' : 'Quote'}</button>
+            <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
 }
 
-function updateModalTotal() {
-  const pp = safeFloat(document.getElementById("modal-product-price")?.value);
-  const sf = safeFloat(document.getElementById("modal-shipping-fee")?.value);
-  const sv = safeFloat(document.getElementById("modal-service-fee")?.value);
-  const df = safeFloat(document.getElementById("modal-delivery-fee")?.value);
-  const total = pp + sf + sv + df;
-  const display = document.getElementById("modal-total-display");
-  if (display) display.textContent = `Total: ₹${total.toFixed(2)}`;
+function setupOrderSearch() {
+  const input = document.getElementById('order-search');
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) { renderOrders(allOrders); return; }
+    const filtered = allOrders.filter(o => {
+      const u = o.users || {};
+      return [o.order_id, u.full_name, u.whatsapp, o.delivery_city, o.order_status].join(' ').toLowerCase().includes(term);
+    });
+    renderOrders(filtered);
+  });
 }
 
-async function handleSaveQuotation() {
-  if (!_quotationOrderId) return;
+/* ==========================================================
+   QUOTATION MODAL
+   ========================================================== */
+function openQuoteModal(orderUuid, orderTextId) {
+  const order = allOrders.find(o => o.id === orderUuid);
+  if (!order) return;
 
-  const productPrice = safeFloat(document.getElementById("modal-product-price").value);
-  const shippingFee  = safeFloat(document.getElementById("modal-shipping-fee").value);
-  const serviceFee   = safeFloat(document.getElementById("modal-service-fee").value);
-  const deliveryFee  = safeFloat(document.getElementById("modal-delivery-fee").value);
+  document.getElementById('quote-order-id').value = orderUuid;
+  document.getElementById('quote-order-text-id').value = orderTextId || '';
+  document.getElementById('quote-modal-subtitle').textContent = `Order: ${orderTextId || orderUuid.slice(0, 8)}`;
+
+  const cityFees = { Thimphu: 350, Phuntsholing: 150, Paro: 400 };
+  const deliveryFee = cityFees[order.delivery_city] || 0;
+  document.getElementById('quote-delivery').value = deliveryFee;
+
+  const existing = allQuotations.find(q => q.order_id === orderUuid);
+  if (existing) {
+    document.getElementById('quote-product-price').value = existing.product_price || '';
+    document.getElementById('quote-shipping').value = existing.shipping_fee || '';
+    document.getElementById('quote-service').value = existing.service_fee || '';
+    document.getElementById('quote-delivery').value = existing.delivery_fee || '';
+    document.getElementById('quote-note').value = existing.note || '';
+    document.getElementById('save-quote-btn').textContent = 'Update Quotation';
+  } else {
+    document.getElementById('quote-product-price').value = '';
+    document.getElementById('quote-shipping').value = '';
+    document.getElementById('quote-service').value = '';
+    document.getElementById('quote-note').value = '';
+    document.getElementById('save-quote-btn').textContent = 'Send Quotation';
+  }
+
+  autoCalculateServiceFee();
+  updateQuoteTotal();
+
+  const modal = document.getElementById('quote-modal');
+  const content = document.getElementById('quote-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.openQuoteModal = openQuoteModal;
+
+function closeQuoteModal() {
+  const modal = document.getElementById('quote-modal');
+  const content = document.getElementById('quote-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => modal.classList.add('hidden'), 200);
+}
+window.closeQuoteModal = closeQuoteModal;
+
+// Auto-calculate service fee and total
+['quote-product-price', 'quote-shipping', 'quote-delivery'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    autoCalculateServiceFee();
+    updateQuoteTotal();
+  });
+});
+
+// Service fee can also be manually overridden
+document.getElementById('quote-service')?.addEventListener('input', updateQuoteTotal);
+
+function autoCalculateServiceFee() {
+  const productPrice = parseFloat(document.getElementById('quote-product-price')?.value) || 0;
+  const rate = productPrice < 2000 ? 0.15 : productPrice <= 5999 ? 0.10 : 0.08;
+  const serviceFee = Math.round(productPrice * rate);
+  document.getElementById('quote-service').value = serviceFee;
+}
+
+function updateQuoteTotal() {
+  const product = parseFloat(document.getElementById('quote-product-price')?.value) || 0;
+  const shipping = parseFloat(document.getElementById('quote-shipping')?.value) || 0;
+  const service = parseFloat(document.getElementById('quote-service')?.value) || 0;
+  const delivery = parseFloat(document.getElementById('quote-delivery')?.value) || 0;
+  document.getElementById('quote-total-display').textContent = '₹ ' + (product + shipping + service + delivery).toLocaleString('en-IN');
+}
+
+async function saveQuotation() {
+  const orderUuid = document.getElementById('quote-order-id').value;
+  const productPrice = parseFloat(document.getElementById('quote-product-price').value) || 0;
+  const shipping = parseFloat(document.getElementById('quote-shipping').value) || 0;
+  const service = parseFloat(document.getElementById('quote-service').value) || 0;
+  const delivery = parseFloat(document.getElementById('quote-delivery').value) || 0;
+  const note = document.getElementById('quote-note').value.trim();
+  const total = Math.round(productPrice + shipping + service + delivery);
 
   if (productPrice <= 0) {
-    showToast("Product price must be greater than 0", true);
+    showToast('Product price is required', 'error');
     return;
   }
 
-  const saveBtn = document.getElementById("modal-save-quotation-btn");
-  saveBtn.disabled = true;
-  saveBtn.textContent = "Saving…";
+  const btn = document.getElementById('save-quote-btn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Saving...';
 
   try {
-    await insertQuotation({
-      orderId: _quotationOrderId,
-      productPrice,
-      shippingFee,
-      serviceFee,
-      deliveryFee,
-    });
-    showToast("Quotation created ✓");
-    closeQuotationModal();
-    // Refresh both tabs so data is current
-    await reloadOrdersAndRender();
-    await reloadQuotationsAndRender();
+    const { data: existing } = await supabase.from('quotations').select('id').eq('order_id', orderUuid).maybeSingle();
+
+    const payload = {
+      order_id: orderUuid,
+      product_price: Math.round(productPrice),
+      shipping_fee: Math.round(shipping),
+      service_fee: Math.round(service),
+      delivery_fee: Math.round(delivery),
+      total_amount: total,  // ← now works as regular column
+      status: 'pending',
+      note: note || null,
+      updated_at: new Date().toISOString()
+    };
+
+    let error;
+    if (existing) {
+      ({ error } = await supabase.from('quotations').update(payload).eq('id', existing.id));
+    } else {
+      payload.created_at = new Date().toISOString();
+      ({ error } = await supabase.from('quotations').insert([payload]));
+    }
+    if (error) throw error;
+
+    await supabase.from('orders').update({ order_status: 'quoted' }).eq('id', orderUuid);
+
+    const orderTextId = document.getElementById('quote-order-text-id').value;
+    await supabase.from('payments').update({
+      product_price: Math.round(productPrice),
+      shipping_fee: Math.round(shipping),
+      service_fee: Math.round(service),
+      delivery_fee: Math.round(delivery),
+      total_amount: total,
+      updated_at: new Date().toISOString()
+    }).eq('order_id', orderTextId);
+
+    closeQuoteModal();
+    showToast('Quotation saved successfully', 'success');
+    refreshOrders();
+    refreshQuotations();
   } catch (err) {
-    showToast(`Quotation error: ${err.message}`, true);
+    console.error('Save quotation failed:', err);
+    showToast('Failed to save quotation: ' + err.message, 'error');
   } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = "Save Quotation";
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
+window.saveQuotation = saveQuotation;
 
-
-// ── Quotations section ───────────────────────────────────────────────────────
-
-let allQuotations     = [];
-let quotationsPage    = 1;
-const QUOT_PAGE_SIZE  = 10;
-
-async function reloadQuotationsAndRender() {
-  const tbody = document.getElementById("quotations-body");
-  if (tbody) tbody.innerHTML =
-    `<tr><td colspan="9" style="text-align:center"><span class="loading-spinner"></span> Loading…</td></tr>`;
-  try {
-    allQuotations  = await fetchQuotations();
-    quotationsPage = 1;
-    renderQuotationsTable();
-  } catch (err) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="9">⚠️ ${esc(err.message)}</td></tr>`;
-    showToast(err.message, true);
-  }
-}
-
-function renderQuotationsTable() {
-  const tbody = document.getElementById("quotations-body");
+/* ==========================================================
+   QUOTATIONS LIST
+   ========================================================== */
+async function loadQuotations() {
+  const loader = document.getElementById('quotations-loader');
+  const empty = document.getElementById('quotations-empty');
+  const wrap = document.getElementById('quotations-table-wrap');
+  const tbody = document.getElementById('quotations-tbody');
   if (!tbody) return;
 
-  const start    = (quotationsPage - 1) * QUOT_PAGE_SIZE;
-  const pageData = allQuotations.slice(start, start + QUOT_PAGE_SIZE);
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
 
-  if (!pageData.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center">📭 No quotations yet</td></tr>`;
-    renderQuotationsPagination();
-    return;
-  }
-
-  tbody.innerHTML = "";
-  for (const q of pageData) {
-    const total = safeFloat(q.total_amount) ||
-      (safeFloat(q.product_price) + safeFloat(q.shipping_fee) +
-       safeFloat(q.service_fee)   + safeFloat(q.delivery_fee));
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${esc(q.id)}</td>
-      <td>${esc(q.order_id)}</td>
-      <td>₹${safeFloat(q.product_price).toFixed(2)}</td>
-      <td>₹${safeFloat(q.shipping_fee).toFixed(2)}</td>
-      <td>₹${safeFloat(q.service_fee).toFixed(2)}</td>
-      <td>₹${safeFloat(q.delivery_fee).toFixed(2)}</td>
-      <td><strong>₹${total.toFixed(2)}</strong></td>
-      <td><span class="status-badge">${esc(q.status ?? "—")}</span></td>
-      <td>${q.created_at ? new Date(q.created_at).toLocaleDateString("en-IN") : "—"}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-  renderQuotationsPagination();
-}
-
-function renderQuotationsPagination() {
-  const container = document.getElementById("quotations-pagination");
-  if (!container) return;
-  const total = Math.ceil(allQuotations.length / QUOT_PAGE_SIZE) || 1;
-  container.innerHTML = `
-    <button id="quot-prev-btn" ${quotationsPage <= 1 ? "disabled" : ""}>◀ Prev</button>
-    <span>Page ${quotationsPage} of ${total} (${allQuotations.length} quotations)</span>
-    <button id="quot-next-btn" ${quotationsPage >= total ? "disabled" : ""}>Next ▶</button>
-  `;
-  document.getElementById("quot-prev-btn").addEventListener("click", () => {
-    if (quotationsPage > 1) { quotationsPage--; renderQuotationsTable(); }
-  });
-  document.getElementById("quot-next-btn").addEventListener("click", () => {
-    if (quotationsPage < total) { quotationsPage++; renderQuotationsTable(); }
-  });
-}
-
-function exportQuotationsCSV() {
-  if (!allQuotations.length) { showToast("No data to export", true); return; }
-  downloadCSV(allQuotations.map(q => ({
-    "Quotation ID":    q.id,
-    "Order ID":        q.order_id,
-    "Product Price":   q.product_price,
-    "Shipping Fee":    q.shipping_fee,
-    "Service Fee":     q.service_fee,
-    "Delivery Fee":    q.delivery_fee,
-    "Total Amount":    q.total_amount,
-    "Status":          q.status,
-    "Created At":      q.created_at,
-  })), "shop2bhutan_quotations.csv");
-}
-
-
-// ── Reviews section ──────────────────────────────────────────────────────────
-
-let allReviews        = [];
-let reviewsFiltered   = [];
-let reviewsPage       = 1;
-let reviewsPageSize   = 12;
-
-async function reloadReviewsAndRender() {
   try {
-    allReviews = await fetchReviews();
-    applyReviewFilterAndRender();
+    const { data, error } = await supabase
+      .from('quotations')
+      .select('*, orders!inner(id, order_id, users(full_name))')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allQuotations = data || [];
+    quotationsLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allQuotations.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    renderQuotations(allQuotations);
+    wrap?.classList.remove('hidden');
   } catch (err) {
-    document.getElementById("reviews-container").innerHTML =
-      `<p style="color:red">⚠️ ${esc(err.message)}</p>`;
-    showToast(err.message, true);
+    console.error('Load quotations failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load quotations'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load quotations', 'error');
   }
 }
+window.loadQuotations = loadQuotations;
 
-// Local filter — no DB call on each keystroke
-function applyReviewFilterAndRender() {
-  const search = (document.getElementById("review-search")?.value ?? "").toLowerCase().trim();
-  const filter = document.getElementById("review-filter")?.value ?? "all";
+function refreshQuotations() {
+  quotationsLoaded = false;
+  loadQuotations();
+}
+window.refreshQuotations = refreshQuotations;
 
-  reviewsFiltered = allReviews.filter(r => {
-    const nameMatch = !search || (r.full_name ?? "").toLowerCase().includes(search);
-    const statusMatch =
-      filter === "approved" ? r.is_approved === true :
-      filter === "pending"  ? !r.is_approved :
-      true;
-    return nameMatch && statusMatch;
-  });
-  reviewsPage = 1;
-  renderReviewsGrid();
+function renderQuotations(quotes) {
+  const tbody = document.getElementById('quotations-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = quotes.map(q => {
+    const order = q.orders || {};
+    const user = order.users || {};
+    const name = user.full_name || '—';
+    const status = q.status || 'pending';
+    const date = q.created_at ? new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+
+    const statusColors = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-100',
+      accepted: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      rejected: 'bg-red-50 text-red-700 border-red-100'
+    };
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-semibold">${esc(order.order_id || '—')}</code></td>
+        <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div></td>
+        <td class="px-6 py-4 text-sm text-gray-700">₹${Math.round(q.product_price || 0).toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4 text-sm font-semibold text-gray-900">₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
+        <td class="px-6 py-4 text-right"><button onclick="window.openQuoteModal('${q.order_id}', '${esc(order.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors ml-auto" title="Edit Quotation"><i class="fas fa-pen text-xs"></i></button></td>
+      </tr>`;
+  }).join('');
 }
 
-function renderReviewsGrid() {
-  const container = document.getElementById("reviews-container");
+function viewOrderDetails(orderId) {
+  showToast('Order detail view coming soon. ID: ' + orderId.slice(0, 8), 'info');
+}
+window.viewOrderDetails = viewOrderDetails;
+
+/* ==========================================================
+   UTILITIES
+   ========================================================== */
+function esc(text) {
+  if (!text) return '';
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
   if (!container) return;
-
-  const start    = (reviewsPage - 1) * reviewsPageSize;
-  const pageData = reviewsFiltered.slice(start, start + reviewsPageSize);
-
-  if (!pageData.length) {
-    container.innerHTML = "<p>✨ No reviews found.</p>";
-    renderReviewsPagination();
-    return;
-  }
-
-  container.innerHTML = "";
-  for (const r of pageData) {
-    const card = document.createElement("div");
-    card.className = "review-card";
-    card.innerHTML = `
-      <h3>${esc(r.full_name || "Anonymous")}</h3>
-      <div class="review-meta">
-        📅 ${r.created_at ? new Date(r.created_at).toLocaleDateString() : "—"}
-        &nbsp;•&nbsp; ⭐ ${r.rating ?? "?"}/5
-      </div>
-      <p>${esc(r.message ?? r.comment ?? "")}</p>
-      <div class="review-actions">
-        <button class="approve-btn ${r.is_approved ? "approved" : "pending"}"
-          data-review-id="${esc(r.id)}"
-          data-approved="${!!r.is_approved}">
-          ${r.is_approved ? "✅ Approved" : "⏳ Approve"}
-        </button>
-        <button class="delete-btn" data-review-id="${esc(r.id)}">🗑️ Delete</button>
-      </div>
-    `;
-    container.appendChild(card);
-  }
-  attachReviewEvents();
-  renderReviewsPagination();
+  const cfg = {
+    success: { bg: 'bg-emerald-600', icon: 'fa-check-circle' },
+    error: { bg: 'bg-red-600', icon: 'fa-exclamation-circle' },
+    info: { bg: 'bg-gray-800', icon: 'fa-info-circle' }
+  };
+  const { bg, icon } = cfg[type] || cfg.info;
+  const toast = document.createElement('div');
+  toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-sm font-medium pointer-events-auto transform translate-y-4 opacity-0 transition-all duration-300 min-w-[280px]`;
+  toast.innerHTML = `<i class="fas ${icon} text-white/90"></i><span class="flex-1">${message}</span>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.remove('translate-y-4', 'opacity-0'));
+  setTimeout(() => {
+    toast.classList.add('translate-y-4', 'opacity-0');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
 }
 
-function attachReviewEvents() {
-  document.querySelectorAll(".approve-btn").forEach(btn => {
-    btn.removeEventListener("click", handleApprove);
-    btn.addEventListener("click", handleApprove);
-  });
-  document.querySelectorAll(".delete-btn").forEach(btn => {
-    btn.removeEventListener("click", handleDelete);
-    btn.addEventListener("click", handleDelete);
-  });
-}
-
-async function handleApprove(e) {
-  const btn     = e.currentTarget;
-  const id      = btn.dataset.reviewId;
-  const current = btn.dataset.approved === "true";
-  btn.disabled  = true;
-  const { error } = await supabase
-    .from("reviews")
-    .update({ is_approved: !current })
-    .eq("id", id);
-  if (error) { showToast("Update failed", true); btn.disabled = false; }
-  else { showToast("Review status updated"); await reloadReviewsAndRender(); }
-}
-
-async function handleDelete(e) {
-  if (!confirm("Delete this review permanently?")) return;
-  const btn = e.currentTarget;
-  const id  = btn.dataset.reviewId;
-  btn.disabled = true;
-  const { error } = await supabase.from("reviews").delete().eq("id", id);
-  if (error) { showToast("Delete failed", true); btn.disabled = false; }
-  else { showToast("Review deleted"); await reloadReviewsAndRender(); }
-}
-
-function renderReviewsPagination() {
-  const container = document.getElementById("reviews-pagination");
-  if (!container) return;
-  const total = Math.ceil(reviewsFiltered.length / reviewsPageSize) || 1;
-  container.innerHTML = `
-    <button id="reviews-prev-btn" ${reviewsPage <= 1 ? "disabled" : ""}>◀ Prev</button>
-    <span>Page ${reviewsPage} of ${total}</span>
-    <button id="reviews-next-btn" ${reviewsPage >= total ? "disabled" : ""}>Next ▶</button>
-  `;
-  document.getElementById("reviews-prev-btn").addEventListener("click", () => {
-    if (reviewsPage > 1) { reviewsPage--; renderReviewsGrid(); }
-  });
-  document.getElementById("reviews-next-btn").addEventListener("click", () => {
-    if (reviewsPage < total) { reviewsPage++; renderReviewsGrid(); }
-  });
-}
-
-// Export only what is currently filtered/visible
-function exportReviewsCSV() {
-  downloadCSV(reviewsFiltered.map(r => ({
-    "Name":     r.full_name,
-    "Rating":   r.rating,
-    "Message":  r.message ?? r.comment,
-    "Approved": r.is_approved ? "Yes" : "No",
-    "Created":  r.created_at,
-  })), "shop2bhutan_reviews.csv");
-}
-
-
-// ── CSV download ─────────────────────────────────────────────────────────────
-
-function downloadCSV(data, filename) {
-  if (!data.length) { showToast("No data to export", true); return; }
-  const headers = Object.keys(data[0]);
-  const rows    = [headers.join(",")];
-  for (const row of data) {
-    rows.push(headers.map(h => `"${String(row[h] ?? "").replace(/"/g, '""')}"`).join(","));
-  }
-  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-  const a    = document.createElement("a");
-  a.href     = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast(`Exported ${data.length} records`);
-}
-
-
-// ── Tab switching ─────────────────────────────────────────────────────────────
-
-function switchTab(tab) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(`${tab}-tab`).classList.add("active");
-  document.getElementById("orders-section").style.display     = tab === "orders"     ? "block" : "none";
-  document.getElementById("reviews-section").style.display    = tab === "reviews"    ? "block" : "none";
-  document.getElementById("quotations-section").style.display = tab === "quotations" ? "block" : "none";
-  if (tab === "orders")     reloadOrdersAndRender();
-  if (tab === "reviews")    reloadReviewsAndRender();
-  if (tab === "quotations") reloadQuotationsAndRender();
-}
-
-
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
-
-document.addEventListener("DOMContentLoaded", async () => {
-  // Detect order schema columns once before anything else
-  await detectOrderColumns();
-
-  // ── Tabs
-  document.getElementById("orders-tab")    .addEventListener("click", () => switchTab("orders"));
-  document.getElementById("reviews-tab")   .addEventListener("click", () => switchTab("reviews"));
-  document.getElementById("quotations-tab").addEventListener("click", () => switchTab("quotations"));
-
-  // ── Logout
-  document.getElementById("logout-btn").addEventListener("click", async () => {
-    if (!confirm("Logout?")) return;
-    await supabase.auth.signOut();
-    localStorage.removeItem("sb_admin_session");
-    window.location.href = "/admin-login.html";
-  });
-
-  // ── Orders controls
-  document.getElementById("order-search")
-    .addEventListener("input", () => applyOrderSearchAndRender());
-  document.getElementById("orders-refresh-btn")
-    .addEventListener("click", () => reloadOrdersAndRender());
-  document.getElementById("orders-page-size")
-    .addEventListener("change", e => {
-      ordersPageSize = parseInt(e.target.value);
-      ordersPage = 1;
-      renderOrdersTable();
-    });
-  document.getElementById("export-orders-btn")
-    .addEventListener("click", () => exportOrdersCSV());
-
-  // ── Reviews controls
-  document.getElementById("review-search")
-    .addEventListener("input", () => applyReviewFilterAndRender());
-  document.getElementById("review-filter")
-    .addEventListener("change", () => applyReviewFilterAndRender());
-  document.getElementById("reviews-refresh-btn")
-    .addEventListener("click", () => reloadReviewsAndRender());
-  document.getElementById("reviews-page-size")
-    .addEventListener("change", e => {
-      reviewsPageSize = parseInt(e.target.value);
-      reviewsPage = 1;
-      renderReviewsGrid();
-    });
-  document.getElementById("export-reviews-btn")
-    .addEventListener("click", () => exportReviewsCSV());
-
-  // ── Quotations controls
-  document.getElementById("refresh-quotations-btn")
-    .addEventListener("click", () => reloadQuotationsAndRender());
-  document.getElementById("export-quotations-btn")
-    .addEventListener("click", () => exportQuotationsCSV());
-
-  // ── Quotation modal
-  document.getElementById("modal-save-quotation-btn")
-    .addEventListener("click", () => handleSaveQuotation());
-  document.getElementById("modal-cancel-btn")
-    .addEventListener("click", () => closeQuotationModal());
-
-  // Live total preview as user types
-  ["modal-product-price","modal-shipping-fee","modal-service-fee","modal-delivery-fee"]
-    .forEach(id => document.getElementById(id).addEventListener("input", updateModalTotal));
-
-  // Close modal on backdrop click
-  document.getElementById("quotationModal").addEventListener("click", e => {
-    if (e.target === e.currentTarget) closeQuotationModal();
-  });
-
-  // ── Initial load (orders is the default visible tab)
-  reloadOrdersAndRender();
-  // Pre-load reviews in background so switching is instant
-  fetchReviews().then(data => { allReviews = data; }).catch(() => {});
+/* ==========================================================
+   EVENT WIRING
+   ========================================================== */
+document.getElementById('confirm-delete-btn')?.addEventListener('click', confirmDelete);
+document.getElementById('delete-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeAllModals();
 });
+document.getElementById('quote-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeQuoteModal();
+});
+
+/* ==========================================================
+   START
+   ========================================================== */
+init();
