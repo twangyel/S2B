@@ -13,6 +13,8 @@ let allOrders = [];
 let allQuotations = [];
 let ordersLoaded = false;
 let quotationsLoaded = false;
+let allPayments = [];
+let paymentsLoaded = false;
 let currentOrderSubTab = 'orders';
 let authChecked = false;
 
@@ -52,6 +54,21 @@ async function init() {
     updateTabVisuals(0);
     setupSearch();
     setupOrderSearch();
+
+    function setupPaymentSearch() {
+  const input = document.getElementById('payment-search');
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) { renderPayments(allPayments); return; }
+    const filtered = allPayments.filter(p => {
+      const o = p.orders || {};
+      const u = o.users || {};
+      return [o.order_id, u.full_name, u.whatsapp, p.payment_method, p.status].join(' ').toLowerCase().includes(term);
+    });
+    renderPayments(filtered);
+  });
+}
 
   } catch (err) {
     console.error('Init error:', err);
@@ -249,11 +266,11 @@ async function confirmDelete() {
 }
 
 /* ==========================================================
-   ORDERS & QUOTATIONS
+   ORDERS & QUOTATIONS & PAYMENTS
    ========================================================== */
 function switchOrderSubTab(tab) {
   currentOrderSubTab = tab;
-  ['orders', 'quotations'].forEach(t => {
+  ['orders', 'quotations', 'payments'].forEach(t => {
     const btn = document.getElementById(`subtab-${t}`);
     const panel = document.getElementById(`panel-${t}`);
     if (!btn || !panel) return;
@@ -269,6 +286,7 @@ function switchOrderSubTab(tab) {
   });
   if (tab === 'orders' && !ordersLoaded) loadOrders();
   if (tab === 'quotations' && !quotationsLoaded) loadQuotations();
+  if (tab === 'payments' && !paymentsLoaded) loadPayments();
 }
 window.switchOrderSubTab = switchOrderSubTab;
 
@@ -336,6 +354,9 @@ function renderOrders(orders) {
       quoted: 'bg-indigo-50 text-indigo-700 border-indigo-100',
       confirmed: 'bg-blue-50 text-blue-700 border-blue-100',
       ordered: 'bg-sky-50 text-sky-700 border-sky-100',
+      reached_jaigaon: 'bg-teal-50 text-teal-700 border-teal-100',
+      reached_phuntsholing: 'bg-cyan-50 text-cyan-700 border-cyan-100',
+      out_for_delivery: 'bg-violet-50 text-violet-700 border-violet-100',
       shipped: 'bg-purple-50 text-purple-700 border-purple-100',
       delivered: 'bg-emerald-50 text-emerald-700 border-emerald-100',
       cancelled: 'bg-red-50 text-red-700 border-red-100'
@@ -348,10 +369,11 @@ function renderOrders(orders) {
         <td class="px-6 py-4 text-sm text-gray-700">${esc(city)}</td>
         <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium"><i class="fas fa-box text-[10px]"></i> ${productCount} item${productCount !== 1 ? 's' : ''}</span></td>
         <td class="px-6 py-4 text-sm text-gray-700"><span class="text-xs text-gray-500">${esc(o.payment_method || '—')}</span></td>
-        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')}</span></td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
             <button onclick="window.openQuoteModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasQuote ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100' : 'text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-600'}" title="${hasQuote ? 'Edit Quotation' : 'Create Quotation'}"><i class="fas ${hasQuote ? 'fa-pen' : 'fa-plus'}"></i> ${hasQuote ? 'Edit Quote' : 'Quote'}</button>
+            <button onclick="window.openTrackingModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Update Tracking"><i class="fas fa-truck-fast text-xs"></i></button>
             <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
           </div>
         </td>
@@ -602,6 +624,146 @@ function renderQuotations(quotes) {
   }).join('');
 }
 
+/* ==========================================================
+   PAYMENTS
+   ========================================================== */
+async function loadPayments() {
+  const loader = document.getElementById('payments-loader');
+  const empty = document.getElementById('payments-empty');
+  const wrap = document.getElementById('payments-table-wrap');
+  const tbody = document.getElementById('payments-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*, orders!inner(id, order_id, users(full_name, whatsapp))')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allPayments = data || [];
+    paymentsLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allPayments.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    renderPayments(allPayments);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load payments failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load payments'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load payments', 'error');
+  }
+}
+window.loadPayments = loadPayments;
+
+function refreshPayments() {
+  paymentsLoaded = false;
+  loadPayments();
+}
+window.refreshPayments = refreshPayments;
+
+function renderPayments(payments) {
+  const tbody = document.getElementById('payments-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = payments.map(p => {
+    const order = p.orders || {};
+    const user = order.users || {};
+    const name = user.full_name || '—';
+    const phone = user.whatsapp || '';
+    const status = p.status || 'pending';
+    const date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
+    const statusColors = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-100',
+      verified: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      refunded: 'bg-gray-50 text-gray-600 border-gray-200'
+    };
+
+    const isPending = status === 'pending';
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-semibold">${esc(order.order_id || '—')}</code></td>
+        <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div><div class="text-xs text-gray-400 mt-0.5">+975 ${esc(phone || '—')}</div></td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">${esc(p.payment_method || '—')}</span></td>
+        <td class="px-6 py-4 text-sm font-semibold text-gray-900">₹${Math.round(p.total_amount || 0).toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            ${isPending ? `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Payment"><i class="fas fa-check"></i> Verify</button>` : `<span class="text-xs text-gray-400 font-medium">Verified</span>`}
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
+  if (!confirm('Verify this payment and mark the order as "Ordered"?')) return;
+
+  const btn = document.querySelector(`button[onclick="window.verifyPayment('${paymentId}', '${orderUuid}', '${esc(orderTextId)}', '${esc(customerPhone)}')"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...'; }
+
+  try {
+    // 1. Update payment status
+    const { error: pErr } = await supabase
+      .from('payments')
+      .update({ status: 'verified', updated_at: new Date().toISOString() })
+      .eq('id', paymentId);
+
+    if (pErr) throw pErr;
+
+    // 2. Update order status
+    const { error: oErr } = await supabase
+      .from('orders')
+      .update({ order_status: 'ordered', updated_at: new Date().toISOString() })
+      .eq('id', orderUuid);
+
+    if (oErr) throw oErr;
+
+    // 3. Create first tracking event
+    const { error: tErr } = await supabase
+      .from('tracking_events')
+      .insert([{
+        order_id: orderUuid,
+        status: 'ordered',
+        location: null,
+        note: 'Payment verified by admin. Order placed with seller.',
+        created_at: new Date().toISOString()
+      }]);
+
+    if (tErr) throw tErr;
+
+    showToast('Payment verified. Order marked as "Ordered".', 'success');
+    refreshPayments();
+    refreshOrders();
+
+    // 4. WhatsApp notification
+    if (customerPhone) {
+      const msg = `Hello,\n\nYour payment for Order *${orderTextId}* has been verified ✅.\n\nYour order has now been placed with the seller. Track live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
+      window.open('https://wa.me/975' + customerPhone + '?text=' + encodeURIComponent(msg), '_blank');
+    }
+
+  } catch (err) {
+    console.error('Verify payment failed:', err);
+    showToast('Failed to verify payment: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Verify'; }
+  }
+}
+window.verifyPayment = verifyPayment;
+
 function viewOrderDetails(orderId) {
   showToast('Order detail view coming soon. ID: ' + orderId.slice(0, 8), 'info');
 }
@@ -616,6 +778,97 @@ function esc(text) {
   d.textContent = text;
   return d.innerHTML;
 }
+
+/* ==========================================================
+   TRACKING MODAL
+   ========================================================== */
+function openTrackingModal(orderUuid, orderTextId) {
+  const order = allOrders.find(o => o.id === orderUuid);
+  if (!order) return;
+
+  document.getElementById('tracking-order-id').value = orderUuid;
+  document.getElementById('tracking-order-text-id').value = orderTextId || '';
+  document.getElementById('tracking-modal-subtitle').textContent = `Order: ${orderTextId || orderUuid.slice(0, 8)}`;
+  
+  // Pre-select current status
+  document.getElementById('tracking-status').value = order.order_status || 'pending';
+  document.getElementById('tracking-location').value = '';
+  document.getElementById('tracking-note').value = '';
+
+  const modal = document.getElementById('tracking-modal');
+  const content = document.getElementById('tracking-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.openTrackingModal = openTrackingModal;
+
+function closeTrackingModal() {
+  const modal = document.getElementById('tracking-modal');
+  const content = document.getElementById('tracking-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => modal.classList.add('hidden'), 200);
+}
+window.closeTrackingModal = closeTrackingModal;
+
+async function saveTracking() {
+  const orderUuid = document.getElementById('tracking-order-id').value;
+  const orderTextId = document.getElementById('tracking-order-text-id').value;
+  const status = document.getElementById('tracking-status').value;
+  const location = document.getElementById('tracking-location').value.trim();
+  const note = document.getElementById('tracking-note').value.trim();
+
+  if (!status) {
+    showToast('Please select a status', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('save-tracking-btn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Updating...';
+
+  try {
+    // Insert tracking event
+    const { error: trackError } = await supabase.from('tracking_events').insert([{
+      order_id: orderUuid,
+      status: status,
+      location: location || null,
+      note: note || null,
+      created_at: new Date().toISOString()
+    }]);
+
+    if (trackError) throw trackError;
+
+    // Update order status
+    const { error: orderError } = await supabase.from('orders').update({
+      order_status: status,
+      updated_at: new Date().toISOString()
+    }).eq('id', orderUuid);
+
+    if (orderError) throw orderError;
+
+    closeTrackingModal();
+    showToast('Tracking updated successfully', 'success');
+    refreshOrders();
+
+    // If on quotations tab, refresh that too
+    if (currentOrderSubTab === 'quotations') refreshQuotations();
+
+  } catch (err) {
+    console.error('Save tracking failed:', err);
+    showToast('Failed to update tracking: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+window.saveTracking = saveTracking;
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -652,3 +905,6 @@ document.getElementById('quote-modal')?.addEventListener('click', (e) => {
    START
    ========================================================== */
 init();
+    setupSearch();
+    setupOrderSearch();
+    setupPaymentSearch();

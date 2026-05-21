@@ -68,7 +68,28 @@
           </div>
           <span id="res-order-status" class="px-3 py-1 rounded-full text-xs font-bold border">—</span>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="text-gray-400 text-xs mb-0.5">Customer</div>
+              <div class="font-semibold text-gray-900" id="res-name">—</div>
+            </div>
+            <div>
+              <div class="text-gray-400 text-xs mb-0.5">WhatsApp</div>
+              <div class="font-medium text-gray-700" id="res-phone">—</div>
+            </div>
+            <div>
+              <div class="text-gray-400 text-xs mb-0.5">City</div>
+              <div class="font-medium text-gray-700" id="res-city">—</div>
+            </div>
+            <div>
+              <div class="text-gray-400 text-xs mb-0.5">Payment Method</div>
+              <div class="font-medium text-gray-700" id="res-payment">—</div>
+            </div>
+            <div id="res-payment-status-wrap" class="hidden col-span-2">
+              <div class="text-gray-400 text-xs mb-0.5">Payment Status</div>
+              <div class="font-medium" id="res-payment-status">—</div>
+            </div>
+          </div>
           <div>
             <div class="text-gray-400 text-xs mb-0.5">Customer</div>
             <div class="font-semibold text-gray-900" id="res-name">—</div>
@@ -171,219 +192,268 @@
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none"></div>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(
-      "https://deecrnfbvgbzyybqhywy.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
-    );
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient(
+    "https://deecrnfbvgbzyybqhywy.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+  );
 
-    let currentOrder = null;
-    let currentQuote = null;
+  let currentOrder = null;
+  let currentQuote = null;
 
-    async function trackOrder() {
-      const input = document.getElementById('track-input');
-      const orderTextId = input.value.trim().toUpperCase();
-      const errorEl = document.getElementById('track-error');
-      const results = document.getElementById('track-results');
+  /* ==========================================================
+     STATUS CONFIG  <-- CHANGED
+     ========================================================== */
+  const statusConfig = {
+    pending:    { label: 'Pending',    color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    quoted:     { label: 'Quoted',     color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    confirmed:  { label: 'Confirmed',  color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    ordered:    { label: 'Ordered',    color: 'bg-sky-50 text-sky-700 border-sky-200' },
+    reached_jaigaon:      { label: 'Reached Jaigaon',      color: 'bg-teal-50 text-teal-700 border-teal-200' },
+    reached_phuntsholing: { label: 'Reached Phuntsholing', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+    out_for_delivery:     { label: 'Out for Delivery',     color: 'bg-violet-50 text-violet-700 border-violet-200' },
+    shipped:    { label: 'Shipped',    color: 'bg-purple-50 text-purple-700 border-purple-200' },
+    delivered:  { label: 'Delivered',  color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    cancelled:  { label: 'Cancelled',  color: 'bg-red-50 text-red-700 border-red-200' }
+  };
 
-      if (!orderTextId) return;
+  const trackingStatusLabels = {
+    pending: 'Order Received',
+    ordered: 'Payment Confirmed — Order Placed',
+    reached_jaigaon: 'Reached Jaigaon',
+    reached_phuntsholing: 'Reached Phuntsholing',
+    out_for_delivery: 'Out for Delivery',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled'
+  };
 
-      errorEl.classList.add('hidden');
-      results.classList.add('hidden');
+  const trackingStatusIcons = {
+    pending: 'fa-clipboard-check',
+    ordered: 'fa-cart-shopping',
+    reached_jaigaon: 'fa-truck-ramp-box',
+    reached_phuntsholing: 'fa-warehouse',
+    out_for_delivery: 'fa-truck-fast',
+    delivered: 'fa-box-open',
+    cancelled: 'fa-ban'
+  };
 
-      try {
-        // Fetch order by text order_id
-        const { data: orders, error: orderErr } = await supabase
-          .from('orders')
-          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, payment_method, created_at, users(full_name, whatsapp, email)')
-          .eq('order_id', orderTextId)
-          .limit(1);
+  async function trackOrder() {
+    const input = document.getElementById('track-input');
+    const orderTextId = input.value.trim().toUpperCase();
+    const errorEl = document.getElementById('track-error');
+    const results = document.getElementById('track-results');
 
-        if (orderErr) throw orderErr;
-        if (!orders || orders.length === 0) {
-          errorEl.classList.remove('hidden');
-          return;
-        }
+    if (!orderTextId) return;
 
-        const order = orders[0];
-        currentOrder = order;
-        const user = order.users || {};
+    errorEl.classList.add('hidden');
+    results.classList.add('hidden');
 
-        // Fetch quotation by UUID order_id
-        const { data: quotes } = await supabase
-          .from('quotations')
-          .select('*')
-          .eq('order_id', order.id)
+    try {
+      // Fetch order by text order_id
+      const { data: orders, error: orderErr } = await supabase
+        .from('orders')
+        .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, payment_method, created_at, users(full_name, whatsapp, email)')
+        .eq('order_id', orderTextId)
+        .limit(1);
+
+      if (orderErr) throw orderErr;
+      if (!orders || orders.length === 0) {
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const order = orders[0];
+      currentOrder = order;
+      const user = order.users || {};
+
+      // Fetch quotation by UUID order_id
+      const { data: quotes } = await supabase
+        .from('quotations')
+        .select('*')
+        .eq('order_id', order.id)
+        .maybeSingle();
+
+      currentQuote = quotes;
+
+      // Fetch tracking events by UUID order_id
+      const { data: tracking } = await supabase
+        .from('tracking_events')
+        .select('*')
+        .eq('order_id', order.id)
+        .order('created_at', { ascending: true });
+
+      // Populate header  <-- CHANGED: uses statusConfig
+      document.getElementById('res-order-id').textContent = order.order_id;
+      document.getElementById('res-name').textContent = user.full_name || '—';
+      document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+      document.getElementById('res-city').textContent = order.delivery_city || '—';
+      document.getElementById('res-payment').textContent = order.payment_method || '—';
+              // Payment status lookup
+        const { data: paymentRow } = await supabase
+          .from('payments')
+          .select('status')
+          .eq('order_id', order.order_id)
           .maybeSingle();
+        
+        const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
+        const paymentStatusEl = document.getElementById('res-payment-status');
+        if (paymentRow && paymentRow.status) {
+          paymentStatusWrap.classList.remove('hidden');
+          const pColors = { pending: 'text-amber-600', verified: 'text-emerald-600', refunded: 'text-gray-500' };
+          paymentStatusEl.innerHTML = `<span class="${pColors[paymentRow.status] || 'text-gray-700'} font-semibold capitalize">${paymentRow.status}</span>`;
+        } else {
+          paymentStatusWrap.classList.add('hidden');
+        }
 
-        currentQuote = quotes;
+      const cfg = statusConfig[order.order_status] || statusConfig.pending;
+      const statusEl = document.getElementById('res-order-status');
+      statusEl.textContent = cfg.label;
+      statusEl.className = `px-3 py-1 rounded-full text-xs font-bold border ${cfg.color}`;
 
-        // Fetch tracking events by UUID order_id
-        const { data: tracking } = await supabase
-          .from('tracking_events')
-          .select('*')
-          .eq('order_id', order.id)
-          .order('created_at', { ascending: true });
+      // Quotation panel
+      const quotePanel = document.getElementById('quote-panel');
+      const noQuotePanel = document.getElementById('no-quote-panel');
+      const trackingPanel = document.getElementById('tracking-panel');
 
-        // Populate header
-        document.getElementById('res-order-id').textContent = order.order_id;
-        document.getElementById('res-name').textContent = user.full_name || '—';
-        document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
-        document.getElementById('res-city').textContent = order.delivery_city || '—';
-        document.getElementById('res-payment').textContent = order.payment_method || '—';
+      if (quotes) {
+        quotePanel.classList.remove('hidden');
+        noQuotePanel.classList.add('hidden');
 
-        const statusColors = {
-          pending:    'bg-amber-50 text-amber-700 border-amber-200',
-          quoted:     'bg-indigo-50 text-indigo-700 border-indigo-200',
-          confirmed:  'bg-blue-50 text-blue-700 border-blue-200',
-          ordered:    'bg-sky-50 text-sky-700 border-sky-200',
-          shipped:    'bg-purple-50 text-purple-700 border-purple-200',
-          delivered:  'bg-emerald-50 text-emerald-700 border-emerald-200',
-          cancelled:  'bg-red-50 text-red-700 border-red-200'
+        document.getElementById('q-product').textContent = '₹ ' + Math.round(quotes.product_price || 0).toLocaleString('en-IN');
+        document.getElementById('q-shipping').textContent = '₹ ' + Math.round(quotes.shipping_fee || 0).toLocaleString('en-IN');
+        document.getElementById('q-service').textContent = '₹ ' + Math.round(quotes.service_fee || 0).toLocaleString('en-IN');
+        document.getElementById('q-delivery').textContent = '₹ ' + Math.round(quotes.delivery_fee || 0).toLocaleString('en-IN');
+        document.getElementById('q-total').textContent = '₹ ' + Math.round(quotes.total_amount || 0).toLocaleString('en-IN');
+
+        if (quotes.note) {
+          document.getElementById('q-note-wrap').classList.remove('hidden');
+          document.getElementById('q-note').textContent = quotes.note;
+        } else {
+          document.getElementById('q-note-wrap').classList.add('hidden');
+        }
+
+        const qStatus = quotes.status || 'pending';
+        const qBadge = document.getElementById('quote-status-badge');
+        const qColors = {
+          pending:  'bg-amber-50 text-amber-700 border-amber-200',
+          accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          rejected: 'bg-red-50 text-red-700 border-red-200'
         };
-        const statusEl = document.getElementById('res-order-status');
-        statusEl.textContent = (order.order_status || 'pending').charAt(0).toUpperCase() + (order.order_status || 'pending').slice(1);
-        statusEl.className = `px-3 py-1 rounded-full text-xs font-bold border ${statusColors[order.order_status] || statusColors.pending}`;
+        qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
+        qBadge.className = `px-2.5 py-1 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
 
-        // Quotation panel
-        const quotePanel = document.getElementById('quote-panel');
-        const noQuotePanel = document.getElementById('no-quote-panel');
-        const trackingPanel = document.getElementById('tracking-panel');
-
-        if (quotes) {
-          quotePanel.classList.remove('hidden');
-          noQuotePanel.classList.add('hidden');
-
-          document.getElementById('q-product').textContent = '₹ ' + Math.round(quotes.product_price || 0).toLocaleString('en-IN');
-          document.getElementById('q-shipping').textContent = '₹ ' + Math.round(quotes.shipping_fee || 0).toLocaleString('en-IN');
-          document.getElementById('q-service').textContent = '₹ ' + Math.round(quotes.service_fee || 0).toLocaleString('en-IN');
-          document.getElementById('q-delivery').textContent = '₹ ' + Math.round(quotes.delivery_fee || 0).toLocaleString('en-IN');
-          document.getElementById('q-total').textContent = '₹ ' + Math.round(quotes.total_amount || 0).toLocaleString('en-IN');
-
-          if (quotes.note) {
-            document.getElementById('q-note-wrap').classList.remove('hidden');
-            document.getElementById('q-note').textContent = quotes.note;
-          } else {
-            document.getElementById('q-note-wrap').classList.add('hidden');
-          }
-
-          const qStatus = quotes.status || 'pending';
-          const qBadge = document.getElementById('quote-status-badge');
-          const qColors = {
-            pending:  'bg-amber-50 text-amber-700 border-amber-200',
-            accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            rejected: 'bg-red-50 text-red-700 border-red-200'
-          };
-          qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
-          qBadge.className = `px-2.5 py-1 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
-
-          if (qStatus === 'pending') {
-            document.getElementById('quote-actions').classList.remove('hidden');
-            document.getElementById('quote-accepted-msg').classList.add('hidden');
-            document.getElementById('quote-rejected-msg').classList.add('hidden');
-          } else if (qStatus === 'accepted') {
-            document.getElementById('quote-actions').classList.add('hidden');
-            document.getElementById('quote-accepted-msg').classList.remove('hidden');
-            document.getElementById('quote-rejected-msg').classList.add('hidden');
-            
-            const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${Math.round(quotes.total_amount || 0)}\n\nPlease share payment details.`;
-            document.getElementById('wa-pay-btn').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
-          } else {
-            document.getElementById('quote-actions').classList.add('hidden');
-            document.getElementById('quote-accepted-msg').classList.add('hidden');
-            document.getElementById('quote-rejected-msg').classList.remove('hidden');
-          }
+        if (qStatus === 'pending') {
+          document.getElementById('quote-actions').classList.remove('hidden');
+          document.getElementById('quote-accepted-msg').classList.add('hidden');
+          document.getElementById('quote-rejected-msg').classList.add('hidden');
+        } else if (qStatus === 'accepted') {
+          document.getElementById('quote-actions').classList.add('hidden');
+          document.getElementById('quote-accepted-msg').classList.remove('hidden');
+          document.getElementById('quote-rejected-msg').classList.add('hidden');
+          
+          const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${Math.round(quotes.total_amount || 0)}\n\nPlease share payment details.`;
+          document.getElementById('wa-pay-btn').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
         } else {
-          quotePanel.classList.add('hidden');
-          noQuotePanel.classList.remove('hidden');
+          document.getElementById('quote-actions').classList.add('hidden');
+          document.getElementById('quote-accepted-msg').classList.add('hidden');
+          document.getElementById('quote-rejected-msg').classList.remove('hidden');
         }
+      } else {
+        quotePanel.classList.add('hidden');
+        noQuotePanel.classList.remove('hidden');
+      }
 
-        // Tracking timeline - only show if quotation accepted
-        if (tracking && tracking.length > 0 && quotes && quotes.status === 'accepted') {
-          trackingPanel.classList.remove('hidden');
-          const timeline = document.getElementById('tracking-timeline');
-          timeline.innerHTML = tracking.map((t, i) => {
-            const isLast = i === tracking.length - 1;
-            const statusClass = isLast ? 'active' : 'completed';
-            const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-            return `
-              <div class="status-line ${statusClass} pb-6">
-                <div class="status-dot"></div>
-                <div class="font-semibold text-gray-900 text-sm">${t.status || 'Update'}</div>
-                ${t.location ? `<div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-location-dot mr-1"></i>${t.location}</div>` : ''}
-                ${t.note ? `<div class="text-xs text-gray-600 mt-1">${t.note}</div>` : ''}
-                <div class="text-xs text-gray-400 mt-1">${time}</div>
+      // Tracking timeline  <-- CHANGED: condition + human-readable labels + icons
+      if (tracking && tracking.length > 0 && !['pending', 'quoted', 'cancelled'].includes(order.order_status)) {
+        trackingPanel.classList.remove('hidden');
+        const timeline = document.getElementById('tracking-timeline');
+        timeline.innerHTML = tracking.map((t, i) => {
+          const isLast = i === tracking.length - 1;
+          const statusClass = isLast ? 'active' : 'completed';
+          const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ');
+          const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
+          return `
+            <div class="status-line ${statusClass} pb-6">
+              <div class="status-dot"></div>
+              <div class="flex items-center gap-2">
+                <i class="fas ${iconClass} text-xs ${isLast ? 'text-indigo-600' : 'text-emerald-500'}"></i>
+                <div class="font-semibold text-gray-900 text-sm">${label}</div>
               </div>
-            `;
-          }).join('');
-        } else {
-          trackingPanel.classList.add('hidden');
-        }
-
-        results.classList.remove('hidden');
-      } catch (err) {
-        console.error('Track error:', err);
-        showToast('Something went wrong. Please try again.');
+              ${t.location ? `<div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-location-dot mr-1"></i>${t.location}</div>` : ''}
+              ${t.note ? `<div class="text-xs text-gray-600 mt-1">${t.note}</div>` : ''}
+              <div class="text-xs text-gray-400 mt-1">${time}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        trackingPanel.classList.add('hidden');
       }
+
+      results.classList.remove('hidden');
+    } catch (err) {
+      console.error('Track error:', err);
+      showToast('Something went wrong. Please try again.');
     }
-    window.trackOrder = trackOrder;
+  }
+  window.trackOrder = trackOrder;
 
-    async function respondQuote(response) {
-      if (!currentQuote || !currentOrder) return;
-      
-      const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
-      if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+  async function respondQuote(response) {
+    if (!currentQuote || !currentOrder) return;
+    
+    const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
-      try {
-        // Update quotation status
-        const { error: qErr } = await supabase
-          .from('quotations')
-          .update({ status: response, updated_at: new Date().toISOString() })
-          .eq('id', currentQuote.id);
+    try {
+      // Update quotation status
+      const { error: qErr } = await supabase
+        .from('quotations')
+        .update({ status: response, updated_at: new Date().toISOString() })
+        .eq('id', currentQuote.id);
 
-        if (qErr) throw qErr;
+      if (qErr) throw qErr;
 
-        // If accepted, create payment row
-        if (response === 'accepted') {
-          const { error: pErr } = await supabase.from('payments').insert([{
-            order_id: currentOrder.id,
-            product_price: currentQuote.product_price || 0,
-            shipping_fee: currentQuote.shipping_fee || 0,
-            service_fee: currentQuote.service_fee || 0,
-            delivery_fee: currentQuote.delivery_fee || 0,
-            total_amount: currentQuote.total_amount || 0,
-            payment_method: currentOrder.payment_method || 'Bank Transfer',
-            status: 'pending',
-            created_at: new Date().toISOString()
-          }]);
+      // If accepted, create payment row
+      if (response === 'accepted') {
+        const { error: pErr } = await supabase.from('payments').insert([{
+          order_id: currentOrder.id,
+          product_price: currentQuote.product_price || 0,
+          shipping_fee: currentQuote.shipping_fee || 0,
+          service_fee: currentQuote.service_fee || 0,
+          delivery_fee: currentQuote.delivery_fee || 0,
+          total_amount: currentQuote.total_amount || 0,
+          payment_method: currentOrder.payment_method || 'Bank Transfer',
+          status: 'pending',
+          created_at: new Date().toISOString()
+        }]);
 
-          if (pErr) throw pErr;
+        if (pErr) throw pErr;
 
-          // Update order status
-          await supabase.from('orders').update({ order_status: 'confirmed' }).eq('id', currentOrder.id);
-        }
-
-        showToast(response === 'accepted' ? 'Quotation accepted! Please complete payment.' : 'Quotation rejected.', 'success');
-        trackOrder(); // refresh view
-      } catch (err) {
-        console.error('Respond error:', err);
-        showToast('Failed to respond. Please try again.', 'error');
-        if (btn) { btn.disabled = false; btn.textContent = response === 'accepted' ? 'Accept & Pay' : 'Reject'; }
+        // Update order status
+        await supabase.from('orders').update({ order_status: 'confirmed' }).eq('id', currentOrder.id);
       }
-    }
-    window.respondQuote = respondQuote;
 
-    function showToast(msg, type) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('opacity-100');
-      setTimeout(() => t.classList.remove('opacity-100'), 3000);
+      showToast(response === 'accepted' ? 'Quotation accepted! Please complete payment.' : 'Quotation rejected.', 'success');
+      trackOrder(); // refresh view
+    } catch (err) {
+      console.error('Respond error:', err);
+      showToast('Failed to respond. Please try again.', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = response === 'accepted' ? 'Accept & Pay' : 'Reject'; }
     }
+  }
+  window.respondQuote = respondQuote;
 
-    // Enter key support
-    document.getElementById('track-input')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') trackOrder();
-    });
-  </script>
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('opacity-100');
+    setTimeout(() => t.classList.remove('opacity-100'), 3000);
+  }
+
+  // Enter key support
+  document.getElementById('track-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') trackOrder();
+  });
+</script>
 </body>
 </html>
