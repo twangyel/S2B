@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account | Shop2Bhutan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+    h1, h2, h3 { font-family: 'Sora', sans-serif; }
+    .portal-card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <nav class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2"><img src="/image/logo.png" alt="Shop2Bhutan" class="h-8 w-auto" /></a>
+      <div class="flex items-center gap-3">
+        <a href="track.html" class="text-sm font-medium text-gray-600 hover:text-gray-900">Track Order</a>
+        <button id="logout-btn" onclick="logout()" class="hidden text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">
+          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+
+    <!-- LOGIN -->
+    <div id="login-view" class="max-w-md mx-auto">
+      <div class="portal-card p-8">
+        <div class="text-center mb-6">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-50 mb-3">
+            <i class="fas fa-user text-indigo-600 text-xl"></i>
+          </div>
+          <h1 class="text-xl font-bold text-gray-900">Customer Portal</h1>
+          <p class="text-sm text-gray-500 mt-1">Access your orders and quotations</p>
+        </div>
+
+        <!-- Step 1: Phone -->
+        <div id="login-step-phone">
+          <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
+          <div class="flex gap-2 mb-4">
+            <span class="px-3 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-600 font-medium">+975</span>
+            <input type="tel" id="phone-input" placeholder="77113302" maxlength="8" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <button onclick="sendOtp()" id="btn-send" class="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            <span>Request Login Code</span>
+          </button>
+          <p class="text-xs text-gray-400 mt-3 text-center">A 6-digit code will be generated. Ask our team on WhatsApp to send it to you.</p>
+        </div>
+
+        <!-- Step 2: OTP -->
+        <div id="login-step-otp" class="hidden">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Enter 6-digit Code</label>
+            <input type="text" id="otp-input" placeholder="123456" maxlength="6" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm tracking-[0.5em] text-center font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <p class="text-xs text-gray-500 mt-2 text-center">Sent to WhatsApp <span id="otp-phone-display" class="font-medium text-gray-700"></span></p>
+          </div>
+          <button onclick="verifyOtp()" id="btn-verify" class="w-full py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm mb-3">
+            Verify & Login
+          </button>
+          <div class="text-center space-y-2">
+            <a id="wa-code-link" href="#" target="_blank" class="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 px-4 py-2 rounded-lg hover:bg-emerald-100 transition-colors">
+              <i class="fa-brands fa-whatsapp"></i> Message us for code
+            </a>
+            <div>
+              <button onclick="resetLogin()" class="text-xs text-gray-500 hover:text-gray-700">Use different number</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="login-error" class="hidden text-red-600 text-sm mt-4 text-center"><i class="fas fa-circle-exclamation mr-1"></i> <span id="login-error-msg">Something went wrong</span></p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-view" class="hidden space-y-6">
+      <div class="portal-card p-6 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900">Welcome back, <span id="dash-name">—</span></h2>
+          <p class="text-sm text-gray-500 mt-0.5"><i class="fab fa-whatsapp text-emerald-500 mr-1"></i> +975 <span id="dash-phone">—</span></p>
+        </div>
+        <div class="text-right hidden sm:block">
+          <div class="text-xs text-gray-400 uppercase tracking-wider">Active Orders</div>
+          <div class="text-2xl font-bold text-indigo-600" id="dash-active-count">0</div>
+        </div>
+      </div>
+
+      <div id="orders-container" class="space-y-4"></div>
+
+      <div id="empty-state" class="hidden portal-card p-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+          <i class="fas fa-box-open text-gray-300 text-2xl"></i>
+        </div>
+        <h3 class="text-gray-900 font-semibold mb-1">No orders yet</h3>
+        <p class="text-gray-500 text-sm max-w-xs mx-auto">Your orders will appear here once you place them via WhatsApp.</p>
+        <a href="https://wa.me/97577113302" target="_blank" class="inline-block mt-4 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+          <i class="fa-brands fa-whatsapp mr-1"></i> Order on WhatsApp
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(
+      "https://deecrnfbvgbzyybqhywy.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+    );
+
+    const statusConfig = {
+      pending:    { label: 'Pending',    color: 'bg-amber-50 text-amber-700 border-amber-200' },
+      quoted:     { label: 'Quoted',     color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+      confirmed:  { label: 'Confirmed',  color: 'bg-blue-50 text-blue-700 border-blue-200' },
+      ordered:    { label: 'Ordered',    color: 'bg-sky-50 text-sky-700 border-sky-200' },
+      reached_jaigaon:      { label: 'Reached Jaigaon',      color: 'bg-teal-50 text-teal-700 border-teal-200' },
+      reached_phuntsholing: { label: 'Reached Phuntsholing', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+      out_for_delivery:     { label: 'Out for Delivery',     color: 'bg-violet-50 text-violet-700 border-violet-200' },
+      shipped:    { label: 'Shipped',    color: 'bg-purple-50 text-purple-700 border-purple-200' },
+      delivered:  { label: 'Delivered',  color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      cancelled:  { label: 'Cancelled',  color: 'bg-red-50 text-red-700 border-red-200' }
+    };
+
+    const quoteColors = {
+      pending:  'bg-amber-50 text-amber-700 border-amber-200',
+      accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      rejected: 'bg-red-50 text-red-700 border-red-200'
+    };
+
+    let sessionPhone = null;
+    let sessionName = null;
+
+    /* ==========================================================
+       INIT
+       ========================================================== */
+    function init() {
+      const saved = localStorage.getItem('s2b_portal_session');
+      if (saved) {
+        try {
+          const s = JSON.parse(saved);
+          if (s.phone && s.expires > Date.now()) {
+            sessionPhone = s.phone;
+            sessionName = s.name || null;
+            showDashboard();
+            return;
+          }
+        } catch(e) {}
+        localStorage.removeItem('s2b_portal_session');
+      }
+      showLogin();
+    }
+    init();
+
+    /* ==========================================================
+       LOGIN UI
+       ========================================================== */
+    function showLogin() {
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
+      resetLogin();
+    }
+
+    function resetLogin() {
+      document.getElementById('login-step-phone').classList.remove('hidden');
+      document.getElementById('login-step-otp').classList.add('hidden');
+      document.getElementById('phone-input').value = '';
+      document.getElementById('otp-input').value = '';
+      document.getElementById('login-error').classList.add('hidden');
+      setBtnLoading('btn-send', false);
+      setBtnLoading('btn-verify', false);
+    }
+
+    function getFormattedPhone() {
+      const raw = document.getElementById('phone-input').value.trim().replace(/\D/g, '');
+      if (!raw || raw.length < 8) return null;
+      return '+975' + raw;
+    }
+
+    /* ==========================================================
+       OTP FLOW
+       ========================================================== */
+    async function sendOtp() {
+      const phone = getFormattedPhone();
+      if (!phone) { showLoginError('Enter a valid 8-digit Bhutan number'); return; }
+
+      setBtnLoading('btn-send', true);
+      document.getElementById('login-error').classList.add('hidden');
+
+      try {
+        // Server-side OTP generation via RPC
+        const { data: code, error } = await supabase.rpc('request_otp', { p_phone: phone });
+
+        if (error) throw error;
+
+        // Show OTP step
+        document.getElementById('login-step-phone').classList.add('hidden');
+        document.getElementById('login-step-otp').classList.remove('hidden');
+        document.getElementById('otp-phone-display').textContent = phone;
+        document.getElementById('otp-input').focus();
+
+        // WhatsApp link for user to request the code from admin
+        const msg = `Hello Shop2Bhutan,\n\nI need my login code for portal access.\nMy number: ${phone}\nPlease send me the 6-digit code.`;
+        document.getElementById('wa-code-link').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
+
+        showToast('Code generated. Message us on WhatsApp to receive it.', 'success');
+
+      } catch (err) {
+        console.error(err);
+        showLoginError('Failed to generate code. Please try again.');
+      } finally {
+        setBtnLoading('btn-send', false);
+      }
+    }
+    window.sendOtp = sendOtp;
+
+    async function verifyOtp() {
+      const phone = getFormattedPhone();
+      const code = document.getElementById('otp-input').value.trim();
+
+      if (!code || code.length !== 6) {
+        showLoginError('Enter the 6-digit code');
+        return;
+      }
+
+      setBtnLoading('btn-verify', true);
+      document.getElementById('login-error').classList.add('hidden');
+
+      try {
+        const { data: valid, error } = await supabase.rpc('verify_otp', { p_phone: phone, p_code: code });
+
+        if (error) throw error;
+        if (!valid) {
+          showLoginError('Invalid or expired code. Please request a new one.');
+          setBtnLoading('btn-verify', false);
+          return;
+        }
+
+        // Lookup user profile
+        const shortPhone = phone.replace('+975', '');
+        const { data: profiles } = await supabase
+          .from('users')
+          .select('id, full_name, whatsapp')
+          .eq('whatsapp', shortPhone)
+          .limit(1);
+
+        const profile = profiles?.[0] || null;
+
+        // Create session
+        sessionPhone = shortPhone;
+        sessionName = profile?.full_name || null;
+        localStorage.setItem('s2b_portal_session', JSON.stringify({
+          phone: sessionPhone,
+          name: sessionName,
+          expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+        }));
+
+        showToast('Login successful!', 'success');
+        await showDashboard();
+
+      } catch (err) {
+        console.error(err);
+        showLoginError('Verification failed. Try again.');
+        setBtnLoading('btn-verify', false);
+      }
+    }
+    window.verifyOtp = verifyOtp;
+
+    function showLoginError(msg) {
+      const el = document.getElementById('login-error');
+      document.getElementById('login-error-msg').textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    /* ==========================================================
+       DASHBOARD
+       ========================================================== */
+    async function showDashboard() {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+
+      document.getElementById('dash-phone').textContent = sessionPhone;
+      document.getElementById('dash-name').textContent = sessionName || 'Customer';
+
+      // Fetch user profile if not in session
+      if (!sessionName) {
+        const { data: profiles } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('whatsapp', sessionPhone)
+          .limit(1);
+        if (profiles?.[0]) {
+          sessionName = profiles[0].full_name;
+          document.getElementById('dash-name').textContent = sessionName;
+          // update storage
+          const s = JSON.parse(localStorage.getItem('s2b_portal_session') || '{}');
+          s.name = sessionName;
+          localStorage.setItem('s2b_portal_session', JSON.stringify(s));
+        }
+      }
+
+      // Fetch orders via users.whatsapp join or user_id
+      let orders = [];
+      const { data: userRow } = await supabase.from('users').select('id').eq('whatsapp', sessionPhone).single();
+      
+      if (userRow?.id) {
+        const { data: o } = await supabase
+          .from('orders')
+          .select('*, quotations(*), tracking_events(*)')
+          .eq('user_id', userRow.id)
+          .order('created_at', { ascending: false });
+        orders = o || [];
+      }
+
+      renderOrders(orders);
+    }
+
+    function renderOrders(orders) {
+      const container = document.getElementById('orders-container');
+      const empty = document.getElementById('empty-state');
+      const active = orders.filter(o => !['delivered','cancelled'].includes(o.order_status)).length;
+      
+      document.getElementById('dash-active-count').textContent = active;
+
+      if (!orders.length) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      container.innerHTML = orders.map(order => {
+        const quote = order.quotations?.[0] || null;
+        const cfg = statusConfig[order.order_status] || statusConfig.pending;
+        const date = order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        
+        let linksHtml = '';
+        if (order.product_links && Array.isArray(order.product_links)) {
+          const links = order.product_links.slice(0, 2);
+          const extra = order.product_links.length > 2 ? `+${order.product_links.length - 2} more` : '';
+          linksHtml = links.map(l => `<div class="truncate text-xs text-gray-500 max-w-[200px]">${l}</div>`).join('') + (extra ? `<div class="text-xs text-gray-400">${extra}</div>` : '');
+        }
+
+        let quoteHtml = '';
+        if (quote) {
+          const qStatus = quote.status || 'pending';
+          const total = '₹ ' + Math.round(quote.total_amount || 0).toLocaleString('en-IN');
+          quoteHtml = `
+            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <div><div class="text-xs text-gray-400 mb-0.5">Quotation Total</div><div class="font-bold text-gray-900">${total}</div></div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${quoteColors[qStatus]||quoteColors.pending}">${qStatus.charAt(0).toUpperCase()+qStatus.slice(1)}</span>
+            </div>`;
+        } else {
+          quoteHtml = `<div class="mt-3 pt-3 border-t border-gray-100"><span class="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-md font-medium">Quotation pending</span></div>`;
+        }
+
+        let actionsHtml = '';
+        if (quote && quote.status === 'pending') {
+          actionsHtml = `
+            <div class="flex gap-2 mt-3">
+              <button onclick="respondQuote('${quote.id}', 'accepted', '${order.order_id}')" class="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><i class="fas fa-check mr-1"></i> Accept</button>
+              <button onclick="respondQuote('${quote.id}', 'rejected', '${order.order_id}')" class="flex-1 py-2 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold hover:bg-red-50 transition-colors"><i class="fas fa-times mr-1"></i> Reject</button>
+            </div>`;
+        } else if (quote && quote.status === 'accepted') {
+          actionsHtml = `<div class="mt-3 text-xs text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg text-center font-medium"><i class="fas fa-check-circle mr-1"></i> Quotation accepted — awaiting payment confirmation</div>`;
+        }
+
+        let trackingHtml = '';
+        if (order.tracking_events?.length > 0) {
+          const latest = order.tracking_events[order.tracking_events.length - 1];
+          trackingHtml = `<div class="mt-3 flex items-center gap-2 text-xs text-gray-500"><i class="fas fa-truck-fast text-indigo-500"></i><span class="capitalize">${latest.status?.replace(/_/g,' ')}</span>${latest.location?`<span class="text-gray-400">• ${latest.location}</span>`:''}</div>`;
+        }
+
+        return `
+          <div class="portal-card p-5" id="order-card-${order.id}">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Order ID</div>
+                <div class="font-mono font-bold text-gray-900">${order.order_id}</div>
+                <div class="text-xs text-gray-400 mt-0.5">${date}</div>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold border ${cfg.color}">${cfg.label}</span>
+            </div>
+            <div class="space-y-1 mb-2">${linksHtml}</div>
+            ${quoteHtml}
+            ${trackingHtml}
+            ${actionsHtml}
+            <div class="mt-3 pt-2 border-t border-gray-50 flex justify-end">
+              <a href="track.html?id=${order.order_id}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">View Full Details <i class="fas fa-arrow-right ml-1"></i></a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ==========================================================
+       ACTIONS
+       ========================================================== */
+    async function respondQuote(quoteId, response, orderId) {
+      const btn = document.querySelector(`button[onclick="respondQuote('${quoteId}', '${response}', '${orderId}')"]`);
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="loader"></span>'; }
+
+      try {
+        const { error } = await supabase.from('quotations').update({ status: response, updated_at: new Date().toISOString() }).eq('id', quoteId);
+        if (error) throw error;
+        showToast(response === 'accepted' ? 'Quotation accepted!' : 'Quotation rejected.', 'success');
+        // refresh
+        await showDashboard();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to update. Try again.', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = response==='accepted'?'<i class="fas fa-check mr-1"></i> Accept':'<<i class="fas fa-times mr-1"></i> Reject'; }
+      }
+    }
+    window.respondQuote = respondQuote;
+
+    function logout() {
+      localStorage.removeItem('s2b_portal_session');
+      sessionPhone = null;
+      sessionName = null;
+      showToast('Logged out', 'success');
+      showLogin();
+    }
+    window.logout = logout;
+
+    /* ==========================================================
+       UTILS
+       ========================================================== */
+    function setBtnLoading(id, loading) {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      if (loading) {
+        btn.disabled = true;
+        if (!btn.dataset.original) btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = '<span class="loader"></span>';
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.original || btn.innerHTML;
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('opacity-100');
+      setTimeout(() => t.classList.remove('opacity-100'), 3000);
+    }
+
+    document.getElementById('phone-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendOtp(); });
+    document.getElementById('otp-input')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyOtp(); });
+  </script>
+</body>
+</html>
