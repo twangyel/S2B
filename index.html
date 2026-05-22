@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shop2Bhutan | Shop India • Deliver to Bhutan</title>
-  <meta name="description" content="Order products from Amazon India, Flipkart, Myntra and more. Shop2Bhutan delivers directly to your doorstep in Bhutan." />
+  <title>Shop2Bhutan | India's Best Stores. One Bhutan Address.</title>
+  <meta name="description" content="Shop from Amazon India, Flipkart, Myntra, Meesho and more. We collect in Jaigaon and deliver to your doorstep in Bhutan." />
   <meta property="og:title" content="Shop2Bhutan" />
   <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#0f172a">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,67 +17,142 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
-<base target="_blank">
+  <link rel="stylesheet" href="/css/style.css">
+  <base target="_blank">
 </head>
 <body>
 
-<!-- ── NAV ── -->
-<nav id="mainNav">
-  <div class="container nav-content">
-    <a href="https://shop2bt.vercel.app/" class="logo">
-      <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan logo"></div>
-    </a>
-    <div class="nav-actions">
-  <a href="/portal.html" class="nav-btn btn-primary" style="background:#4f46e5;">
-    <i class="fa-solid fa-user"></i> My Account
-  </a>
-  <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
-  <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
-    <i class="fa-brands fa-whatsapp"></i> WhatsApp
-  </a>
+<!-- ── AMBIENT MESH BACKGROUND (Hero only) ── -->
+<div class="ambient-mesh" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 </div>
+
+<!-- ── NAV ── -->
+<<nav id="mainNav">
+  <div class="container nav-content">
+    <a href="https://shop2bt.vercel.app/" class="logo" target="_self">
+      <div class="logo-icon">
+        <img src="/image/logo.png" alt="Shop2Bhutan logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fa-solid fa-bag-shopping\'></i>'">
+      </div>
+      <span class="logo-text">Shop2<span class="logo-accent">Bhutan</span></span>
+    </a>
+
+    <div class="nav-actions">
+      <a href="/portal.html" class="nav-btn btn-primary">
+        <i class="fa-solid fa-user"></i> My Account
+      </a>
+      <a href="/track.html" class="nav-btn btn-secondary">Track Order</a>
+      <a href="https://wa.me/97577113302" class="nav-btn btn-whatsapp">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+      </a>
+    </div>
+
     <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
-  <a href="/portal.html" class="nav-btn btn-primary" style="background:#4f46e5;margin-bottom:8px;">
-    <i class="fa-solid fa-user"></i> My Account
-  </a>
-  <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
-  <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
-    <i class="fa-brands fa-whatsapp"></i> WhatsApp
-  </a>
-</div>
+    <a href="/portal.html" class="nav-btn btn-primary" style="justify-content:center;">
+      <i class="fa-solid fa-user"></i> My Account
+    </a>
+    <a href="/track.html" class="nav-btn btn-secondary" style="justify-content:center;">Track Order</a>
+    <a href="https://wa.me/97577113302" class="nav-btn btn-whatsapp" style="justify-content:center;">
+      <i class="fa-brands fa-whatsapp"></i> WhatsApp
+    </a>
+  </div>
 </nav>
 
 <!-- ── HERO ── -->
 <section class="hero">
-  <div class="container hero-content">
-    <div class="hero-badge">
-      <i class="fa-solid fa-location-dot"></i>
-      Delivering in Thimphu, Phuntsholing &amp; Paro
+  <div class="container hero-layout">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        Delivering in Thimphu, Phuntsholing &amp; Paro
+      </div>
+      <h1>India's Best Stores.<br><span class="gradient-text">One Bhutan Address.</span></h1>
+      <p class="hero-sub">Browse Amazon, Flipkart, Myntra and Meesho like a local. We personally collect from Jaigaon and deliver straight to your doorstep — no Indian payment card or SIM needed.</p>
+      
+      <div class="hero-cta">
+        <a href="#order-form" class="cta-main" target="_self">
+          <i class="fa-solid fa-bag-shopping"></i> Start Shopping
+        </a>
+        <a href="https://wa.me/97577113302" class="cta-wa">
+          <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+        </a>
+      </div>
+
+      <div class="hero-chips">
+        <div class="hero-chip"><i class="fa-solid fa-shield-halved"></i> Trusted Local Service</div>
+        <div class="hero-chip"><i class="fa-solid fa-truck-fast"></i> Doorstep Delivery</div>
+        <div class="hero-chip"><i class="fa-solid fa-calendar-check"></i> Weekly Collection</div>
+        <div class="hero-chip"><i class="fa-solid fa-clock"></i> 5–10 Day Turnaround</div>
+      </div>
     </div>
-    <h1>Shop India.<br><span>Delivered</span> to Bhutan.</h1>
-    <p>Order from Amazon, Flipkart, Myntra and more. We personally collect from Jaigaon and deliver straight to your doorstep.</p>
-    <div class="hero-cta">
-      <a href="#order-form" class="cta-main">Submit Order Request</a>
-      <a href="https://wa.me/97577113302" target="_blank" class="cta-wa">
-        <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-      </a>
-    </div>
-    <div class="hero-chips">
-      <div class="hero-chip"><i class="fa-solid fa-circle-check"></i> Trusted Local Service</div>
-      <div class="hero-chip"><i class="fa-solid fa-truck"></i> Doorstep Delivery</div>
-      <div class="hero-chip"><i class="fa-solid fa-calendar"></i> Weekly Delivery</div>
-      <div class="hero-chip"><i class="fa-solid fa-clock"></i> 5–10 Day Turnaround</div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="store-float-card amazon">
+        <div class="store-float-header"><i class="fa-brands fa-amazon"></i> Amazon.in</div>
+        <div class="store-float-body">
+          <div class="skeleton-line w-75"></div>
+          <div class="skeleton-line w-50"></div>
+          <div class="skeleton-price">₹1,299</div>
+        </div>
+      </div>
+      <div class="store-float-card flipkart">
+        <div class="store-float-header"><i class="fa-solid fa-bag-shopping"></i> Flipkart</div>
+        <div class="store-float-body">
+          <div class="skeleton-line w-80"></div>
+          <div class="skeleton-line w-60"></div>
+          <div class="skeleton-price">₹899</div>
+        </div>
+      </div>
+      <div class="store-float-card myntra">
+        <div class="store-float-header"><i class="fa-solid fa-shirt"></i> Myntra</div>
+        <div class="store-float-body">
+          <div class="skeleton-line w-70"></div>
+          <div class="skeleton-line w-90"></div>
+          <div class="skeleton-price">₹2,499</div>
+        </div>
+      </div>
+      <div class="store-float-card meesho">
+        <div class="store-float-header"><i class="fa-solid fa-tags"></i> Meesho</div>
+        <div class="store-float-body">
+          <div class="skeleton-line w-65"></div>
+          <div class="skeleton-line w-55"></div>
+          <div class="skeleton-price">₹349</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- ── LIVE TRUST BAR ── -->
+<div class="trust-bar">
+  <div class="container trust-bar-inner">
+    <div class="trust-stat">
+      <div class="trust-stat-num" data-target="1200">0</div>
+      <div class="trust-stat-label">Orders Delivered</div>
+    </div>
+    <div class="trust-stat">
+      <div class="trust-stat-num" data-target="4">0</div>
+      <div class="trust-stat-label">Partner Stores</div>
+    </div>
+    <div class="trust-stat">
+      <div class="trust-stat-num" data-target="3">0</div>
+      <div class="trust-stat-label">Bhutan Cities</div>
+    </div>
+    <div class="trust-stat">
+      <div class="trust-stat-num" data-target="98">0</div>
+      <div class="trust-stat-label">% Satisfaction</div>
+    </div>
+  </div>
+</div>
+
 <!-- ── FEE ESTIMATOR ── -->
-<section class="estimator-section">
+<section class="estimator-section section-padding">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Quick Estimate</span>
@@ -85,15 +160,15 @@
       <p class="section-subtitle">Enter the product price in Indian Rupees to get an instant estimate including our service charge.</p>
     </div>
     <div class="estimator-box">
-      <h3><i class="fa-solid fa-calculator" style="color:var(--primary);margin-right:8px;"></i>Service Charge Estimator</h3>
+      <h3 class="estimator-title"><i class="fa-solid fa-calculator"></i> Service Charge Estimator</h3>
       <div class="est-row">
         <div>
           <div class="est-label">Product Price (₹ INR)</div>
-          <input type="number" class="est-input" id="estPrice" placeholder="e.g. 1500" min="0" oninput="calcEstimate()">
+          <input type="number" class="input-field" id="estPrice" placeholder="e.g. 1500" min="0" oninput="calcEstimate()">
         </div>
         <div>
           <div class="est-label">Delivery Location</div>
-          <select class="est-input" id="dcharge" onchange="calcEstimate()">
+          <select class="input-field" id="dcharge" onchange="calcEstimate()">
             <option value="350">Thimphu</option>
             <option value="150">Phuntsholing</option>
             <option value="400">Paro</option>
@@ -119,7 +194,7 @@
         </div>
         <div>
           <div class="est-result-label">Est. Total (INR)</div>
-          <div class="est-result-val" id="estTotal">₹ —</div>
+          <div class="est-result-val highlight" id="estTotal">₹ —</div>
         </div>
       </div>
       <p class="est-note">* Shipping fee shown is an estimate (₹50–₹150). Exchange rate adjustments may apply. Final price confirmed on WhatsApp before order.</p>
@@ -127,62 +202,8 @@
   </div>
 </section>
 
-<!-- ── SHOPPING WEBSITES ── -->
-<section class="shops-section">
-  <div class="container">
-    <div class="text-center">
-      <span class="section-tag">Browse &amp; Shop</span>
-      <h2 class="section-title">Browse Indian Stores</h2>
-      <p class="section-subtitle">Click any store below to shop, then copy the product link and paste it into our order form.</p>
-    </div>
-    <div class="shop-grid">
-
-      <a class="shop-card" href="https://www.amazon.in/" target="_blank" rel="noopener">
-        <div class="shop-logo-wrap">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India"
-            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#ff9900;color:#000;'>AMZ</div>'">
-        </div>
-        <h3>Amazon India</h3>
-        <span class="shop-tag">Electronics, books, fashion &amp; more</span>
-        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
-      </a>
-
-      <a class="shop-card" href="https://www.flipkart.com/" target="_blank" rel="noopener">
-        <div class="shop-logo-wrap">
-          <img src="image/flipkart.png" alt="Flipkart"
-            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#2874f0;'>FK</div>'">
-        </div>
-        <h3>Flipkart</h3>
-        <span class="shop-tag">Wide range of products</span>
-        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
-      </a>
-
-      <a class="shop-card" href="https://www.myntra.com/" target="_blank" rel="noopener">
-        <div class="shop-logo-wrap">
-          <img src="image/myntra.jpg" alt="Myntra"
-            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#ff3f6c;'>MYN</div>'">
-        </div>
-        <h3>Myntra</h3>
-        <span class="shop-tag">Fashion &amp; lifestyle</span>
-        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
-      </a>
-
-      <a class="shop-card" href="https://www.meesho.com/" target="_blank" rel="noopener">
-        <div class="shop-logo-wrap">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho"
-            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#9400d3;'>MS</div>'">
-        </div>
-        <h3>Meesho</h3>
-        <span class="shop-tag">Budget-friendly finds</span>
-        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
-      </a>
-
-    </div>
-  </div>
-</section>
-
 <!-- ── HOW IT WORKS ── -->
-<section class="how-section">
+<section class="section-padding how-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">How It Works</span>
@@ -190,21 +211,21 @@
       <p class="section-subtitle">No Indian payment card? No problem. We handle everything.</p>
     </div>
     <div class="how-grid">
-      <div class="how-card">
+      <div class="how-card card">
         <div class="how-num">1</div>
         <div class="how-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
         <h3>Find Your Product</h3>
         <p>Browse Amazon, Flipkart, Myntra or Meesho. Find exactly what you want.</p>
       </div>
       <div class="how-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="how-card">
+      <div class="how-card card">
         <div class="how-num">2</div>
         <div class="how-icon"><i class="fa-solid fa-copy"></i></div>
         <h3>Copy the Link</h3>
         <p>Copy the product URL from your browser or app. That's all we need.</p>
       </div>
       <div class="how-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="how-card">
+      <div class="how-card card">
         <div class="how-num">3</div>
         <div class="how-icon"><i class="fa-solid fa-paper-plane"></i></div>
         <h3>Paste &amp; Submit</h3>
@@ -212,13 +233,67 @@
       </div>
     </div>
     <div class="how-cta">
-      <a href="#order-form" class="cta-main">Start Your Order <i class="fa-solid fa-arrow-down"></i></a>
+      <a href="#order-form" class="btn btn-primary btn-lg" target="_self">
+        Start Your Order <i class="fa-solid fa-arrow-down"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── SHOPPING WEBSITES (Marketplace Grid) ── -->
+<section class="section-padding shops-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Browse &amp; Shop</span>
+      <h2 class="section-title">Enter the Indian Marketplace</h2>
+      <p class="section-subtitle">Click any store below to shop, then copy the product link and paste it into our order form.</p>
+    </div>
+    <div class="shop-grid">
+      <a class="shop-card" href="https://www.amazon.in/" rel="noopener">
+        <div class="shop-card-glow amazon-glow"></div>
+        <div class="shop-logo-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India" onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff9900;color:#000;\'>AMZ</div>'">
+        </div>
+        <h3>Amazon India</h3>
+        <span class="shop-tag">Electronics, books, fashion &amp; more</span>
+        <span class="shop-external">Shop Now <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </a>
+
+      <a class="shop-card" href="https://www.flipkart.com/" rel="noopener">
+        <div class="shop-card-glow flipkart-glow"></div>
+        <div class="shop-logo-wrap">
+          <img src="image/flipkart.png" alt="Flipkart" onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#2874f0;\'>FK</div>'">
+        </div>
+        <h3>Flipkart</h3>
+        <span class="shop-tag">Wide range of products</span>
+        <span class="shop-external">Shop Now <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </a>
+
+      <a class="shop-card" href="https://www.myntra.com/" rel="noopener">
+        <div class="shop-card-glow myntra-glow"></div>
+        <div class="shop-logo-wrap">
+          <img src="image/myntra.jpg" alt="Myntra" onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff3f6c;\'>MYN</div>'">
+        </div>
+        <h3>Myntra</h3>
+        <span class="shop-tag">Fashion &amp; lifestyle</span>
+        <span class="shop-external">Shop Now <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </a>
+
+      <a class="shop-card" href="https://www.meesho.com/" rel="noopener">
+        <div class="shop-card-glow meesho-glow"></div>
+        <div class="shop-logo-wrap">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho" onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#9400d3;\'>MS</div>'">
+        </div>
+        <h3>Meesho</h3>
+        <span class="shop-tag">Budget-friendly finds</span>
+        <span class="shop-external">Shop Now <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+      </a>
     </div>
   </div>
 </section>
 
 <!-- ── TRUST ── -->
-<section class="trust-section">
+<section class="section-padding trust-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Why Us</span>
@@ -226,22 +301,22 @@
       <p class="section-subtitle">We make cross-border shopping simple, safe and convenient for everyone in Bhutan.</p>
     </div>
     <div class="trust-grid">
-      <div class="trust-card">
+      <div class="trust-card card">
         <div class="trust-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
         <h3>No Indian Payment Needed</h3>
         <p>We handle the entire ordering process on your behalf. Pay us locally in BTN.</p>
       </div>
-      <div class="trust-card">
+      <div class="trust-card card">
         <div class="trust-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
         <h3>No Indian SIM Required</h3>
         <p>Simply send us the product link or a screenshot — we do the rest.</p>
       </div>
-      <div class="trust-card">
+      <div class="trust-card card">
         <div class="trust-icon"><i class="fa-solid fa-box-open"></i></div>
         <h3>Personally Sourced</h3>
         <p>Products are personally collected from Jaigaon — no middlemen.</p>
       </div>
-      <div class="trust-card">
+      <div class="trust-card card">
         <div class="trust-icon"><i class="fa-solid fa-shield-halved"></i></div>
         <h3>Trusted Local Delivery</h3>
         <p>Delivered directly to your door in Thimphu, Phuntsholing or Paro.</p>
@@ -250,8 +325,260 @@
   </div>
 </section>
 
+<!-- ── ORDER FORM ── -->
+<section class="section-padding form-section" id="order-form">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">Get Started</span>
+      <h2 class="section-title">Submit Order Request</h2>
+      <p class="section-subtitle">Build your cart below. We'll confirm everything on WhatsApp before placing your order.</p>
+    </div>
+
+    <div class="form-layout">
+      <!-- LEFT: Form -->
+      <div class="form-card">
+        <!-- Progress -->
+        <div class="form-progress">
+          <div class="steps-row">
+            <div class="step-item active" id="si-1">
+              <div class="step-dot"><i class="fa-solid fa-user"></i></div>
+              <span class="step-label">Contact</span>
+            </div>
+            <div class="step-item" id="si-2">
+              <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
+              <span class="step-label">Delivery</span>
+            </div>
+            <div class="step-item" id="si-3">
+              <div class="step-dot"><i class="fa-solid fa-box-open"></i></div>
+              <span class="step-label">Products</span>
+            </div>
+            <div class="step-item" id="si-4">
+              <div class="step-dot"><i class="fa-solid fa-credit-card"></i></div>
+              <span class="step-label">Payment</span>
+            </div>
+            <div class="step-item" id="si-5">
+              <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+              <span class="step-label">Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panels -->
+        <div class="form-body">
+          <form id="orderForm" novalidate>
+
+            <!-- STEP 1 -->
+            <div class="step-panel active" id="step-1">
+              <p class="step-heading">Who are we delivering to?</p>
+              <p class="step-hint">We'll reach you on WhatsApp to confirm your order and payment.</p>
+
+              <div class="input-group">
+                <label class="field-label" for="fullName">Full Name <span class="req">*</span></label>
+                <input type="text" class="input-field" id="fullName" name="fi-sender-fullName" placeholder="e.g. Tenzin Wangchuk" autocomplete="name" onblur="saveFormState()" />
+                <div class="field-error-msg" id="err-name"><i class="fa-solid fa-circle-exclamation"></i> Please enter your full name.</div>
+              </div>
+
+              <div class="input-grid">
+                <div class="input-group">
+                  <label class="field-label" for="whatsapp">WhatsApp <span class="req">*</span></label>
+                  <div class="phone-wrap">
+                    <div class="phone-prefix"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>&nbsp;+975</div>
+                    <input type="tel" class="input-field phone-input" id="whatsapp" name="fi-text-whatsapp" placeholder="17 11 33 02" autocomplete="tel" onblur="saveFormState()" />
+                  </div>
+                  <div class="field-error-msg" id="err-phone"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid 8-digit Bhutan number.</div>
+                </div>
+                <div class="input-group">
+                  <label class="field-label" for="email">Email</label>
+                  <input type="email" class="input-field" id="email" name="fi-email" placeholder="your@email.com" autocomplete="email" onblur="saveFormState()" />
+                  <div class="field-error-msg" id="err-email"><i class="fa-solid fa-circle-exclamation"></i> Please enter a valid email address.</div>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <button type="button" class="btn btn-primary btn-next" onclick="goStep(2)">
+                  Next — Delivery <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="step-panel" id="step-2">
+              <p class="step-heading">Where should we deliver?</p>
+              <p class="step-hint">Pick your city, then give us your specific address so we find you easily.</p>
+
+              <div class="city-cards" id="cityCards">
+                <div class="city-card" onclick="selectCity('Thimphu', 350, this)">
+                  <span class="city-icon">🏙️</span>
+                  <span class="city-name">Thimphu</span>
+                  <span class="city-fee">₹350 delivery fee</span>
+                </div>
+                <div class="city-card" onclick="selectCity('Phuntsholing', 150, this)">
+                  <span class="city-icon">🌉</span>
+                  <span class="city-name">Phuntsholing</span>
+                  <span class="city-fee">₹150 delivery fee</span>
+                </div>
+                <div class="city-card" onclick="selectCity('Paro', 400, this)">
+                  <span class="city-icon">✈️</span>
+                  <span class="city-name">Paro</span>
+                  <span class="city-fee">₹400 delivery fee</span>
+                </div>
+              </div>
+              <input type="hidden" id="deliveryCity" name="fi-text-city" />
+              <div class="field-error-msg" id="err-city" style="margin-bottom:18px;margin-top:-10px;">
+                <i class="fa-solid fa-circle-exclamation"></i> Please select your city.
+              </div>
+
+              <div class="input-group">
+                <label class="field-label" for="address">Delivery Address <span class="req">*</span></label>
+                <textarea class="input-field" id="address" name="fi-text-address" rows="3" placeholder="House number, area or building name, landmark…" onblur="saveFormState()"></textarea>
+                <div class="field-error-msg" id="err-address"><i class="fa-solid fa-circle-exclamation"></i> Please enter your delivery address.</div>
+              </div>
+
+              <div class="form-nav">
+                <button type="button" class="btn btn-secondary btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary btn-next" onclick="goStep(3)">Next — Add Products <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="step-panel" id="step-3">
+              <p class="step-heading">Build your order cart</p>
+              <p class="step-hint">Paste a product link or describe the item. Add size, colour or variant in the notes field.</p>
+
+              <div class="products-container" id="productsContainer"></div>
+
+              <button type="button" class="add-product-btn" onclick="addProductRow()">
+                <i class="fa-solid fa-plus"></i> Add Another Product
+              </button>
+
+              <!-- Screenshot upload -->
+              <div class="input-group" style="margin-top:1.5rem; margin-bottom:0;">
+                <div class="upload-section-label">
+                  <i class="fa-solid fa-image" style="color:var(--primary);"></i>
+                  Upload Screenshots
+                  <span class="upload-optional">Optional</span>
+                </div>
+                <div class="file-upload-area" id="dropZone">
+                  <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)" />
+                  <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                  <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
+                  <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
+                </div>
+                <div class="field-error-msg" id="err-files"></div>
+                <div class="file-list" id="fileList"></div>
+              </div>
+
+              <div class="form-nav">
+                <button type="button" class="btn btn-secondary btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary btn-next" onclick="goStep(4)">Next — Payment <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 4 -->
+            <div class="step-panel" id="step-4">
+              <p class="step-heading">How would you like to pay?</p>
+              <p class="step-hint">Select your preferred payment method. Final amount confirmed on WhatsApp.</p>
+
+              <div class="payment-cards" id="paymentCards">
+                <div class="payment-card" onclick="selectPayment('Full Payment', this)">
+                  <span class="payment-icon">💰</span>
+                  <span class="payment-name">Full Payment</span>
+                  <span class="payment-desc">Pay 100% upfront via bank transfer / mobile money</span>
+                </div>
+                <div class="payment-card" onclick="selectPayment('Partial Payment (50/50)', this)">
+                  <span class="payment-icon">📊</span>
+                  <span class="payment-name">Partial Payment (50/50)</span>
+                  <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
+                </div>
+              </div>
+              <input type="hidden" id="paymentMethod" name="payment_method" />
+              <div class="field-error-msg" id="err-payment">
+                <i class="fa-solid fa-circle-exclamation"></i> Please select a payment method.
+              </div>
+
+              <div class="form-nav">
+                <button type="button" class="btn btn-secondary btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary btn-next" onclick="goStep(5)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
+            <!-- STEP 5 -->
+            <div class="step-panel" id="step-5">
+              <p class="step-heading">Review &amp; Submit</p>
+              <p class="step-hint">Check everything looks right. You can still go back and edit any section.</p>
+
+              <div class="review-grid" id="reviewGrid"></div>
+
+              <div class="pricing-summary">
+                <div class="pricing-summary-title">
+                  <i class="fa-solid fa-receipt" style="color:var(--primary);"></i> Pricing is confirmed on WhatsApp
+                </div>
+                <div class="pricing-summary-rows">
+                  <div class="pricing-row">
+                    <span class="pricing-row-label">Service fee (8–15% of product price)</span>
+                    <span class="pricing-row-val">Confirmed on WhatsApp</span>
+                  </div>
+                  <div class="pricing-row">
+                    <span class="pricing-row-label">Estimated shipping (India → Jaigaon)</span>
+                    <span class="pricing-row-val">₹50–₹150</span>
+                  </div>
+                  <div class="pricing-row">
+                    <span class="pricing-row-label">Delivery fee to your city</span>
+                    <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
+                  </div>
+                  <div class="pricing-row">
+                    <span class="pricing-row-label">Payment method</span>
+                    <span class="pricing-row-val" id="reviewPaymentMethod">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="notice-box">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;flex-shrink:0;margin-top:1px;"></i>
+                <span>Restricted, oversized, or prohibited items may not be eligible for delivery. We'll let you know on WhatsApp before proceeding.</span>
+              </div>
+
+              <button type="submit" class="btn-submit-final" id="submitBtn">
+                <i class="fa-solid fa-paper-plane"></i> Submit Order Request
+              </button>
+              <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment confirmation.</p>
+
+              <div class="form-nav" style="margin-top:16px;">
+                <button type="button" class="btn btn-secondary btn-back" onclick="goStep(4)"><i class="fa-solid fa-arrow-left"></i> Back to Payment</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sticky Summary -->
+      <div class="order-summary" id="orderSummary">
+        <div class="summary-title"><i class="fa-solid fa-cart-shopping" style="color:var(--primary);"></i> Your Order</div>
+        <div class="summary-items" id="summaryItems">
+          <div class="summary-empty">
+            <i class="fa-solid fa-basket-shopping" style="font-size:1.5rem; color:var(--text-muted); display:block; margin-bottom:0.5rem;"></i>
+            Your cart is empty. Add products to see your estimate.
+          </div>
+        </div>
+        <div class="summary-totals">
+          <div class="summary-row"><span>Items</span><span id="summaryItemCount">0</span></div>
+          <div class="summary-row"><span>Delivery</span><span id="summaryDelivery">—</span></div>
+          <div class="summary-row"><span>Est. Service Fee</span><span id="summaryService">—</span></div>
+          <div class="summary-row total"><span>Est. Total</span><span id="summaryTotal">—</span></div>
+        </div>
+      </div>
+      <!-- Mobile summary toggle (invisible on desktop) -->
+      <div class="summary-toggle" id="summaryToggle" onclick="toggleSummary()" style="display:none;">
+        <span style="font-weight:700;"><i class="fa-solid fa-cart-shopping"></i> Your Order</span>
+        <span id="summaryToggleTotal" style="font-weight:700; color:var(--primary);">—</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── TESTIMONIALS ── -->
-<section class="testimonials-section">
+<section class="section-padding testimonials-section">
   <div class="container">
     <div class="testi-header">
       <div>
@@ -268,245 +595,8 @@
   </div>
 </section>
 
-<!-- ── ORDER FORM ── -->
-<section class="form-section" id="order-form">
-  <div class="container">
-    <div class="text-center">
-      <span class="section-tag">Get Started</span>
-      <h2 class="section-title">Submit Order Request</h2>
-      <p class="section-subtitle">Just 5 quick steps. We'll confirm everything on WhatsApp before placing your order.</p>
-    </div>
-
-    <div class="form-card">
-
-      <!-- ── STEP PROGRESS BAR ── -->
-      <div class="form-progress">
-        <div class="steps-row">
-
-          <div class="step-item active" id="si-1">
-            <div class="step-dot"><i class="fa-solid fa-user"></i></div>
-            <span class="step-label">Contact</span>
-          </div>
-
-          <div class="step-item" id="si-2">
-            <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
-            <span class="step-label">Delivery</span>
-          </div>
-
-          <div class="step-item" id="si-3">
-            <div class="step-dot"><i class="fa-solid fa-box-open"></i></div>
-            <span class="step-label">Products</span>
-          </div>
-
-          <div class="step-item" id="si-4">
-            <div class="step-dot"><i class="fa-solid fa-credit-card"></i></div>
-            <span class="step-label">Payment</span>
-          </div>
-
-          <div class="step-item" id="si-5">
-            <div class="step-dot"><i class="fa-solid fa-check"></i></div>
-            <span class="step-label">Review</span>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ── FORM PANELS ── -->
-      <div class="form-body">
-        <form id="orderForm" novalidate>
-
-          <!-- ══ STEP 1 · CONTACT ══ -->
-          <div class="step-panel active" id="step-1">
-            <p class="step-heading">Who are we delivering to?</p>
-            <p class="step-hint">We'll reach you on WhatsApp to confirm your order and payment.</p>
-
-            <div class="input-group">
-              <label for="fullName">Full Name <span class="req">*</span></label>
-              <input type="text" id="fullName" name="fi-sender-fullName" placeholder="e.g. Tenzin Wangchuk" autocomplete="name" />
-              <div class="field-error-msg" id="err-name"><i class="fa-solid fa-circle-exclamation"></i> Please enter your full name.</div>
-            </div>
-
-            <div class="input-group">
-              <label for="whatsapp">WhatsApp Number <span class="req">*</span></label>
-              <div class="phone-wrap">
-                <div class="phone-prefix"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>&nbsp;+975</div>
-                <input type="tel" id="whatsapp" name="fi-text-whatsapp" placeholder="17 11 33 02" autocomplete="tel" class="phone-input" />
-              </div>
-              <div class="field-error-msg" id="err-phone"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid 8-digit Bhutan number.</div>
-            </div>
-
-            <div class="input-group">
-              <label for="email">Email <span class="req"></span></label>
-              <input type="email" id="email" name="fi-email" placeholder="Type your email adress" autocomplete="name" />
-              <div class="field-error-msg" id="err-email"><i class="fa-solid fa-circle-exclamation"></i> Please enter a valid email address.</div>
-            </div>
-
-            <div class="form-nav">
-              <button type="button" class="btn-next" onclick="goStep(2)">
-                Next — Delivery Location <i class="fa-solid fa-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- ══ STEP 2 · DELIVERY ══ -->
-          <div class="step-panel" id="step-2">
-            <p class="step-heading">Where should we deliver?</p>
-            <p class="step-hint">Pick your city, then give us your specific address so we find you easily.</p>
-
-            <div class="city-cards" id="cityCards">
-              <div class="city-card" onclick="selectCity('Thimphu', 350, this)">
-                <span class="city-icon">🏙️</span>
-                <span class="city-name">Thimphu</span>
-                <span class="city-fee">₹350 delivery fee</span>
-              </div>
-              <div class="city-card" onclick="selectCity('Phuntsholing', 150, this)">
-                <span class="city-icon">🌉</span>
-                <span class="city-name">Phuntsholing</span>
-                <span class="city-fee">₹150 delivery fee</span>
-              </div>
-              <div class="city-card" onclick="selectCity('Paro', 400, this)">
-                <span class="city-icon">✈️</span>
-                <span class="city-name">Paro</span>
-                <span class="city-fee">₹400 delivery fee</span>
-              </div>
-            </div>
-            <input type="hidden" id="deliveryCity" name="fi-text-city" />
-            <div class="field-error-msg" id="err-city" style="margin-bottom:18px;margin-top:-10px;">
-              <i class="fa-solid fa-circle-exclamation"></i> Please select your city.
-            </div>
-
-            <div class="input-group">
-              <label for="address">Delivery Address <span class="req">*</span></label>
-              <textarea id="address" name="fi-text-address" rows="3" placeholder="House number, area or building name, landmark…"></textarea>
-              <div class="field-error-msg" id="err-address"><i class="fa-solid fa-circle-exclamation"></i> Please enter your delivery address.</div>
-            </div>
-
-            <div class="form-nav">
-              <button type="button" class="btn-back" onclick="goStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <button type="button" class="btn-next" onclick="goStep(3)">Next — Add Products <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-          </div>
-
-          <!-- ══ STEP 3 · PRODUCTS ══ -->
-          <div class="step-panel" id="step-3">
-            <p class="step-heading">What would you like to order?</p>
-            <p class="step-hint">Paste a product link or describe the item. Add size, colour or variant in the notes field.</p>
-
-            <div class="products-container" id="productsContainer">
-              <!-- First row auto-injected on DOMContentLoaded by main.js -->
-            </div>
-
-            <button type="button" class="add-product-btn" onclick="addProductRow()">
-              <i class="fa-solid fa-plus"></i> Add Another Product
-            </button>
-
-            <!-- Screenshot upload -->
-            <div class="input-group" style="margin-bottom:0;">
-              <div class="upload-section-label">
-                <i class="fa-solid fa-image" style="color:var(--primary);"></i>
-                Upload Screenshots
-                <span class="upload-optional">Optional</span>
-              </div>
-              <div class="file-upload-area">
-                <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)" />
-                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
-                <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
-              </div>
-              <div class="field-error-msg" id="err-files"></div>
-              <div class="file-list" id="fileList"></div>
-            </div>
-
-            <div class="form-nav">
-              <button type="button" class="btn-back" onclick="goStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <button type="button" class="btn-next" onclick="goStep(4)">Next — Payment <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-          </div>
-
-          <!-- ══ STEP 4 · PAYMENT METHOD ══ -->
-          <div class="step-panel" id="step-4">
-            <p class="step-heading">How would you like to pay?</p>
-            <p class="step-hint">Select your preferred payment method. Final amount confirmed on WhatsApp.</p>
-
-            <div class="payment-cards" id="paymentCards">
-              <div class="payment-card" onclick="selectPayment('Full Payment', this)">
-                <span class="payment-icon">💰</span>
-                <span class="payment-name">Full Payment</span>
-                <span class="payment-desc">Pay 100% upfront via bank transfer / mobile money</span>
-              </div>
-              <div class="payment-card" onclick="selectPayment('Partial Payment (50/50)', this)">
-                <span class="payment-icon">📊</span>
-                <span class="payment-name">Partial Payment (50/50)</span>
-                <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
-              </div>
-            </div>
-            <input type="hidden" id="paymentMethod" name="payment_method" />
-            <div class="field-error-msg" id="err-payment">
-              <i class="fa-solid fa-circle-exclamation"></i> Please select a payment method.
-            </div>
-
-            <div class="form-nav">
-              <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <button type="button" class="btn-next" onclick="goStep(5)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-          </div>
-
-          <!-- ══ STEP 5 · REVIEW & SUBMIT ══ -->
-          <div class="step-panel" id="step-5">
-            <p class="step-heading">Review &amp; Submit</p>
-            <p class="step-hint">Check everything looks right. You can still go back and edit any section.</p>
-
-            <div class="review-grid" id="reviewGrid">
-              <!-- Populated by buildReview() in main.js when goStep(5) is called -->
-            </div>
-
-            <div class="pricing-summary">
-              <div class="pricing-summary-title">
-                <i class="fa-solid fa-receipt" style="color:var(--primary);"></i> Pricing is confirmed on WhatsApp
-              </div>
-              <div class="pricing-summary-rows">
-                <div class="pricing-row">
-                  <span class="pricing-row-label">Service fee (8–15% of product price)</span>
-                  <span class="pricing-row-val">Confirmed on WhatsApp</span>
-                </div>
-                <div class="pricing-row">
-                  <span class="pricing-row-label">Estimated shipping (India → Jaigaon)</span>
-                  <span class="pricing-row-val">₹50–₹150</span>
-                </div>
-                <div class="pricing-row">
-                  <span class="pricing-row-label">Delivery fee to your city</span>
-                  <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
-                </div>
-                <div class="pricing-row">
-                  <span class="pricing-row-label">Payment method</span>
-                  <span class="pricing-row-val" id="reviewPaymentMethod">—</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="notice-box">
-              <i class="fa-solid fa-triangle-exclamation" style="color:#ffb300;flex-shrink:0;margin-top:1px;"></i>
-              <span>Restricted, oversized, or prohibited items may not be eligible for delivery. We'll let you know on WhatsApp before proceeding.</span>
-            </div>
-
-            <button type="submit" class="btn-submit-final" id="submitBtn">
-              <i class="fa-solid fa-paper-plane"></i> Submit Order Request
-            </button>
-            <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment confirmation.</p>
-
-            <div class="form-nav" style="margin-top:16px;">
-              <button type="button" class="btn-back" onclick="goStep(4)"><i class="fa-solid fa-arrow-left"></i> Back to Payment</button>
-            </div>
-          </div>
-
-        </form>
-      </div><!-- /form-body -->
-    </div><!-- /form-card -->
-  </div>
-</section>
-
 <!-- ── FAQ ── -->
-<section class="faq-section">
+<section class="section-padding faq-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">FAQ</span>
@@ -560,7 +650,7 @@
 </section>
 
 <!-- ── DELIVERY SCHEDULE ── -->
-<section class="delivery-section">
+<section class="section-padding delivery-section">
   <div class="container text-center">
     <span class="section-tag">Schedule</span>
     <h2 class="section-title">Delivery Schedule</h2>
@@ -591,19 +681,19 @@
 </section>
 
 <!-- ── FOOTER ── -->
-<footer>
+<<footer>
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="footer-logo">
           <div class="logo-icon" style="width:38px;height:38px;border-radius:10px;font-size:1rem;">
-            <i class="fa-solid fa-truck-fast"></i>
+            <i class="fa-solid fa-bag-shopping"></i>
           </div>
           Shop2Bhutan
         </div>
         <p>Shop from Indian e-commerce platforms and get delivery directly to your doorstep in Bhutan.</p>
         <div class="footer-social">
-          <a href="https://wa.me/97577113302" target="_blank" aria-label="WhatsApp">
+          <a href="https://wa.me/97577113302" aria-label="WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
           </a>
         </div>
@@ -619,17 +709,17 @@
       <div>
         <h3 class="footer-title">Platforms</h3>
         <ul class="footer-list">
-          <li><a href="https://www.amazon.in/" target="_blank" rel="noopener">Amazon India</a></li>
-          <li><a href="https://www.flipkart.com/" target="_blank" rel="noopener">Flipkart</a></li>
-          <li><a href="https://www.myntra.com/" target="_blank" rel="noopener">Myntra</a></li>
-          <li><a href="https://www.meesho.com/" target="_blank" rel="noopener">Meesho</a></li>
+          <li><a href="https://www.amazon.in/" rel="noopener">Amazon India</a></li>
+          <li><a href="https://www.flipkart.com/" rel="noopener">Flipkart</a></li>
+          <li><a href="https://www.myntra.com/" rel="noopener">Myntra</a></li>
+          <li><a href="https://www.meesho.com/" rel="noopener">Meesho</a></li>
         </ul>
       </div>
       <div>
         <h3 class="footer-title">Contact</h3>
         <ul class="footer-list">
-          <li><a href="https://wa.me/97577113302" target="_blank">WhatsApp Support</a></li>
-          <li><a href="#order-form">Submit Order</a></li>
+          <li><a href="https://wa.me/97577113302">WhatsApp Support</a></li>
+          <li><a href="#order-form" target="_self">Submit Order</a></li>
         </ul>
       </div>
     </div>
@@ -643,7 +733,7 @@
 <!-- ── FLOATING WHATSAPP ── -->
 <div class="floating-wa">
   <div class="floating-wa-label">Chat with us</div>
-  <a href="https://wa.me/97577113302" class="floating-wa-btn" target="_blank" aria-label="Chat on WhatsApp">
+  <a href="https://wa.me/97577113302" class="floating-wa-btn" aria-label="Chat on WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 </div>
@@ -656,7 +746,7 @@
     <div class="popup-order-id" id="popupOrderId" style="cursor:pointer;" title="Tap to copy">—</div>
     <p class="popup-copy-note" id="copyNote">Tap the ID above to copy it</p>
     <p>Your request has been received. Tap below to confirm on WhatsApp and we'll sort out the details.</p>
-    <a id="whatsappConfirmBtn" href="#" target="_blank" class="popup-wa-btn">
+    <a id="whatsappConfirmBtn" href="#" class="popup-wa-btn">
       <i class="fa-brands fa-whatsapp"></i> Confirm on WhatsApp
     </a>
     <button class="popup-close-btn" onclick="closePopup()">Close</button>
@@ -702,7 +792,7 @@
   }
 </script>
 
-<!-- ── MAIN MODULE (all logic lives here) ── -->
+<!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
 </body>
 </html>
