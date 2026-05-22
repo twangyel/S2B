@@ -9,226 +9,173 @@
   <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#111827">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-<base target="_blank">
 </head>
 <body>
 
 <!-- ── NAV ── -->
-<nav id="mainNav" role="navigation" aria-label="Main">
+<nav id="mainNav">
   <div class="container nav-content">
-    <a href="https://shop2bt.vercel.app/" class="logo" aria-label="Shop2Bhutan Home">
-      <div class="logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
-      Shop2Bhutan
+    <a href="https://shop2bt.vercel.app/" class="logo">
+      <div class="logo-icon"><img src="/image/logo.png" alt="Shop2Bhutan logo"></div>
     </a>
     <div class="nav-actions">
-      <a href="#order-form" class="nav-btn btn-primary">Submit Order</a>
-      <a href="https://wa.me/97577113302" target="_blank" rel="noopener" class="nav-btn btn-whatsapp" aria-label="Chat on WhatsApp">
+      <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
+      <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
         <i class="fa-brands fa-whatsapp"></i> WhatsApp
       </a>
     </div>
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileMenu">
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
   </div>
-  <div class="mobile-menu" id="mobileMenu" role="menu" aria-hidden="true">
-    <a href="#order-form" class="nav-btn btn-primary" role="menuitem">Submit Order</a>
-    <a href="https://wa.me/97577113302" target="_blank" rel="noopener" class="nav-btn btn-whatsapp" role="menuitem">
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="/track.html" class="nav-btn btn-primary">Track Order</a>
+    <a href="https://wa.me/97577113302" target="_blank" class="nav-btn btn-whatsapp">
       <i class="fa-brands fa-whatsapp"></i> WhatsApp
     </a>
   </div>
 </nav>
 
 <!-- ── HERO ── -->
-<section class="hero" aria-label="Hero">
-  <div class="container hero-grid">
-    <div class="hero-content">
-      <div class="hero-badge" aria-label="Delivery locations">
-        <i class="fa-solid fa-location-dot"></i>
-        Delivering in Thimphu, Phuntsholing &amp; Paro
-      </div>
-      <h1>Shop India.<br><span class="text-accent">Delivered</span> to Bhutan.</h1>
-      <p>Order from Amazon, Flipkart, Myntra and more. We personally collect from Jaigaon and deliver straight to your doorstep.</p>
-      <div class="hero-cta">
-        <a href="#order-form" class="cta-main">Submit Order Request</a>
-        <a href="https://wa.me/97577113302" target="_blank" rel="noopener" class="cta-wa" aria-label="Chat on WhatsApp">
-          <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-        </a>
-      </div>
-      <div class="hero-chips" role="list" aria-label="Key features">
-        <div class="hero-chip" role="listitem"><i class="fa-solid fa-circle-check"></i> Trusted Local Service</div>
-        <div class="hero-chip" role="listitem"><i class="fa-solid fa-truck"></i> Doorstep Delivery</div>
-        <div class="hero-chip" role="listitem"><i class="fa-solid fa-calendar"></i> Weekly Delivery</div>
-        <div class="hero-chip" role="listitem"><i class="fa-solid fa-clock"></i> 5–10 Day Turnaround</div>
-      </div>
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <i class="fa-solid fa-location-dot"></i>
+      Delivering in Thimphu, Phuntsholing &amp; Paro
     </div>
-    <div class="hero-visual">
-      <div class="hero-card-stack">
-        <div class="hero-card">
-          <div class="hero-card-header">
-            <div class="hero-card-avatar">JD</div>
-            <div>
-              <div class="hero-card-title">Order #2841</div>
-              <div class="hero-card-sub">Amazon India</div>
-            </div>
-          </div>
-          <div class="hero-card-body">
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-          </div>
-          <div class="hero-card-footer">
-            <span class="hero-card-price">₹2,450</span>
-            <span class="hero-card-status">Delivered</span>
-          </div>
-        </div>
-        <div class="hero-card">
-          <div class="hero-card-header">
-            <div class="hero-card-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">TS</div>
-            <div>
-              <div class="hero-card-title">Order #2842</div>
-              <div class="hero-card-sub">Flipkart</div>
-            </div>
-          </div>
-          <div class="hero-card-body">
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-          </div>
-          <div class="hero-card-footer">
-            <span class="hero-card-price">₹1,890</span>
-            <span class="hero-card-status" style="background:#dbeafe;color:#1e40af">In Transit</span>
-          </div>
-        </div>
-        <div class="hero-card">
-          <div class="hero-card-header">
-            <div class="hero-card-avatar" style="background:linear-gradient(135deg,#10b981,#059669)">PD</div>
-            <div>
-              <div class="hero-card-title">Order #2843</div>
-              <div class="hero-card-sub">Myntra</div>
-            </div>
-          </div>
-          <div class="hero-card-body">
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-            <div class="hero-card-body-text"></div>
-          </div>
-          <div class="hero-card-footer">
-            <span class="hero-card-price">₹3,200</span>
-            <span class="hero-card-status">Delivered</span>
-          </div>
-        </div>
-      </div>
+    <h1>Shop India.<br><span>Delivered</span> to Bhutan.</h1>
+    <p>Order from Amazon, Flipkart, Myntra and more. We personally collect from Jaigaon and deliver straight to your doorstep.</p>
+    <div class="hero-cta">
+      <a href="#order-form" class="cta-main">Submit Order Request</a>
+      <a href="https://wa.me/97577113302" target="_blank" class="cta-wa">
+        <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+      </a>
+    </div>
+    <div class="hero-chips">
+      <div class="hero-chip"><i class="fa-solid fa-circle-check"></i> Trusted Local Service</div>
+      <div class="hero-chip"><i class="fa-solid fa-truck"></i> Doorstep Delivery</div>
+      <div class="hero-chip"><i class="fa-solid fa-calendar"></i> Weekly Delivery</div>
+      <div class="hero-chip"><i class="fa-solid fa-clock"></i> 5–10 Day Turnaround</div>
     </div>
   </div>
 </section>
 
 <!-- ── FEE ESTIMATOR ── -->
-<section class="estimator-section animate-on-scroll" aria-labelledby="estimator-heading">
+<section class="estimator-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Quick Estimate</span>
-      <h2 class="section-title" id="estimator-heading">How much will it cost?</h2>
+      <h2 class="section-title">How much will it cost?</h2>
       <p class="section-subtitle">Enter the product price in Indian Rupees to get an instant estimate including our service charge.</p>
     </div>
     <div class="estimator-box">
-      <h3><i class="fa-solid fa-calculator"></i> Service Charge Estimator</h3>
+      <h3><i class="fa-solid fa-calculator" style="color:var(--primary);margin-right:8px;"></i>Service Charge Estimator</h3>
       <div class="est-row">
-        <div class="est-field">
-          <label class="est-label" for="estPrice">Product Price (₹ INR)</label>
-          <input type="number" class="est-input" id="estPrice" placeholder="e.g. 1500" min="0" oninput="calcEstimate()" aria-describedby="est-note">
+        <div>
+          <div class="est-label">Product Price (₹ INR)</div>
+          <input type="number" class="est-input" id="estPrice" placeholder="e.g. 1500" min="0" oninput="calcEstimate()">
         </div>
-        <div class="est-field">
-          <label class="est-label" for="dcharge">Delivery Location</label>
+        <div>
+          <div class="est-label">Delivery Location</div>
           <select class="est-input" id="dcharge" onchange="calcEstimate()">
-            <option value="350">Thimphu — ₹350</option>
-            <option value="150">Phuntsholing — ₹150</option>
-            <option value="400">Paro — ₹400</option>
+            <option value="350">Thimphu</option>
+            <option value="150">Phuntsholing</option>
+            <option value="400">Paro</option>
           </select>
         </div>
       </div>
-      <div class="est-result" id="estResult" aria-live="polite" aria-atomic="true">
-        <div class="est-result-item">
+      <div class="est-result" id="estResult">
+        <div>
           <div class="est-result-label">Product Price</div>
           <div class="est-result-val" id="estBase">₹ —</div>
         </div>
-        <div class="est-result-item">
+        <div>
           <div class="est-result-label">Service Fee</div>
           <div class="est-result-val" id="estServiceCharge">₹ —</div>
         </div>
-        <div class="est-result-item">
+        <div>
           <div class="est-result-label">Shipping Fee</div>
           <div class="est-result-val" id="estShipping">₹ —</div>
         </div>
-        <div class="est-result-item">
+        <div>
           <div class="est-result-label">Delivery Fee</div>
           <div class="est-result-val" id="dchargeDisplay">₹ —</div>
         </div>
-        <div class="est-result-item est-result-total">
+        <div>
           <div class="est-result-label">Est. Total (INR)</div>
           <div class="est-result-val" id="estTotal">₹ —</div>
         </div>
       </div>
-      <p class="est-note" id="est-note"><i class="fa-solid fa-circle-info"></i> Shipping fee shown is an estimate (₹50–₹150). Exchange rate adjustments may apply. Final price confirmed on WhatsApp before order.</p>
+      <p class="est-note">* Shipping fee shown is an estimate (₹50–₹150). Exchange rate adjustments may apply. Final price confirmed on WhatsApp before order.</p>
     </div>
   </div>
 </section>
 
 <!-- ── SHOPPING WEBSITES ── -->
-<section class="shops-section animate-on-scroll" aria-labelledby="shops-heading">
+<section class="shops-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Browse &amp; Shop</span>
-      <h2 class="section-title" id="shops-heading">Start Shopping</h2>
+      <h2 class="section-title">Start Shopping</h2>
       <p class="section-subtitle">Browse your favorite Indian shopping websites and share the product links with us.</p>
     </div>
     <div class="shop-grid">
-      <a class="shop-card" href="https://www.amazon.in/" target="_blank" rel="noopener" aria-label="Shop on Amazon India">
+
+      <a class="shop-card" href="https://www.amazon.in/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India" width="64" height="64" loading="lazy">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff9900;color:#000;\'>AMZ</div>'">
         </div>
         <h3>Amazon India</h3>
         <span class="shop-tag">Electronics, books, fashion &amp; more</span>
       </a>
-      <a class="shop-card" href="https://www.flipkart.com/" target="_blank" rel="noopener" aria-label="Shop on Flipkart">
+
+      <a class="shop-card" href="https://www.flipkart.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
-          <img src="image/flipkart.png" alt="Flipkart" width="64" height="64" loading="lazy">
+          <img src="image/flipkart.png" alt="Flipkart"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#2874f0;\'>FK</div>'">
         </div>
         <h3>Flipkart</h3>
         <span class="shop-tag">Wide range of products</span>
       </a>
-      <a class="shop-card" href="https://www.myntra.com/" target="_blank" rel="noopener" aria-label="Shop on Myntra">
+
+      <a class="shop-card" href="https://www.myntra.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
-          <img src="image/myntra.jpg" alt="Myntra" width="64" height="64" loading="lazy">
+          <img src="image/myntra.jpg" alt="Myntra"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff3f6c;\'>MYN</div>'">
         </div>
         <h3>Myntra</h3>
         <span class="shop-tag">Fashion &amp; lifestyle</span>
       </a>
-      <a class="shop-card" href="https://www.meesho.com/" target="_blank" rel="noopener" aria-label="Shop on Meesho">
+
+      <a class="shop-card" href="https://www.meesho.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho" width="64" height="64" loading="lazy">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho"
+            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#9400d3;\'>MS</div>'">
         </div>
         <h3>Meesho</h3>
         <span class="shop-tag">Budget-friendly finds</span>
       </a>
+
     </div>
   </div>
 </section>
 
 <!-- ── TRUST ── -->
-<section class="trust-section animate-on-scroll" aria-labelledby="trust-heading">
+<section class="trust-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Why Us</span>
-      <h2 class="section-title" id="trust-heading">Why Shop2Bhutan?</h2>
+      <h2 class="section-title">Why Shop2Bhutan?</h2>
       <p class="section-subtitle">We make cross-border shopping simple, safe and convenient for everyone in Bhutan.</p>
     </div>
     <div class="trust-grid">
@@ -257,102 +204,95 @@
 </section>
 
 <!-- ── TESTIMONIALS ── -->
-<section class="testimonials-section animate-on-scroll" aria-labelledby="testimonials-heading">
+<section class="testimonials-section">
   <div class="container">
     <div class="testi-header">
       <div>
         <span class="section-tag">Reviews</span>
-        <h2 class="section-title" id="testimonials-heading" style="margin-bottom:0;">What customers say</h2>
+        <h2 class="section-title" style="margin-bottom:0;">What customers say</h2>
       </div>
-      <button class="review-btn" onclick="openReviewForm()" aria-label="Write a review">
+      <button class="review-btn" onclick="openReviewForm()">
         <i class="fa-solid fa-pen"></i> Write a Review
       </button>
     </div>
-    <div id="testiGrid" class="testi-grid" aria-live="polite">
-      <div class="testi-skeleton" aria-label="Loading reviews">
-        <div class="skeleton-card">
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-        </div>
-        <div class="skeleton-card">
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-        </div>
-        <div class="skeleton-card">
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-          <div class="skeleton-shimmer"></div>
-        </div>
-      </div>
+    <div id="testiGrid" class="testi-grid">
+      <div class="testi-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading reviews…</div>
     </div>
   </div>
 </section>
 
 <!-- ── ORDER FORM ── -->
-<section class="form-section animate-on-scroll" id="order-form" aria-labelledby="form-heading">
+<section class="form-section" id="order-form">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Get Started</span>
-      <h2 class="section-title" id="form-heading">Submit Order Request</h2>
+      <h2 class="section-title">Submit Order Request</h2>
       <p class="section-subtitle">Just 5 quick steps. We'll confirm everything on WhatsApp before placing your order.</p>
     </div>
 
     <div class="form-card">
-      <!-- Progress -->
-      <div class="form-progress" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" aria-label="Order form progress" id="formProgress">
+
+      <!-- ── STEP PROGRESS BAR ── -->
+      <!-- 5 steps: Contact · Delivery · Products · Payment · Review -->
+      <div class="form-progress">
         <div class="steps-row">
-          <div class="step-item active" id="si-1" data-step="1">
+
+          <div class="step-item active" id="si-1">
             <div class="step-dot"><i class="fa-solid fa-user"></i></div>
             <span class="step-label">Contact</span>
           </div>
-          <div class="step-item" id="si-2" data-step="2">
+
+          <div class="step-item" id="si-2">
             <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
             <span class="step-label">Delivery</span>
           </div>
-          <div class="step-item" id="si-3" data-step="3">
+
+          <div class="step-item" id="si-3">
             <div class="step-dot"><i class="fa-solid fa-box-open"></i></div>
             <span class="step-label">Products</span>
           </div>
-          <div class="step-item" id="si-4" data-step="4">
+
+          <div class="step-item" id="si-4">
             <div class="step-dot"><i class="fa-solid fa-credit-card"></i></div>
             <span class="step-label">Payment</span>
           </div>
-          <div class="step-item" id="si-5" data-step="5">
+
+          <div class="step-item" id="si-5">
             <div class="step-dot"><i class="fa-solid fa-check"></i></div>
             <span class="step-label">Review</span>
           </div>
+
         </div>
       </div>
 
+      <!-- ── FORM PANELS ── -->
       <div class="form-body">
         <form id="orderForm" novalidate>
 
-          <!-- STEP 1 -->
-          <div class="step-panel active" id="step-1" role="tabpanel" aria-labelledby="tab-contact">
-            <p class="step-heading" id="tab-contact">Who are we delivering to?</p>
+          <!-- ══ STEP 1 · CONTACT ══ -->
+          <div class="step-panel active" id="step-1">
+            <p class="step-heading">Who are we delivering to?</p>
             <p class="step-hint">We'll reach you on WhatsApp to confirm your order and payment.</p>
 
             <div class="input-group">
-              <label for="fullName">Full Name <span class="req" aria-label="required">*</span></label>
-              <input type="text" id="fullName" name="fi-sender-fullName" placeholder="e.g. Tenzin Wangchuk" autocomplete="name" required aria-required="true" />
-              <div class="field-error-msg" id="err-name" role="alert" aria-live="polite"><i class="fa-solid fa-circle-exclamation"></i> Please enter your full name.</div>
+              <label for="fullName">Full Name <span class="req">*</span></label>
+              <input type="text" id="fullName" name="fi-sender-fullName" placeholder="e.g. Tenzin Wangchuk" autocomplete="name" />
+              <div class="field-error-msg" id="err-name"><i class="fa-solid fa-circle-exclamation"></i> Please enter your full name.</div>
             </div>
 
             <div class="input-group">
-              <label for="whatsapp">WhatsApp Number <span class="req" aria-label="required">*</span></label>
+              <label for="whatsapp">WhatsApp Number <span class="req">*</span></label>
               <div class="phone-wrap">
-                <div class="phone-prefix" aria-hidden="true"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>&nbsp;+975</div>
-                <input type="tel" id="whatsapp" name="fi-text-whatsapp" placeholder="17 11 33 02" autocomplete="tel" class="phone-input" required aria-required="true" aria-describedby="err-phone" />
+                <div class="phone-prefix"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i>&nbsp;+975</div>
+                <input type="tel" id="whatsapp" name="fi-text-whatsapp" placeholder="17 11 33 02" autocomplete="tel" class="phone-input" />
               </div>
-              <div class="field-error-msg" id="err-phone" role="alert" aria-live="polite"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid 8-digit Bhutan number.</div>
+              <div class="field-error-msg" id="err-phone"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid 8-digit Bhutan number.</div>
             </div>
 
             <div class="input-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="fi-email" placeholder="your@email.com" autocomplete="email" aria-describedby="err-email" />
-              <div class="field-error-msg" id="err-email" role="alert" aria-live="polite"><i class="fa-solid fa-circle-exclamation"></i> Please enter a valid email address.</div>
+              <label for="email">Email <span class="req"></span></label>
+              <input type="email" id="email" name="fi-email" placeholder="Type your email adress" autocomplete="name" />
+              <div class="field-error-msg" id="err-email"><i class="fa-solid fa-circle-exclamation"></i> Please enter a valid email address.</div>
             </div>
 
             <div class="form-nav">
@@ -362,43 +302,37 @@
             </div>
           </div>
 
-          <!-- STEP 2 -->
-          <div class="step-panel" id="step-2" role="tabpanel" aria-labelledby="tab-delivery">
-            <p class="step-heading" id="tab-delivery">Where should we deliver?</p>
+          <!-- ══ STEP 2 · DELIVERY ══ -->
+          <div class="step-panel" id="step-2">
+            <p class="step-heading">Where should we deliver?</p>
             <p class="step-hint">Pick your city, then give us your specific address so we find you easily.</p>
 
-            <div class="city-cards" id="cityCards" role="radiogroup" aria-label="Select delivery city">
-              <div class="city-card" onclick="selectCity('Thimphu', 350, this)" role="radio" aria-checked="false" tabindex="0">
+            <div class="city-cards" id="cityCards">
+              <div class="city-card" onclick="selectCity('Thimphu', 350, this)">
                 <span class="city-icon">🏙️</span>
-                <div class="city-info">
-                  <span class="city-name">Thimphu</span>
-                  <span class="city-fee">₹350 delivery fee</span>
-                </div>
+                <span class="city-name">Thimphu</span>
+                <span class="city-fee">₹350 delivery fee</span>
               </div>
-              <div class="city-card" onclick="selectCity('Phuntsholing', 150, this)" role="radio" aria-checked="false" tabindex="0">
+              <div class="city-card" onclick="selectCity('Phuntsholing', 150, this)">
                 <span class="city-icon">🌉</span>
-                <div class="city-info">
-                  <span class="city-name">Phuntsholing</span>
-                  <span class="city-fee">₹150 delivery fee</span>
-                </div>
+                <span class="city-name">Phuntsholing</span>
+                <span class="city-fee">₹150 delivery fee</span>
               </div>
-              <div class="city-card" onclick="selectCity('Paro', 400, this)" role="radio" aria-checked="false" tabindex="0">
+              <div class="city-card" onclick="selectCity('Paro', 400, this)">
                 <span class="city-icon">✈️</span>
-                <div class="city-info">
-                  <span class="city-name">Paro</span>
-                  <span class="city-fee">₹400 delivery fee</span>
-                </div>
+                <span class="city-name">Paro</span>
+                <span class="city-fee">₹400 delivery fee</span>
               </div>
             </div>
             <input type="hidden" id="deliveryCity" name="fi-text-city" />
-            <div class="field-error-msg" id="err-city" role="alert" aria-live="polite">
+            <div class="field-error-msg" id="err-city" style="margin-bottom:18px;margin-top:-10px;">
               <i class="fa-solid fa-circle-exclamation"></i> Please select your city.
             </div>
 
             <div class="input-group">
-              <label for="address">Delivery Address <span class="req" aria-label="required">*</span></label>
-              <textarea id="address" name="fi-text-address" rows="3" placeholder="House number, area or building name, landmark…" required aria-required="true"></textarea>
-              <div class="field-error-msg" id="err-address" role="alert" aria-live="polite"><i class="fa-solid fa-circle-exclamation"></i> Please enter your delivery address.</div>
+              <label for="address">Delivery Address <span class="req">*</span></label>
+              <textarea id="address" name="fi-text-address" rows="3" placeholder="House number, area or building name, landmark…"></textarea>
+              <div class="field-error-msg" id="err-address"><i class="fa-solid fa-circle-exclamation"></i> Please enter your delivery address.</div>
             </div>
 
             <div class="form-nav">
@@ -407,30 +341,34 @@
             </div>
           </div>
 
-          <!-- STEP 3 -->
-          <div class="step-panel" id="step-3" role="tabpanel" aria-labelledby="tab-products">
-            <p class="step-heading" id="tab-products">What would you like to order?</p>
+          <!-- ══ STEP 3 · PRODUCTS ══ -->
+          <div class="step-panel" id="step-3">
+            <p class="step-heading">What would you like to order?</p>
             <p class="step-hint">Paste a product link or describe the item. Add size, colour or variant in the notes field.</p>
 
-            <div class="products-container" id="productsContainer"></div>
+            <div class="products-container" id="productsContainer">
+              <!-- First row auto-injected on DOMContentLoaded by main.js -->
+            </div>
 
-            <button type="button" class="add-product-btn" onclick="addProductRow()" aria-label="Add another product">
+            <button type="button" class="add-product-btn" onclick="addProductRow()">
               <i class="fa-solid fa-plus"></i> Add Another Product
             </button>
 
-            <div class="input-group upload-group">
+            <!-- Screenshot upload -->
+            <div class="input-group" style="margin-bottom:0;">
               <div class="upload-section-label">
-                <i class="fa-solid fa-image"></i>
+                <i class="fa-solid fa-image" style="color:var(--primary);"></i>
                 Upload Screenshots
                 <span class="upload-optional">Optional</span>
               </div>
-              <div class="file-upload-area" id="dropZone">
-                <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)" aria-describedby="file-help" />
+              <div class="file-upload-area">
+                <input type="file" name="fi-file-screenshot" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(this)" />
                 <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                <p class="upload-text" id="file-help"><strong>Click to upload</strong> or drag &amp; drop</p>
-                <p class="upload-text upload-hint">JPG, PNG — max 5 MB each</p>
+                <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
+                <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
               </div>
-              <div class="field-error-msg" id="err-files" role="alert" aria-live="polite"></div>
+              <!-- FIX: #err-files now exists so handleFileSelect doesn't throw -->
+              <div class="field-error-msg" id="err-files"></div>
               <div class="file-list" id="fileList"></div>
             </div>
 
@@ -440,55 +378,58 @@
             </div>
           </div>
 
-          <!-- STEP 4 -->
-          <div class="step-panel" id="step-4" role="tabpanel" aria-labelledby="tab-payment">
-            <p class="step-heading" id="tab-payment">How would you like to pay?</p>
+          <!-- ══ STEP 4 · PAYMENT METHOD ══ -->
+          <div class="step-panel" id="step-4">
+            <p class="step-heading">How would you like to pay?</p>
             <p class="step-hint">Select your preferred payment method. Final amount confirmed on WhatsApp.</p>
 
-            <div class="payment-cards" id="paymentCards" role="radiogroup" aria-label="Select payment method">
-              <div class="payment-card" onclick="selectPayment('Full Payment', this)" role="radio" aria-checked="false" tabindex="0">
+            <!-- FIX: onclick now calls selectPayment(), which is defined in main.js -->
+            <div class="payment-cards" id="paymentCards">
+              <div class="payment-card" onclick="selectPayment('Full Payment', this)">
                 <span class="payment-icon">💰</span>
-                <div class="payment-info">
-                  <span class="payment-name">Full Payment</span>
-                  <span class="payment-desc">Pay 100% upfront via bank transfer / mobile money</span>
-                </div>
+                <span class="payment-name">Full Payment</span>
+                <span class="payment-desc">Pay 100% upfront via bank transfer / mobile money</span>
               </div>
-              <div class="payment-card" onclick="selectPayment('Partial Payment (50/50)', this)" role="radio" aria-checked="false" tabindex="0">
+              <div class="payment-card" onclick="selectPayment('Partial Payment (50/50)', this)">
                 <span class="payment-icon">📊</span>
-                <div class="payment-info">
-                  <span class="payment-name">Partial Payment (50/50)</span>
-                  <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
-                </div>
+                <span class="payment-name">Partial Payment (50/50)</span>
+                <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
               </div>
-              <div class="payment-card payment-card--disabled" onclick="showToast('Cash on Delivery coming soon!')" role="radio" aria-checked="false" aria-disabled="true" tabindex="-1">
-                <span class="payment-icon">💵</span>
-                <div class="payment-info">
-                  <span class="payment-name">Cash on Delivery <span class="coming-soon-badge">Soon</span></span>
-                  <span class="payment-desc">Pay when your order arrives</span>
-                </div>
-              </div>
+        
+<div class="payment-grid">
+  <div class="payment-card disabled" onclick="showToast('Cash on Delivery coming soon!')" title="Coming soon">
+    <i class="fas fa-money-bill-wave"></i>
+    <span>Cash on Delivery</span>
+    <span class="coming-soon-badge">Soon</span>
+  </div>
+</div>
+
+
             </div>
             <input type="hidden" id="paymentMethod" name="payment_method" />
-            <div class="field-error-msg" id="err-payment" role="alert" aria-live="polite">
+            <div class="field-error-msg" id="err-payment">
               <i class="fa-solid fa-circle-exclamation"></i> Please select a payment method.
             </div>
 
             <div class="form-nav">
               <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+              <!-- FIX: goes to step 5 (Review), not step 5 was previously mislabelled -->
               <button type="button" class="btn-next" onclick="goStep(5)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
 
-          <!-- STEP 5 -->
-          <div class="step-panel" id="step-5" role="tabpanel" aria-labelledby="tab-review">
-            <p class="step-heading" id="tab-review">Review &amp; Submit</p>
+          <!-- ══ STEP 5 · REVIEW & SUBMIT ══ -->
+          <div class="step-panel" id="step-5">
+            <p class="step-heading">Review &amp; Submit</p>
             <p class="step-hint">Check everything looks right. You can still go back and edit any section.</p>
 
-            <div class="review-grid" id="reviewGrid" aria-live="polite"></div>
+            <div class="review-grid" id="reviewGrid">
+              <!-- Populated by buildReview() in main.js when goStep(5) is called -->
+            </div>
 
             <div class="pricing-summary">
               <div class="pricing-summary-title">
-                <i class="fa-solid fa-receipt"></i> Pricing is confirmed on WhatsApp
+                <i class="fa-solid fa-receipt" style="color:var(--primary);"></i> Pricing is confirmed on WhatsApp
               </div>
               <div class="pricing-summary-rows">
                 <div class="pricing-row">
@@ -501,84 +442,85 @@
                 </div>
                 <div class="pricing-row">
                   <span class="pricing-row-label">Delivery fee to your city</span>
+                  <!-- FIX: populated by buildReview() -->
                   <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
                 </div>
                 <div class="pricing-row">
                   <span class="pricing-row-label">Payment method</span>
+                  <!-- FIX: populated by buildReview() -->
                   <span class="pricing-row-val" id="reviewPaymentMethod">—</span>
                 </div>
               </div>
             </div>
 
             <div class="notice-box">
-              <i class="fa-solid fa-triangle-exclamation"></i>
+              <i class="fa-solid fa-triangle-exclamation" style="color:#ffb300;flex-shrink:0;margin-top:1px;"></i>
               <span>Restricted, oversized, or prohibited items may not be eligible for delivery. We'll let you know on WhatsApp before proceeding.</span>
             </div>
 
             <button type="submit" class="btn-submit-final" id="submitBtn">
-              <span class="btn-text"><i class="fa-solid fa-paper-plane"></i> Submit Order Request</span>
-              <span class="btn-loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Submitting…</span>
+              <i class="fa-solid fa-paper-plane"></i> Submit Order Request
             </button>
-            <p class="form-footer-note"><i class="fa-solid fa-lock"></i> You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment confirmation.</p>
+            <p class="form-footer-note">You'll receive a WhatsApp message to confirm and pay. Orders are placed only after payment confirmation.</p>
 
-            <div class="form-nav form-nav--review">
+            <div class="form-nav" style="margin-top:16px;">
               <button type="button" class="btn-back" onclick="goStep(4)"><i class="fa-solid fa-arrow-left"></i> Back to Payment</button>
             </div>
           </div>
 
         </form>
-      </div>
-    </div>
+      </div><!-- /form-body -->
+    </div><!-- /form-card -->
   </div>
 </section>
 
 <!-- ── FAQ ── -->
-<section class="faq-section animate-on-scroll" aria-labelledby="faq-heading">
+<section class="faq-section">
   <div class="container">
     <div class="text-center">
       <span class="section-tag">FAQ</span>
-      <h2 class="section-title" id="faq-heading">Frequently Asked Questions</h2>
+      <h2 class="section-title">Frequently Asked Questions</h2>
     </div>
     <div class="faq-grid">
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>How do I place an order?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">Browse any Indian shopping site, copy the product link and paste it into the order form above. You can also upload screenshots if you don't have a direct link.</div>
       </div>
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>How do payments work?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">After you submit the form, we contact you on WhatsApp to confirm product availability, total price (including service charge), and payment. Orders are placed only after payment is confirmed.</div>
       </div>
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>How long does delivery take?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">Most orders are fulfilled weekly. Typical end-to-end time is 5–10 days from order confirmation, depending on the seller's shipping speed within India.</div>
       </div>
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>Can I send screenshots instead of links?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">Yes, absolutely. Use the file upload field in the form to attach product screenshots. You can also send them directly in the WhatsApp chat after submitting.</div>
       </div>
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>What items can't be delivered?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">Restricted, prohibited, or oversized items may not be eligible. Items like flammable goods, large furniture, or commercially restricted products cannot be shipped. Contact us on WhatsApp if you're unsure about a specific item.</div>
       </div>
-      <div class="faq-item" onclick="toggleFaq(this)" role="button" aria-expanded="false" tabindex="0">
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-header">
           <h3>How is the service charge calculated?</h3>
-          <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div>
+          <i class="fa-solid fa-chevron-down faq-icon"></i>
         </div>
         <div class="faq-body">Our service charge is tiered: 15% for orders under ₹2,000, 10% for ₹2,000–₹5,999, and 8% for ₹6,000 and above. Use the estimator at the top of this page to get a quick idea of the total before ordering.</div>
       </div>
@@ -587,10 +529,10 @@
 </section>
 
 <!-- ── DELIVERY SCHEDULE ── -->
-<section class="delivery-section animate-on-scroll" aria-labelledby="schedule-heading">
+<section class="delivery-section">
   <div class="container text-center">
     <span class="section-tag">Schedule</span>
-    <h2 class="section-title" id="schedule-heading">Delivery Schedule</h2>
+    <h2 class="section-title">Delivery Schedule</h2>
     <p class="section-subtitle">Here's how a typical order flows from submission to your door.</p>
     <div class="schedule-grid">
       <div class="schedule-card">
@@ -623,12 +565,14 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="footer-logo">
-          <div class="footer-logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
+          <div class="logo-icon" style="width:38px;height:38px;border-radius:10px;font-size:1rem;">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
           Shop2Bhutan
         </div>
         <p>Shop from Indian e-commerce platforms and get delivery directly to your doorstep in Bhutan.</p>
         <div class="footer-social">
-          <a href="https://wa.me/97577113302" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <a href="https://wa.me/97577113302" target="_blank" aria-label="WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
           </a>
         </div>
@@ -653,7 +597,7 @@
       <div>
         <h3 class="footer-title">Contact</h3>
         <ul class="footer-list">
-          <li><a href="https://wa.me/97577113302" target="_blank" rel="noopener">WhatsApp Support</a></li>
+          <li><a href="https://wa.me/97577113302" target="_blank">WhatsApp Support</a></li>
           <li><a href="#order-form">Submit Order</a></li>
         </ul>
       </div>
@@ -668,20 +612,20 @@
 <!-- ── FLOATING WHATSAPP ── -->
 <div class="floating-wa">
   <div class="floating-wa-label">Chat with us</div>
-  <a href="https://wa.me/97577113302" class="floating-wa-btn" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <a href="https://wa.me/97577113302" class="floating-wa-btn" target="_blank" aria-label="Chat on WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 </div>
 
 <!-- ── SUCCESS POPUP ── -->
-<div class="popup-backdrop" id="successPopup" role="dialog" aria-modal="true" aria-labelledby="popup-title" aria-hidden="true">
+<div class="popup-backdrop" id="successPopup">
   <div class="popup-box">
     <div class="popup-icon">✅</div>
-    <h3 id="popup-title">Order Submitted!</h3>
-    <div class="popup-order-id" id="popupOrderId" style="cursor:pointer;" title="Tap to copy" role="button" tabindex="0" aria-label="Order ID, click to copy">—</div>
+    <h3>Order Submitted!</h3>
+    <div class="popup-order-id" id="popupOrderId" style="cursor:pointer;" title="Tap to copy">—</div>
     <p class="popup-copy-note" id="copyNote">Tap the ID above to copy it</p>
     <p>Your request has been received. Tap below to confirm on WhatsApp and we'll sort out the details.</p>
-    <a id="whatsappConfirmBtn" href="#" target="_blank" rel="noopener" class="popup-wa-btn">
+    <a id="whatsappConfirmBtn" href="#" target="_blank" class="popup-wa-btn">
       <i class="fa-brands fa-whatsapp"></i> Confirm on WhatsApp
     </a>
     <button class="popup-close-btn" onclick="closePopup()">Close</button>
@@ -689,445 +633,45 @@
 </div>
 
 <!-- ── REVIEW MODAL ── -->
-<div class="modal-backdrop" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="review-modal-title" aria-hidden="true">
+<div class="modal-backdrop" id="reviewModal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3 id="review-modal-title">Write a Review</h3>
-      <button class="modal-close" onclick="closeReviewForm()" aria-label="Close review form">&times;</button>
+      <h3>Write a Review</h3>
+      <button class="modal-close" onclick="closeReviewForm()" aria-label="Close">&times;</button>
     </div>
     <input type="text" id="reviewOrderId" placeholder="Order ID (optional for verified badge)">
-    <input type="text" id="reviewName" placeholder="Your Name *" required>
+    <input type="text" id="reviewName" placeholder="Your Name *">
     <input type="text" id="reviewLocation" placeholder="Location (e.g. Thimphu)">
-    <select id="reviewRating" aria-label="Rating">
+    <select id="reviewRating">
       <option value="5">5 ⭐ — Excellent</option>
       <option value="4">4 ⭐ — Good</option>
       <option value="3">3 ⭐ — Average</option>
       <option value="2">2 ⭐ — Poor</option>
       <option value="1">1 ⭐ — Very Poor</option>
     </select>
-    <textarea id="reviewText" rows="4" placeholder="Share your experience *" required></textarea>
+    <textarea id="reviewText" rows="4" placeholder="Share your experience *"></textarea>
     <button class="modal-submit" id="reviewSubmitBtn" onclick="submitReview()">Submit Review</button>
   </div>
 </div>
 
 <!-- ── TOAST ── -->
-<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="toast" id="toast"></div>
 
+<!-- ── SERVICE WORKER ── -->
 <script>
-// ── SCROLL ANIMATIONS ──
-const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, observerOptions);
-document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-
-// ── NAV SCROLL ──
-const nav = document.getElementById('mainNav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 50);
-});
-
-// ── MOBILE MENU ──
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
-hamburger.addEventListener('click', () => {
-  const isOpen = mobileMenu.classList.toggle('open');
-  hamburger.classList.toggle('active', isOpen);
-  hamburger.setAttribute('aria-expanded', isOpen);
-  mobileMenu.setAttribute('aria-hidden', !isOpen);
-});
-
-// ── ESTIMATOR ──
-function calcEstimate() {
-  const price = parseFloat(document.getElementById('estPrice').value) || 0;
-  const dcharge = parseFloat(document.getElementById('dcharge').value) || 0;
-  let serviceCharge = 0;
-  if (price > 0) {
-    if (price < 2000) serviceCharge = price * 0.15;
-    else if (price < 6000) serviceCharge = price * 0.10;
-    else serviceCharge = price * 0.08;
-  }
-  const shipping = price > 0 ? 100 : 0;
-  const total = price + serviceCharge + shipping + dcharge;
-
-  document.getElementById('estBase').textContent = price > 0 ? '₹' + price.toLocaleString() : '₹ —';
-  document.getElementById('estServiceCharge').textContent = price > 0 ? '₹' + Math.round(serviceCharge).toLocaleString() : '₹ —';
-  document.getElementById('estShipping').textContent = price > 0 ? '₹' + shipping : '₹ —';
-  document.getElementById('dchargeDisplay').textContent = '₹' + dcharge;
-  document.getElementById('estTotal').textContent = price > 0 ? '₹' + Math.round(total).toLocaleString() : '₹ —';
-}
-
-// ── FORM NAVIGATION ──
-let currentStep = 1;
-const totalSteps = 5;
-
-function goStep(step) {
-  if (step > currentStep && !validateStep(currentStep)) return;
-  if (step === 5) buildReview();
-
-  document.getElementById('step-' + currentStep).classList.remove('active');
-  document.getElementById('si-' + currentStep).classList.remove('active');
-  if (step > currentStep) {
-    document.getElementById('si-' + currentStep).classList.add('completed');
-  } else {
-    for (let i = step; i <= totalSteps; i++) {
-      document.getElementById('si-' + i).classList.remove('completed');
-    }
-  }
-
-  currentStep = step;
-  document.getElementById('step-' + currentStep).classList.add('active');
-  document.getElementById('si-' + currentStep).classList.add('active');
-  document.getElementById('formProgress').setAttribute('aria-valuenow', currentStep);
-  window.scrollTo({ top: document.getElementById('order-form').offsetTop - 100, behavior: 'smooth' });
-}
-
-function validateStep(step) {
-  let valid = true;
-  if (step === 1) {
-    const name = document.getElementById('fullName').value.trim();
-    const phone = document.getElementById('whatsapp').value.trim();
-    const email = document.getElementById('email').value.trim();
-    if (!name) { showErr('err-name', 'fullName'); valid = false; } else hideErr('err-name', 'fullName');
-    if (!/^\d{8}$/.test(phone.replace(/\s/g,''))) { showErr('err-phone', 'whatsapp'); valid = false; } else hideErr('err-phone', 'whatsapp');
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('err-email', 'email'); valid = false; } else hideErr('err-email', 'email');
-  }
-  if (step === 2) {
-    if (!document.getElementById('deliveryCity').value) { document.getElementById('err-city').classList.add('show'); valid = false; } else document.getElementById('err-city').classList.remove('show');
-    if (!document.getElementById('address').value.trim()) { showErr('err-address', 'address'); valid = false; } else hideErr('err-address', 'address');
-  }
-  if (step === 4) {
-    if (!document.getElementById('paymentMethod').value) { document.getElementById('err-payment').classList.add('show'); valid = false; } else document.getElementById('err-payment').classList.remove('show');
-  }
-  return valid;
-}
-
-function showErr(errId, inputId) {
-  document.getElementById(errId).classList.add('show');
-  document.getElementById(inputId).classList.add('field-error');
-}
-function hideErr(errId, inputId) {
-  document.getElementById(errId).classList.remove('show');
-  document.getElementById(inputId).classList.remove('field-error');
-}
-
-// ── CITY SELECT ──
-function selectCity(city, fee, el) {
-  document.querySelectorAll('.city-card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
-  el.classList.add('selected');
-  el.setAttribute('aria-checked','true');
-  document.getElementById('deliveryCity').value = city;
-  document.getElementById('err-city').classList.remove('show');
-}
-
-// ── PRODUCTS ──
-let productCount = 0;
-function addProductRow() {
-  productCount++;
-  const container = document.getElementById('productsContainer');
-  const row = document.createElement('div');
-  row.className = 'product-row';
-  row.id = 'prod-row-' + productCount;
-  row.innerHTML = `
-    <div class="product-row-num">
-      <span>Product ${productCount}</span>
-      ${productCount > 1 ? `<button type="button" class="remove-btn" onclick="removeProductRow(${productCount})"><i class="fa-solid fa-trash"></i> Remove</button>` : ''}
-    </div>
-    <div class="product-row-fields">
-      <div>
-        <input type="text" class="product-url-input" name="fi-text-product[]" placeholder="Paste product link or describe item" required />
-      </div>
-      <div class="qty-group">
-        <label>Qty</label>
-        <input type="number" class="qty-input" name="fi-text-qty[]" value="1" min="1" />
-      </div>
-    </div>
-    <input type="text" class="product-note-input" name="fi-text-note[]" placeholder="Size, color, variant notes (optional)" />
-  `;
-  container.appendChild(row);
-}
-addProductRow();
-
-function removeProductRow(id) {
-  const row = document.getElementById('prod-row-' + id);
-  if (row) row.remove();
-}
-
-// ── PAYMENT ──
-function selectPayment(method, el) {
-  if (el.classList.contains('payment-card--disabled')) return;
-  document.querySelectorAll('.payment-card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
-  el.classList.add('selected');
-  el.setAttribute('aria-checked','true');
-  document.getElementById('paymentMethod').value = method;
-  document.getElementById('err-payment').classList.remove('show');
-}
-
-// ── REVIEW BUILDER ──
-function buildReview() {
-  const city = document.getElementById('deliveryCity').value;
-  const feeMap = { 'Thimphu': '₹350', 'Phuntsholing': '₹150', 'Paro': '₹400' };
-  document.getElementById('reviewDeliveryFee').textContent = feeMap[city] || '—';
-  document.getElementById('reviewPaymentMethod').textContent = document.getElementById('paymentMethod').value || '—';
-
-  const grid = document.getElementById('reviewGrid');
-  const products = [];
-  document.querySelectorAll('.product-row').forEach((row, i) => {
-    const url = row.querySelector('.product-url-input').value;
-    const qty = row.querySelector('.qty-input').value;
-    const note = row.querySelector('.product-note-input').value;
-    if (url) products.push(`<div class="review-block-sub"><strong>#${i+1}</strong> ${url} ${qty > 1 ? '(×'+qty+')' : ''} ${note ? '— '+note : ''}</div>`);
-  });
-
-  grid.innerHTML = `
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-user"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Contact</div>
-        <div class="review-block-val">${document.getElementById('fullName').value}</div>
-        <div class="review-block-sub">+975 ${document.getElementById('whatsapp').value} ${document.getElementById('email').value ? '· ' + document.getElementById('email').value : ''}</div>
-      </div>
-      <button type="button" class="review-edit-btn" onclick="goStep(1)">Edit</button>
-    </div>
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-location-dot"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Delivery</div>
-        <div class="review-block-val">${city}</div>
-        <div class="review-block-sub">${document.getElementById('address').value}</div>
-      </div>
-      <button type="button" class="review-edit-btn" onclick="goStep(2)">Edit</button>
-    </div>
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-box-open"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Products</div>
-        ${products.length ? products.join('') : '<div class="review-block-sub">No products added</div>'}
-      </div>
-      <button type="button" class="review-edit-btn" onclick="goStep(3)">Edit</button>
-    </div>
-    <div class="review-block">
-      <div class="review-block-icon"><i class="fa-solid fa-credit-card"></i></div>
-      <div class="review-block-info">
-        <div class="review-block-title">Payment</div>
-        <div class="review-block-val">${document.getElementById('paymentMethod').value || '—'}</div>
-      </div>
-      <button type="button" class="review-edit-btn" onclick="goStep(4)">Edit</button>
-    </div>
-  `;
-}
-
-// ── FILE UPLOAD ──
-let uploadedFiles = [];
-function handleFileSelect(input) {
-  const files = Array.from(input.files);
-  const maxSize = 5 * 1024 * 1024;
-  const list = document.getElementById('fileList');
-  const err = document.getElementById('err-files');
-  err.textContent = '';
-  err.classList.remove('show');
-
-  files.forEach(file => {
-    if (file.size > maxSize) {
-      err.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> File too large (max 5MB): ' + file.name;
-      err.classList.add('show');
-      return;
-    }
-    uploadedFiles.push(file);
-    const chip = document.createElement('div');
-    chip.className = 'file-chip';
-    chip.innerHTML = `<i class="fa-solid fa-image"></i> ${file.name} <i class="fa-solid fa-xmark file-chip-remove" onclick="removeFile(this, '${file.name}')"></i>`;
-    list.appendChild(chip);
-  });
-  input.value = '';
-}
-function removeFile(el, name) {
-  uploadedFiles = uploadedFiles.filter(f => f.name !== name);
-  el.parentElement.remove();
-}
-
-// Drag & drop
-const dropZone = document.getElementById('dropZone');
-['dragenter','dragover','dragleave','drop'].forEach(eventName => {
-  dropZone.addEventListener(eventName, preventDefaults, false);
-});
-function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-['dragenter','dragover'].forEach(eventName => {
-  dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-});
-['dragleave','drop'].forEach(eventName => {
-  dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-});
-dropZone.addEventListener('drop', (e) => {
-  const dt = e.dataTransfer;
-  const files = dt.files;
-  document.getElementById('fileInput').files = files;
-  handleFileSelect(document.getElementById('fileInput'));
-});
-
-// ── FORM SUBMIT ──
-document.getElementById('orderForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('submitBtn');
-  btn.classList.add('loading');
-  btn.disabled = true;
-
-  // Simulate API call
-  await new Promise(r => setTimeout(r, 1500));
-
-  const orderId = 'S2B-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-  document.getElementById('popupOrderId').textContent = orderId;
-  const waMsg = encodeURIComponent(`Hi! I just submitted order ${orderId}. Please confirm my order details.`);
-  document.getElementById('whatsappConfirmBtn').href = `https://wa.me/97577113302?text=${waMsg}`;
-
-  btn.classList.remove('loading');
-  btn.disabled = false;
-  document.getElementById('successPopup').classList.add('open');
-  document.getElementById('successPopup').setAttribute('aria-hidden','false');
-});
-
-function closePopup() {
-  document.getElementById('successPopup').classList.remove('open');
-  document.getElementById('successPopup').setAttribute('aria-hidden','true');
-}
-
-// Copy order ID
-let copyTimeout;
-document.getElementById('popupOrderId').addEventListener('click', function() {
-  navigator.clipboard.writeText(this.textContent).then(() => {
-    const note = document.getElementById('copyNote');
-    note.textContent = 'Copied to clipboard!';
-    note.style.color = 'var(--success)';
-    clearTimeout(copyTimeout);
-    copyTimeout = setTimeout(() => {
-      note.textContent = 'Tap the ID above to copy it';
-      note.style.color = '';
-    }, 2000);
-  });
-});
-
-// ── FAQ ──
-function toggleFaq(el) {
-  const isOpen = el.classList.toggle('open');
-  el.setAttribute('aria-expanded', isOpen);
-}
-
-// ── TOAST ──
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-// ── REVIEWS ──
-function openReviewForm() {
-  document.getElementById('reviewModal').classList.add('open');
-  document.getElementById('reviewModal').setAttribute('aria-hidden','false');
-}
-function closeReviewForm() {
-  document.getElementById('reviewModal').classList.remove('open');
-  document.getElementById('reviewModal').setAttribute('aria-hidden','true');
-}
-
-const sampleReviews = [
-  { name: 'Karma Dorji', location: 'Thimphu', rating: 5, text: 'Amazing service! Got my Amazon order in just 6 days. The WhatsApp updates were super helpful.', verified: true },
-  { name: 'Pema Wangmo', location: 'Phuntsholing', rating: 5, text: 'So convenient not needing an Indian payment method. Shop2Bhutan handled everything perfectly.', verified: false },
-  { name: 'Tenzin Choden', location: 'Paro', rating: 4, text: 'Great experience overall. Delivery was smooth and the pricing was transparent. Will order again!', verified: true }
-];
-
-function renderReviews() {
-  const grid = document.getElementById('testiGrid');
-  grid.innerHTML = sampleReviews.map(r => `
-    <div class="testi-card">
-      <div class="testi-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
-      <div class="testi-text">"${r.text}"</div>
-      <div class="testi-author">
-        <div class="testi-avatar">${r.name.split(' ').map(n=>n[0]).join('')}</div>
-        <div>
-          <div class="testi-name">${r.name} ${r.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i> Verified</span>' : ''}</div>
-          <div class="testi-location"><i class="fa-solid fa-location-dot" style="font-size:0.75rem;color:var(--muted)"></i> ${r.location}</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-setTimeout(renderReviews, 1500);
-
-function submitReview() {
-  const name = document.getElementById('reviewName').value.trim();
-  const text = document.getElementById('reviewText').value.trim();
-  const rating = parseInt(document.getElementById('reviewRating').value);
-  const location = document.getElementById('reviewLocation').value.trim() || 'Bhutan';
-  const orderId = document.getElementById('reviewOrderId').value.trim();
-
-  if (!name || !text) {
-    showToast('Please fill in your name and review');
-    return;
-  }
-
-  const btn = document.getElementById('reviewSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
-  setTimeout(() => {
-    sampleReviews.unshift({
-      name, location, rating, text,
-      verified: !!orderId
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        console.log("SW registered:", reg.scope);
+      } catch (err) {
+        console.error("SW failed:", err);
+      }
     });
-    renderReviews();
-    closeReviewForm();
-    btn.disabled = false;
-    btn.textContent = 'Submit Review';
-    document.getElementById('reviewName').value = '';
-    document.getElementById('reviewText').value = '';
-    document.getElementById('reviewLocation').value = '';
-    document.getElementById('reviewOrderId').value = '';
-    showToast('Review submitted successfully!');
-  }, 1000);
-}
-
-// ── KEYBOARD NAV ──
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closePopup();
-    closeReviewForm();
   }
-});
-
-// City cards keyboard
-document.querySelectorAll('.city-card').forEach(card => {
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      card.click();
-    }
-  });
-});
-
-// Payment cards keyboard
-document.querySelectorAll('.payment-card:not(.payment-card--disabled)').forEach(card => {
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      card.click();
-    }
-  });
-});
-
-// FAQ keyboard
-document.querySelectorAll('.faq-item').forEach(item => {
-  item.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleFaq(item);
-    }
-  });
-});
 </script>
+
+<!-- ── MAIN MODULE (all logic lives here) ── -->
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
