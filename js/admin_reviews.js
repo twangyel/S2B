@@ -15,6 +15,12 @@ let ordersLoaded = false;
 let quotationsLoaded = false;
 let allPayments = [];
 let paymentsLoaded = false;
+let allOtpCodes = [];
+let allPortalUsers = [];
+let portalLoaded = false;
+let otpCodesLoaded = false;
+let portalUsersLoaded = false;
+let currentPortalSubTab = 'otp';
 let currentOrderSubTab = 'orders';
 let authChecked = false;
 
@@ -55,6 +61,7 @@ async function init() {
     setupSearch();
     setupOrderSearch();
     setupPaymentSearch();
+    setupUserSearch();
 
   } catch (err) {
     console.error('Init error:', err);
@@ -66,7 +73,7 @@ async function init() {
    TAB VISUALS
    ========================================================== */
 function updateTabVisuals(index) {
-  [0, 1, 2].forEach(i => {
+[0, 1, 2, 3].forEach(i => {
     const btn = document.getElementById(`tab-${i}`);
     const pane = document.getElementById(`content-${i}`);
     if (!btn || !pane) return;
@@ -89,8 +96,10 @@ function updateTabVisuals(index) {
 function switchTab(index) {
   if (!authChecked) return;
   updateTabVisuals(index);
-  if (index === 0 && !reviewsLoaded) loadReviews();
-  if (index === 1 && !ordersLoaded) loadOrders();
+if (index === 0 && !reviewsLoaded) loadReviews();
+if (index === 1 && !ordersLoaded) loadOrders();
+if (index === 2) { /* Analytics - already has placeholder */ }
+if (index === 3 && !portalLoaded) loadPortal();
 }
 window.switchTab = switchTab;
 
@@ -406,6 +415,19 @@ function setupPaymentSearch() {
       return [o.order_id, u.full_name, u.whatsapp, p.payment_method, p.status].join(' ').toLowerCase().includes(term);
     });
     renderPayments(filtered);
+  });
+}
+
+function setupUserSearch() {
+  const input = document.getElementById('user-search');
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) { renderPortalUsers(allPortalUsers, []); return; }
+    const filtered = allPortalUsers.filter(u => {
+      return [u.full_name, u.whatsapp, u.email].join(' ').toLowerCase().includes(term);
+    });
+    renderPortalUsers(filtered, []);
   });
 }
 
@@ -894,6 +916,287 @@ function esc(text) {
   d.textContent = text;
   return d.innerHTML;
 }
+
+/* ==========================================================
+   PORTAL TAB
+   ========================================================== */
+function switchPortalSubTab(tab) {
+  currentPortalSubTab = tab;
+  ['otp', 'users'].forEach(t => {
+    const btn = document.getElementById(`portal-subtab-${t}`);
+    const panel = document.getElementById(`portal-panel-${t}`);
+    if (!btn || !panel) return;
+    if (t === tab) {
+      btn.classList.add('subtab-active', 'border-indigo-600', 'text-indigo-700');
+      btn.classList.remove('border-transparent', 'text-gray-500');
+      panel.classList.remove('hidden');
+    } else {
+      btn.classList.remove('subtab-active', 'border-indigo-600', 'text-indigo-700');
+      btn.classList.add('border-transparent', 'text-gray-500');
+      panel.classList.add('hidden');
+    }
+  });
+  if (tab === 'otp' && !otpCodesLoaded) loadOtpCodes();
+  if (tab === 'users' && !portalUsersLoaded) loadPortalUsers();
+}
+window.switchPortalSubTab = switchPortalSubTab;
+
+async function loadPortal() {
+  portalLoaded = true;
+  switchPortalSubTab('otp');
+}
+
+async function loadOtpCodes() {
+  const loader = document.getElementById('otp-loader');
+  const empty = document.getElementById('otp-empty');
+  const wrap = document.getElementById('otp-table-wrap');
+  const tbody = document.getElementById('otp-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('otp_codes')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    allOtpCodes = data || [];
+    otpCodesLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allOtpCodes.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    renderOtpCodes(allOtpCodes);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load OTP failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load OTP codes'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load OTP codes', 'error');
+  }
+}
+window.loadOtpCodes = loadOtpCodes;
+
+function refreshOtpCodes() {
+  otpCodesLoaded = false;
+  loadOtpCodes();
+}
+window.refreshOtpCodes = refreshOtpCodes;
+
+function renderOtpCodes(codes) {
+  const tbody = document.getElementById('otp-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = codes.map(c => {
+    const phone = c.phone || '—';
+    const code = c.code || '—';
+    const isUsed = c.used;
+    const isExpired = new Date(c.expires_at) < new Date();
+    const isActive = !isUsed && !isExpired;
+    
+    let statusBadge = '';
+    if (isUsed) {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-gray-50 text-gray-500 border-gray-200"><span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>Used</span>`;
+    } else if (isExpired) {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-red-50 text-red-600 border-red-100"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Expired</span>`;
+    } else {
+      statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-emerald-50 text-emerald-700 border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>`;
+    }
+
+    const expires = c.expires_at ? new Date(c.expires_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const created = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4 font-mono text-sm text-gray-900">${esc(phone)}</td>
+        <td class="px-6 py-4"><code class="text-sm font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-bold tracking-wider">${esc(code)}</code></td>
+        <td class="px-6 py-4">${statusBadge}</td>
+        <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(expires)}</td>
+        <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(created)}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            ${isActive ? `<button onclick="window.copyOtpCode('${esc(code)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100" title="Copy code"><i class="fas fa-copy"></i> Copy</button>` : ''}
+            <button onclick="window.openWaFromOtp('${esc(phone)}', '${esc(code)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function copyOtpCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    showToast('Code copied: ' + code, 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Code copied: ' + code, 'success');
+  });
+}
+window.copyOtpCode = copyOtpCode;
+
+function openWaFromOtp(phone, code) {
+  const msg = `Hello,\n\nYour Shop2Bhutan portal login code is: *${code}*\n\nEnter this code at https://shop2bt.vercel.app/portal.html to view your orders.\n\nThis code expires in 10 minutes.\n\n— Shop2Bhutan`;
+  window.open('https://wa.me/' + phone.replace('+', '') + '?text=' + encodeURIComponent(msg), '_blank');
+}
+window.openWaFromOtp = openWaFromOtp;
+
+async function generateAdminOtp() {
+  const raw = document.getElementById('otp-gen-phone')?.value.trim().replace(/\D/g, '');
+  if (!raw || raw.length < 8) {
+    showToast('Enter a valid 8-digit Bhutan number', 'error');
+    return;
+  }
+  const phone = '+975' + raw;
+  const btn = document.getElementById('btn-gen-otp');
+  
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span class="loader"></span>';
+
+  try {
+    const { data: code, error } = await supabase.rpc('request_otp', { p_phone: phone });
+    if (error) throw error;
+    
+    showToast('OTP generated: ' + code, 'success');
+    document.getElementById('otp-gen-phone').value = '';
+    refreshOtpCodes();
+    
+    // Auto-open WhatsApp to send it
+    openWaFromOtp(phone, code);
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to generate OTP', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+window.generateAdminOtp = generateAdminOtp;
+
+/* ==========================================================
+   PORTAL USERS
+   ========================================================== */
+async function loadPortalUsers() {
+  const loader = document.getElementById('users-loader');
+  const empty = document.getElementById('users-empty');
+  const wrap = document.getElementById('users-table-wrap');
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, full_name, whatsapp, email, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allPortalUsers = data || [];
+    portalUsersLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allPortalUsers.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+
+    // Count orders per user
+    const userIds = allPortalUsers.map(u => u.id);
+    const { data: orderCounts } = await supabase
+      .from('orders')
+      .select('user_id', { count: 'exact' })
+      .in('user_id', userIds);
+
+    renderPortalUsers(allPortalUsers, orderCounts || []);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load users failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load customers'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load customers', 'error');
+  }
+}
+window.loadPortalUsers = loadPortalUsers;
+
+function refreshPortalUsers() {
+  portalUsersLoaded = false;
+  loadPortalUsers();
+}
+window.refreshPortalUsers = refreshPortalUsers;
+
+function renderPortalUsers(users, orderCounts) {
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = users.map(u => {
+    const name = u.full_name || '—';
+    const phone = u.whatsapp || '—';
+    const email = u.email || '—';
+    const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+    
+    // Count orders (approximate since we don't have exact per-user counts from the aggregate)
+    const count = orderCounts.filter(o => o.user_id === u.id).length;
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-sm flex-shrink-0">
+              ${name.charAt(0).toUpperCase()}
+            </div>
+            <div class="font-semibold text-gray-900 text-sm">${esc(name)}</div>
+          </div>
+        </td>
+        <td class="px-6 py-4 font-mono text-sm text-gray-700">+975 ${esc(phone)}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${esc(email)}</td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">${count} order${count !== 1 ? 's' : ''}</span></td>
+        <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(joined)}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button onclick="window.viewUserOrders('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Orders"><i class="fas fa-box text-xs"></i></button>
+            <button onclick="window.openWaUser('${esc(phone)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function viewUserOrders(userId) {
+  // Switch to orders tab and filter by user
+  switchTab(1);
+  switchOrderSubTab('orders');
+  // Filter orders table
+  const filtered = allOrders.filter(o => o.user_id === userId);
+  renderOrders(filtered);
+  showToast('Showing orders for selected customer', 'info');
+}
+window.viewUserOrders = viewUserOrders;
+
+function openWaUser(phone) {
+  if (!phone || phone === '—') return;
+  window.open('https://wa.me/975' + phone, '_blank');
+}
+window.openWaUser = openWaUser;
 
 /* ==========================================================
    TRACKING MODAL

@@ -876,8 +876,8 @@ const message =
   '💳 Payment: ' + paymentMethod + '\n' +
   '📍 Address: ' + addressVal + '\n\n' +
   '🛒 Products:\n' + productsText + screenshotNote +
-  
-  '\n\n👉 Please go to https://shop2bt.vercel.app/track.html to track your order using the Order ID.';
+   '\n\n👉 You can also view all your orders at: https://shop2bt.vercel.app/portal.html';
+ 
 
     document.getElementById('whatsappConfirmBtn').href =
       'https://wa.me/97577113302?text=' + encodeURIComponent(message);
