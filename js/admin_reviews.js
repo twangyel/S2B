@@ -54,21 +54,7 @@ async function init() {
     updateTabVisuals(0);
     setupSearch();
     setupOrderSearch();
-
-    function setupPaymentSearch() {
-  const input = document.getElementById('payment-search');
-  if (!input) return;
-  input.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase().trim();
-    if (!term) { renderPayments(allPayments); return; }
-    const filtered = allPayments.filter(p => {
-      const o = p.orders || {};
-      const u = o.users || {};
-      return [o.order_id, u.full_name, u.whatsapp, p.payment_method, p.status].join(' ').toLowerCase().includes(term);
-    });
-    renderPayments(filtered);
-  });
-}
+    setupPaymentSearch();
 
   } catch (err) {
     console.error('Init error:', err);
@@ -381,6 +367,19 @@ function renderOrders(orders) {
   }).join('');
 }
 
+function setupSearch() {
+  const input = document.getElementById('review-search');
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) { renderReviews(allReviews); return; }
+    const filtered = allReviews.filter(r => {
+      return [r.full_name, r.city, r.order_id, r.message].join(' ').toLowerCase().includes(term);
+    });
+    renderReviews(filtered);
+  });
+}
+
 function setupOrderSearch() {
   const input = document.getElementById('order-search');
   if (!input) return;
@@ -392,6 +391,21 @@ function setupOrderSearch() {
       return [o.order_id, u.full_name, u.whatsapp, o.delivery_city, o.order_status].join(' ').toLowerCase().includes(term);
     });
     renderOrders(filtered);
+  });
+}
+
+function setupPaymentSearch() {
+  const input = document.getElementById('payment-search');
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) { renderPayments(allPayments); return; }
+    const filtered = allPayments.filter(p => {
+      const o = p.orders || {};
+      const u = o.users || {};
+      return [o.order_id, u.full_name, u.whatsapp, p.payment_method, p.status].join(' ').toLowerCase().includes(term);
+    });
+    renderPayments(filtered);
   });
 }
 
@@ -443,14 +457,22 @@ window.openQuoteModal = openQuoteModal;
 function closeQuoteModal() {
   const modal = document.getElementById('quote-modal');
   const content = document.getElementById('quote-modal-content');
+  
+  modal.style.pointerEvents = 'none';
+  content.style.pointerEvents = 'none';
+  
   modal.classList.remove('opacity-100');
   content?.classList.remove('scale-100');
   content?.classList.add('scale-95');
-  setTimeout(() => modal.classList.add('hidden'), 200);
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    modal.style.pointerEvents = '';
+    content.style.pointerEvents = '';
+  }, 200);
 }
 window.closeQuoteModal = closeQuoteModal;
 
-// Auto-calculate service fee and total
 ['quote-product-price', 'quote-shipping', 'quote-delivery'].forEach(id => {
   document.getElementById(id)?.addEventListener('input', () => {
     autoCalculateServiceFee();
@@ -458,7 +480,6 @@ window.closeQuoteModal = closeQuoteModal;
   });
 });
 
-// Service fee can also be manually overridden
 document.getElementById('quote-service')?.addEventListener('input', updateQuoteTotal);
 
 function autoCalculateServiceFee() {
@@ -491,9 +512,14 @@ async function saveQuotation() {
   }
 
   const btn = document.getElementById('save-quote-btn');
+  if (btn.disabled) return;
+  
   btn.disabled = true;
-  const originalText = btn.textContent;
+  btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
   btn.textContent = 'Saving...';
+
+  const modalContent = document.getElementById('quote-modal-content');
+  modalContent.style.pointerEvents = 'none';
 
   try {
     const { data: existing } = await supabase.from('quotations').select('id').eq('order_id', orderUuid).maybeSingle();
@@ -504,7 +530,7 @@ async function saveQuotation() {
       shipping_fee: Math.round(shipping),
       service_fee: Math.round(service),
       delivery_fee: Math.round(delivery),
-      total_amount: total,  // ← now works as regular column
+      total_amount: total,
       status: 'pending',
       note: note || null,
       updated_at: new Date().toISOString()
@@ -522,14 +548,23 @@ async function saveQuotation() {
     await supabase.from('orders').update({ order_status: 'quoted' }).eq('id', orderUuid);
 
     const orderTextId = document.getElementById('quote-order-text-id').value;
-    await supabase.from('payments').update({
-      product_price: Math.round(productPrice),
-      shipping_fee: Math.round(shipping),
-      service_fee: Math.round(service),
-      delivery_fee: Math.round(delivery),
-      total_amount: total,
-      updated_at: new Date().toISOString()
-    }).eq('order_id', orderTextId);
+    
+    const { data: paymentExists } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('order_id', orderTextId)
+      .maybeSingle();
+      
+    if (paymentExists) {
+      await supabase.from('payments').update({
+        product_price: Math.round(productPrice),
+        shipping_fee: Math.round(shipping),
+        service_fee: Math.round(service),
+        delivery_fee: Math.round(delivery),
+        total_amount: total,
+        updated_at: new Date().toISOString()
+      }).eq('order_id', orderTextId);
+    }
 
     closeQuoteModal();
     showToast('Quotation saved successfully', 'success');
@@ -539,8 +574,12 @@ async function saveQuotation() {
     console.error('Save quotation failed:', err);
     showToast('Failed to save quotation: ' + err.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.originalText;
+      modalContent.style.pointerEvents = '';
+      delete btn.dataset.originalText;
+    }, 300);
   }
 }
 window.saveQuotation = saveQuotation;
@@ -625,7 +664,7 @@ function renderQuotations(quotes) {
 }
 
 /* ==========================================================
-   PAYMENTS
+   PAYMENTS  (50% ADVANCE LOGIC)
    ========================================================== */
 async function loadPayments() {
   const loader = document.getElementById('payments-loader');
@@ -687,79 +726,156 @@ function renderPayments(payments) {
 
     const statusColors = {
       pending: 'bg-amber-50 text-amber-700 border-amber-100',
+      partial: 'bg-blue-50 text-blue-700 border-blue-100',
       verified: 'bg-emerald-50 text-emerald-700 border-emerald-100',
       refunded: 'bg-gray-50 text-gray-600 border-gray-200'
     };
 
     const isPending = status === 'pending';
+    const isPartial = status === 'partial';
+    const total = p.total_amount || 0;
+    const advance = p.advance_paid || 0;
+    const due = p.due_amount || 0;
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
         <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-semibold">${esc(order.order_id || '—')}</code></td>
         <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div><div class="text-xs text-gray-400 mt-0.5">+975 ${esc(phone || '—')}</div></td>
         <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">${esc(p.payment_method || '—')}</span></td>
-        <td class="px-6 py-4 text-sm font-semibold text-gray-900">₹${Math.round(p.total_amount || 0).toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">
+          <div class="font-semibold text-gray-900">₹${Math.round(total).toLocaleString('en-IN')}</div>
+          ${isPartial ? `<div class="text-xs text-blue-600 mt-0.5">Paid: ₹${Math.round(advance).toLocaleString('en-IN')} | Due: ₹${Math.round(due).toLocaleString('en-IN')}</div>` : ''}
+          ${isPending ? `<div class="text-xs text-amber-600 mt-0.5">Advance (50%): ₹${Math.round(total * 0.5).toLocaleString('en-IN')}</div>` : ''}
+        </td>
         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
         <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-            ${isPending ? `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Payment"><i class="fas fa-check"></i> Verify</button>` : `<span class="text-xs text-gray-400 font-medium">Verified</span>`}
+            ${isPending ? `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 shadow-sm" title="Verify 50% Advance"><i class="fas fa-check"></i> Verify 50%</button>` : ''}
+            ${isPartial ? `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Full Payment"><i class="fas fa-check-double"></i> Verify Full</button>` : ''}
+            ${status === 'verified' ? `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>` : ''}
           </div>
         </td>
       </tr>`;
   }).join('');
 }
 
+// VERIFY PAYMENT  —  50% advance + full settlement logic
 async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
-  if (!confirm('Verify this payment and mark the order as "Ordered"?')) return;
+  const { data: payment, error: fetchErr } = await supabase
+    .from('payments')
+    .select('total_amount, advance_paid, due_amount, payment_method, status')
+    .eq('id', paymentId)
+    .single();
+
+  if (fetchErr || !payment) {
+    showToast('Failed to fetch payment details', 'error');
+    return;
+  }
+
+  const total = payment.total_amount || 0;
+  const isCod = payment.payment_method === 'Cash on Delivery';
+  const currentStatus = payment.status || 'pending';
+  
+  let confirmMsg = '';
+  let newPaymentStatus = currentStatus;
+  let newAdvance = payment.advance_paid || 0;
+  let newDue = payment.due_amount || 0;
+  let newOrderStatus = '';
+  let trackingNote = '';
+  let whatsappMsg = '';
+  let toastMsg = '';
+  let btnText = '';
+
+  if (isCod) {
+    confirmMsg = 'This is Cash on Delivery. Mark order as ready for shipment?';
+    newPaymentStatus = 'verified';
+    newAdvance = total;
+    newDue = 0;
+    newOrderStatus = 'ordered';
+    trackingNote = 'COD order confirmed. Ready for shipment.';
+    toastMsg = 'COD order confirmed. Ready for shipment.';
+    whatsappMsg = `Hello,\n\nYour COD order *${orderTextId}* is confirmed ✅.\nTotal: ₹${Math.round(total).toLocaleString('en-IN')}\n\nYour order will be shipped soon. Track here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
+    btnText = 'Verify';
+  } else if (currentStatus === 'pending') {
+    newAdvance = Math.round(total * 0.5);
+    newDue = total - newAdvance;
+    newPaymentStatus = 'partial';
+    newOrderStatus = 'confirmed';
+    trackingNote = `50% advance payment verified (₹${newAdvance.toLocaleString('en-IN')}). Balance ₹${newDue.toLocaleString('en-IN')} due before delivery.`;
+    toastMsg = `50% advance verified (₹${newAdvance.toLocaleString('en-IN')}).`;
+    confirmMsg = `Verify 50% advance payment?\n\nAdvance: ₹${newAdvance.toLocaleString('en-IN')}\nBalance Due: ₹${newDue.toLocaleString('en-IN')}\n\nOrder status will be set to "Confirmed".`;
+    whatsappMsg = `Hello,\n\nYour advance payment (50%) for Order *${orderTextId}* has been verified ✅.\n\nAmount Received: ₹${newAdvance.toLocaleString('en-IN')}\nBalance Due: ₹${newDue.toLocaleString('en-IN')}\n\nPlease pay the balance before delivery. Track here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
+    btnText = 'Verify 50%';
+  } else if (currentStatus === 'partial') {
+    newAdvance = total;
+    newDue = 0;
+    newPaymentStatus = 'verified';
+    newOrderStatus = 'ordered';
+    trackingNote = 'Full payment verified. Order placed with seller.';
+    toastMsg = 'Full payment verified. Order processing.';
+    confirmMsg = `Verify full payment?\n\nBalance Received: ₹${Math.round(payment.due_amount || 0).toLocaleString('en-IN')}\nTotal Paid: ₹${Math.round(total).toLocaleString('en-IN')}\n\nOrder status will be set to "Ordered".`;
+    whatsappMsg = `Hello,\n\nYour full payment for Order *${orderTextId}* has been verified ✅.\n\nTotal Paid: ₹${Math.round(total).toLocaleString('en-IN')}\n\nYour order has been placed with the seller. Track live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
+    btnText = 'Verify Full';
+  } else {
+    showToast('Payment already fully verified', 'info');
+    return;
+  }
+
+  if (!confirm(confirmMsg)) return;
 
   const btn = document.querySelector(`button[onclick="window.verifyPayment('${paymentId}', '${orderUuid}', '${esc(orderTextId)}', '${esc(customerPhone)}')"]`);
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...'; }
 
   try {
-    // 1. Update payment status
     const { error: pErr } = await supabase
       .from('payments')
-      .update({ status: 'verified', updated_at: new Date().toISOString() })
+      .update({ 
+        advance_paid: newAdvance,
+        due_amount: newDue,
+        status: newPaymentStatus, 
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', paymentId);
 
     if (pErr) throw pErr;
 
-    // 2. Update order status
     const { error: oErr } = await supabase
       .from('orders')
-      .update({ order_status: 'ordered', updated_at: new Date().toISOString() })
+      .update({ order_status: newOrderStatus, updated_at: new Date().toISOString() })
       .eq('id', orderUuid);
 
     if (oErr) throw oErr;
 
-    // 3. Create first tracking event
-    const { error: tErr } = await supabase
-      .from('tracking_events')
-      .insert([{
-        order_id: orderUuid,
-        status: 'ordered',
-        location: null,
-        note: 'Payment verified by admin. Order placed with seller.',
-        created_at: new Date().toISOString()
-      }]);
+    if (newOrderStatus === 'ordered') {
+      const { error: tErr } = await supabase
+        .from('tracking_events')
+        .insert([{
+          order_id: orderUuid,
+          status: 'ordered',
+          location: null,
+          note: trackingNote,
+          created_at: new Date().toISOString()
+        }]);
 
-    if (tErr) throw tErr;
+      if (tErr) throw tErr;
+    }
 
-    showToast('Payment verified. Order marked as "Ordered".', 'success');
+    showToast(toastMsg, 'success');
     refreshPayments();
     refreshOrders();
 
-    // 4. WhatsApp notification
-    if (customerPhone) {
-      const msg = `Hello,\n\nYour payment for Order *${orderTextId}* has been verified ✅.\n\nYour order has now been placed with the seller. Track live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
-      window.open('https://wa.me/975' + customerPhone + '?text=' + encodeURIComponent(msg), '_blank');
+    if (customerPhone && whatsappMsg) {
+      window.open('https://wa.me/975' + customerPhone + '?text=' + encodeURIComponent(whatsappMsg), '_blank');
     }
 
   } catch (err) {
     console.error('Verify payment failed:', err);
-    showToast('Failed to verify payment: ' + err.message, 'error');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Verify'; }
+    showToast('Failed to verify: ' + err.message, 'error');
+    if (btn) { 
+      btn.disabled = false; 
+      btn.innerHTML = btnText === 'Verify 50%' ? '<i class="fas fa-check"></i> Verify 50%' : (btnText === 'Verify Full' ? '<i class="fas fa-check-double"></i> Verify Full' : '<i class="fas fa-check"></i> Verify'); 
+    }
   }
 }
 window.verifyPayment = verifyPayment;
@@ -790,7 +906,6 @@ function openTrackingModal(orderUuid, orderTextId) {
   document.getElementById('tracking-order-text-id').value = orderTextId || '';
   document.getElementById('tracking-modal-subtitle').textContent = `Order: ${orderTextId || orderUuid.slice(0, 8)}`;
   
-  // Pre-select current status
   document.getElementById('tracking-status').value = order.order_status || 'pending';
   document.getElementById('tracking-location').value = '';
   document.getElementById('tracking-note').value = '';
@@ -818,7 +933,6 @@ window.closeTrackingModal = closeTrackingModal;
 
 async function saveTracking() {
   const orderUuid = document.getElementById('tracking-order-id').value;
-  const orderTextId = document.getElementById('tracking-order-text-id').value;
   const status = document.getElementById('tracking-status').value;
   const location = document.getElementById('tracking-location').value.trim();
   const note = document.getElementById('tracking-note').value.trim();
@@ -829,12 +943,16 @@ async function saveTracking() {
   }
 
   const btn = document.getElementById('save-tracking-btn');
+  if (btn.disabled) return;
+  
   btn.disabled = true;
-  const originalText = btn.textContent;
+  btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
   btn.textContent = 'Updating...';
 
+  const modalContent = document.getElementById('tracking-modal-content');
+  modalContent.style.pointerEvents = 'none';
+
   try {
-    // Insert tracking event
     const { error: trackError } = await supabase.from('tracking_events').insert([{
       order_id: orderUuid,
       status: status,
@@ -845,7 +963,6 @@ async function saveTracking() {
 
     if (trackError) throw trackError;
 
-    // Update order status
     const { error: orderError } = await supabase.from('orders').update({
       order_status: status,
       updated_at: new Date().toISOString()
@@ -857,15 +974,19 @@ async function saveTracking() {
     showToast('Tracking updated successfully', 'success');
     refreshOrders();
 
-    // If on quotations tab, refresh that too
     if (currentOrderSubTab === 'quotations') refreshQuotations();
+    if (currentOrderSubTab === 'payments') refreshPayments();
 
   } catch (err) {
     console.error('Save tracking failed:', err);
     showToast('Failed to update tracking: ' + err.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = btn.dataset.originalText;
+      modalContent.style.pointerEvents = '';
+      delete btn.dataset.originalText;
+    }, 300);
   }
 }
 window.saveTracking = saveTracking;
@@ -900,11 +1021,11 @@ document.getElementById('delete-modal')?.addEventListener('click', (e) => {
 document.getElementById('quote-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeQuoteModal();
 });
+document.getElementById('tracking-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeTrackingModal();
+});
 
 /* ==========================================================
    START
    ========================================================== */
 init();
-    setupSearch();
-    setupOrderSearch();
-    setupPaymentSearch();

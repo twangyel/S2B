@@ -395,11 +395,16 @@
                 <span class="payment-name">Partial Payment (50/50)</span>
                 <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
               </div>
-              <div class="payment-card" onclick="selectPayment('Cash on Delivery', this)">
-                <span class="payment-icon">💵</span>
-                <span class="payment-name">Cash on Delivery</span>
-                <span class="payment-desc">Pay when you receive the order (COD fee applies)</span>
-              </div>
+        
+<div class="payment-grid">
+  <div class="payment-card disabled" onclick="showToast('Cash on Delivery coming soon!')" title="Coming soon">
+    <i class="fas fa-money-bill-wave"></i>
+    <span>Cash on Delivery</span>
+    <span class="coming-soon-badge">Soon</span>
+  </div>
+</div>
+
+
             </div>
             <input type="hidden" id="paymentMethod" name="payment_method" />
             <div class="field-error-msg" id="err-payment">
