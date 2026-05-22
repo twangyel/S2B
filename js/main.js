@@ -866,16 +866,18 @@ try {
       ? '\n\n📎 Screenshots: ' + fileCount + ' file' + (fileCount > 1 ? 's' : '') + ' uploaded.' 
       : '';
 
-    const message = 
-      'Hello Shop2Bhutan,\n\n' +
-      '🆔 Order ID: ' + orderId + '\n\n' +
-      '👤 Name: ' + nameVal + '\n' +
-      '📱 WhatsApp: ' + phoneVal + '\n' +
-      '✉️ Email: ' + (emailVal || 'Not provided') + '\n' +
-      '🏙️ City: ' + cityVal + '\n' +
-      '💳 Payment: ' + paymentMethod + '\n' +
-      '📍 Address: ' + addressVal + '\n\n' +
-      '🛒 Products:\n' + productsText + screenshotNote;
+const message = 
+  'Hello Shop2Bhutan,\n\n' +
+  '🆔 Order ID: ' + orderId + '\n\n' +
+  '👤 Name: ' + nameVal + '\n' +
+  '📱 WhatsApp: ' + phoneVal + '\n' +
+  '✉️ Email: ' + (emailVal || 'Not provided') + '\n' +
+  '🏙️ City: ' + cityVal + '\n' +
+  '💳 Payment: ' + paymentMethod + '\n' +
+  '📍 Address: ' + addressVal + '\n\n' +
+  '🛒 Products:\n' + productsText + screenshotNote +
+  
+  '\n\n👉 Please go to https://shop2bt.vercel.app/track.html to track your order using the Order ID.';
 
     document.getElementById('whatsappConfirmBtn').href =
       'https://wa.me/97577113302?text=' + encodeURIComponent(message);

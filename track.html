@@ -233,9 +233,10 @@
 
       try {
         // Fetch order by text order_id
+        // FIXED: removed payment_method from orders select (it's in payments table)
         const { data: orders, error: orderErr } = await supabase
           .from('orders')
-          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, payment_method, created_at, users(full_name, whatsapp, email)')
+          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, users(full_name, whatsapp, email)')
           .eq('order_id', orderTextId)
           .limit(1);
 
@@ -255,7 +256,6 @@
           .select('*')
           .eq('order_id', order.id)
           .maybeSingle();
-
         currentQuote = quotes;
 
         // Fetch tracking events by UUID order_id
@@ -265,66 +265,60 @@
           .eq('order_id', order.id)
           .order('created_at', { ascending: true });
 
-        // Populate header
-        document.getElementById('res-order-id').textContent = order.order_id;
-        document.getElementById('res-name').textContent = user.full_name || '—';
-        document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
-        document.getElementById('res-city').textContent = order.delivery_city || '—';
-        document.getElementById('res-payment').textContent = order.payment_method || '—';
-
-        // Payment status lookup — all vars declared before any await
+        // FIXED: Fetch payment info BEFORE rendering the header so we can show payment_method
         let paymentInfo = null;
-        let paymentStatusWrap = null;
-        let paymentStatusEl = null;
-
         try {
-          paymentStatusWrap = document.getElementById('res-payment-status-wrap');
-          paymentStatusEl = document.getElementById('res-payment-status');
-          
           const pmtRes = await supabase
             .from('payments')
             .select('status, advance_paid, due_amount, total_amount, payment_method')
             .eq('order_id', order.order_id)
             .maybeSingle();
-          
-          if (pmtRes.data) {
-            paymentInfo = pmtRes.data;
-          }
+          if (pmtRes.data) paymentInfo = pmtRes.data;
         } catch (e) {
           console.log('Payment lookup skipped:', e.message);
         }
 
-        if (paymentStatusWrap && paymentStatusEl) {
-          // Reset: hide and clear old content
-          paymentStatusWrap.classList.add('hidden');
-          paymentStatusEl.innerHTML = '';
+        // Populate header
+        document.getElementById('res-order-id').textContent = order.order_id;
+        document.getElementById('res-name').textContent = user.full_name || '—';
+        document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+        document.getElementById('res-city').textContent = order.delivery_city || '—';
+        // FIXED: read payment_method from payments table, not orders
+        document.getElementById('res-payment').textContent = paymentInfo?.payment_method || '—';
+
+        // Payment status display
+        const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
+        const paymentStatusEl = document.getElementById('res-payment-status');
+        
+        // Reset: hide and clear old content
+        paymentStatusWrap.classList.add('hidden');
+        paymentStatusEl.innerHTML = '';
+        
+        if (paymentInfo) {
+          paymentStatusWrap.classList.remove('hidden');
+          const isCod = paymentInfo.payment_method === 'Cash on Delivery';
+          const isPartial = paymentInfo.status === 'partial';
+          const isPending = paymentInfo.status === 'pending';
+          const isVerified = paymentInfo.status === 'verified';
           
-          if (paymentInfo) {
-            paymentStatusWrap.classList.remove('hidden');
-            const isCod = paymentInfo.payment_method === 'Cash on Delivery';
-            const isPartial = paymentInfo.status === 'partial';
-            const isPending = paymentInfo.status === 'pending';
-            const isVerified = paymentInfo.status === 'verified';
-            
-            let statusHtml = '';
-            if (isCod) {
-              statusHtml = `<span class="text-amber-600 font-semibold">Cash on Delivery</span>
-                <div class="text-xs text-gray-500 mt-1">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} when your order arrives</div>`;
-            } else if (isPending) {
-              statusHtml = `<span class="text-amber-600 font-semibold">Awaiting Advance Payment</span>
-                <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${Math.round((paymentInfo.total_amount || 0) * 0.5).toLocaleString('en-IN')}</div>`;
-            } else if (isPartial) {
-              statusHtml = `<span class="text-blue-600 font-semibold">Partial Payment</span>
-                <div class="text-xs text-gray-500 mt-1">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
-            } else if (isVerified) {
-              statusHtml = `<span class="text-emerald-600 font-semibold">Payment Verified</span>
-                <div class="text-xs text-gray-500 mt-1">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
-            } else {
-              statusHtml = `<span class="text-amber-600 font-semibold capitalize">${paymentInfo.status}</span>
-                <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
-            }
-            paymentStatusEl.innerHTML = statusHtml;
+          let statusHtml = '';
+          if (isCod) {
+            statusHtml = `<span class="text-amber-600 font-semibold">Cash on Delivery</span>
+              <div class="text-xs text-gray-500 mt-1">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} when your order arrives</div>`;
+          } else if (isPending) {
+            statusHtml = `<span class="text-amber-600 font-semibold">Awaiting Advance Payment</span>
+              <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${Math.round((paymentInfo.total_amount || 0) * 0.5).toLocaleString('en-IN')}</div>`;
+          } else if (isPartial) {
+            statusHtml = `<span class="text-blue-600 font-semibold">Partial Payment</span>
+              <div class="text-xs text-gray-500 mt-1">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (isVerified) {
+            statusHtml = `<span class="text-emerald-600 font-semibold">Payment Verified</span>
+              <div class="text-xs text-gray-500 mt-1">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
+          } else {
+            statusHtml = `<span class="text-amber-600 font-semibold capitalize">${paymentInfo.status}</span>
+              <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
           }
+          paymentStatusEl.innerHTML = statusHtml;
         }
 
         const cfg = statusConfig[order.order_status] || statusConfig.pending;

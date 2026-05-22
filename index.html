@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
+<base target="_blank">
 </head>
 <body>
 
@@ -125,47 +126,87 @@
   <div class="container">
     <div class="text-center">
       <span class="section-tag">Browse &amp; Shop</span>
-      <h2 class="section-title">Start Shopping</h2>
-      <p class="section-subtitle">Browse your favorite Indian shopping websites and share the product links with us.</p>
+      <h2 class="section-title">Browse Indian Stores</h2>
+      <p class="section-subtitle">Click any store below to shop, then copy the product link and paste it into our order form.</p>
     </div>
     <div class="shop-grid">
 
       <a class="shop-card" href="https://www.amazon.in/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
           <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon India"
-            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff9900;color:#000;\'>AMZ</div>'">
+            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#ff9900;color:#000;'>AMZ</div>'">
         </div>
         <h3>Amazon India</h3>
         <span class="shop-tag">Electronics, books, fashion &amp; more</span>
+        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
       </a>
 
       <a class="shop-card" href="https://www.flipkart.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
           <img src="image/flipkart.png" alt="Flipkart"
-            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#2874f0;\'>FK</div>'">
+            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#2874f0;'>FK</div>'">
         </div>
         <h3>Flipkart</h3>
         <span class="shop-tag">Wide range of products</span>
+        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
       </a>
 
       <a class="shop-card" href="https://www.myntra.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
           <img src="image/myntra.jpg" alt="Myntra"
-            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#ff3f6c;\'>MYN</div>'">
+            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#ff3f6c;'>MYN</div>'">
         </div>
         <h3>Myntra</h3>
         <span class="shop-tag">Fashion &amp; lifestyle</span>
+        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
       </a>
 
       <a class="shop-card" href="https://www.meesho.com/" target="_blank" rel="noopener">
         <div class="shop-logo-wrap">
           <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/Meesho_logo.png" alt="Meesho"
-            onerror="this.parentElement.innerHTML='<div class=\'shop-logo-fallback\' style=\'background:#9400d3;\'>MS</div>'">
+            onerror="this.parentElement.innerHTML='<div class='shop-logo-fallback' style='background:#9400d3;'>MS</div>'">
         </div>
         <h3>Meesho</h3>
         <span class="shop-tag">Budget-friendly finds</span>
+        <span class="shop-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Opens in new tab</span>
       </a>
 
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how-section">
+  <div class="container">
+    <div class="text-center">
+      <span class="section-tag">How It Works</span>
+      <h2 class="section-title">From India to Your Door in 3 Steps</h2>
+      <p class="section-subtitle">No Indian payment card? No problem. We handle everything.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <h3>Find Your Product</h3>
+        <p>Browse Amazon, Flipkart, Myntra or Meesho. Find exactly what you want.</p>
+      </div>
+      <div class="how-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-icon"><i class="fa-solid fa-copy"></i></div>
+        <h3>Copy the Link</h3>
+        <p>Copy the product URL from your browser or app. That's all we need.</p>
+      </div>
+      <div class="how-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-icon"><i class="fa-solid fa-paper-plane"></i></div>
+        <h3>Paste &amp; Submit</h3>
+        <p>Paste the link in our form below. We order it, collect it, and deliver to you.</p>
+      </div>
+    </div>
+    <div class="how-cta">
+      <a href="#order-form" class="cta-main">Start Your Order <i class="fa-solid fa-arrow-down"></i></a>
     </div>
   </div>
 </section>
@@ -233,7 +274,6 @@
     <div class="form-card">
 
       <!-- ── STEP PROGRESS BAR ── -->
-      <!-- 5 steps: Contact · Delivery · Products · Payment · Review -->
       <div class="form-progress">
         <div class="steps-row">
 
@@ -367,7 +407,6 @@
                 <p class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</p>
                 <p class="upload-text" style="font-size:0.78rem;margin-top:2px;">JPG, PNG — max 5 MB each</p>
               </div>
-              <!-- FIX: #err-files now exists so handleFileSelect doesn't throw -->
               <div class="field-error-msg" id="err-files"></div>
               <div class="file-list" id="fileList"></div>
             </div>
@@ -383,7 +422,6 @@
             <p class="step-heading">How would you like to pay?</p>
             <p class="step-hint">Select your preferred payment method. Final amount confirmed on WhatsApp.</p>
 
-            <!-- FIX: onclick now calls selectPayment(), which is defined in main.js -->
             <div class="payment-cards" id="paymentCards">
               <div class="payment-card" onclick="selectPayment('Full Payment', this)">
                 <span class="payment-icon">💰</span>
@@ -395,16 +433,6 @@
                 <span class="payment-name">Partial Payment (50/50)</span>
                 <span class="payment-desc">Pay 50% advance, 50% on delivery</span>
               </div>
-        
-<div class="payment-grid">
-  <div class="payment-card disabled" onclick="showToast('Cash on Delivery coming soon!')" title="Coming soon">
-    <i class="fas fa-money-bill-wave"></i>
-    <span>Cash on Delivery</span>
-    <span class="coming-soon-badge">Soon</span>
-  </div>
-</div>
-
-
             </div>
             <input type="hidden" id="paymentMethod" name="payment_method" />
             <div class="field-error-msg" id="err-payment">
@@ -413,7 +441,6 @@
 
             <div class="form-nav">
               <button type="button" class="btn-back" onclick="goStep(3)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-              <!-- FIX: goes to step 5 (Review), not step 5 was previously mislabelled -->
               <button type="button" class="btn-next" onclick="goStep(5)">Review Order <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
@@ -442,12 +469,10 @@
                 </div>
                 <div class="pricing-row">
                   <span class="pricing-row-label">Delivery fee to your city</span>
-                  <!-- FIX: populated by buildReview() -->
                   <span class="pricing-row-val" id="reviewDeliveryFee">—</span>
                 </div>
                 <div class="pricing-row">
                   <span class="pricing-row-label">Payment method</span>
-                  <!-- FIX: populated by buildReview() -->
                   <span class="pricing-row-val" id="reviewPaymentMethod">—</span>
                 </div>
               </div>
