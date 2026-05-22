@@ -142,6 +142,7 @@ nav.bg-white {
 .tab.tab-active::after { width:55%; }
 .tab:active { transform:scale(.97); }
 
+
 /* ============================================
    MAIN CONTENT
    ============================================ */
@@ -509,6 +510,90 @@ h2.text-lg.font-semibold::before {
   appearance:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat:no-repeat; background-position:right 12px center; padding-right:40px;
+}
+
+/* ============================================
+   NOTIFICATION SYSTEM
+   ============================================ */
+
+/* Bell animation on new notification */
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-14deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(6deg); }
+  60% { transform: rotate(-6deg); }
+  70% { transform: rotate(3deg); }
+  80% { transform: rotate(-3deg); }
+}
+#notif-toggle.has-new i { animation: bellShake 1.2s cubic-bezier(.36,.07,.19,.97) both; color: var(--primary-600); }
+#notif-toggle.has-new { background: var(--primary-50); }
+
+/* Badge pulse */
+#notif-badge { transition: all .2s ease; }
+#notif-badge.pulse { animation: badgePulse .6s ease; }
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Dropdown panel */
+#notif-dropdown { animation: notifDropdownIn .2s ease-out; }
+@keyframes notifDropdownIn {
+  from { opacity: 0; transform: scale(.95) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Notification item */
+.notif-item {
+  display: flex; align-items: flex-start; gap: .875rem;
+  padding: .875rem 1rem; border-bottom: 1px solid var(--gray-100);
+  cursor: pointer; transition: all var(--transition-fast);
+  position: relative;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--primary-50); }
+.notif-item.unread { background: var(--primary-50); }
+.notif-item.unread::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 40%; background: var(--primary-500); border-radius: 0 4px 4px 0;
+}
+
+.notif-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .875rem; flex-shrink: 0;
+}
+.notif-icon.order { background: var(--info-50); color: var(--info-600); }
+.notif-icon.review { background: var(--warning-50); color: var(--warning-600); }
+.notif-icon.payment { background: var(--success-50); color: var(--success-600); }
+.notif-icon.user { background: var(--primary-50); color: var(--primary-600); }
+.notif-icon.quotation { background: var(--gray-100); color: var(--gray-600); }
+.notif-icon.tracking { background: #f0f9ff; color: #0ea5e9; }
+
+.notif-content { flex: 1; min-width: 0; }
+.notif-title { font-size: .8125rem; font-weight: 600; color: var(--gray-900); line-height: 1.4; }
+.notif-title span { font-weight: 700; color: var(--primary-700); }
+.notif-message { font-size: .75rem; color: var(--gray-500); margin-top: 2px; line-height: 1.5; }
+.notif-time { font-size: .6875rem; color: var(--gray-400); margin-top: 4px; font-weight: 500; }
+
+.notif-read-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary-500); flex-shrink: 0; margin-top: 6px;
+  transition: opacity .2s;
+}
+.notif-item.read .notif-read-dot { opacity: 0; }
+
+/* Empty state inside dropdown */
+#notif-list .empty-notif { padding: 2.5rem 1rem; text-align: center; }
+#notif-list .empty-notif i { font-size: 1.5rem; margin-bottom: .75rem; display: block; }
+
+/* Mobile: full-width dropdown */
+@media (max-width: 640px) {
+  #notif-dropdown { position: fixed; left: .5rem; right: .5rem; top: 3.5rem; width: auto; max-width: none; }
 }
 
 /* ============================================

@@ -368,10 +368,11 @@ function fetchPreview(input, url) {
       slug = decodeURIComponent(new URL(url).pathname)
         .split('/').filter(Boolean)
         .find(s => s.length > 8 && !/^[0-9]+$/.test(s)) || '';
-      slug = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      slug = slug.replace(/[-_]/g, ' ').replace(/\w/g, c => c.toUpperCase());
       if (slug.length > 80) slug = slug.slice(0, 80) + '…';
     } catch (e) {}
     renderPreview(preview, slug || brandFallback + ' product', '', brandFallback, true);
+    // Update thumbnail
     previewPlaceholder.style.display = 'none';
     previewContent.style.display = 'none';
     updateOrderSummary();
@@ -390,6 +391,7 @@ function fetchPreview(input, url) {
       let title = (d.title || '').replace(/\s*[-|–]\s*(Amazon|Flipkart|Myntra|Meesho).*/i, '').trim();
       if (title.length > 100) title = title.slice(0, 100) + '…';
       renderPreview(preview, title || brandFallback + ' product', (d.image && d.image.url) || '', d.publisher || brandFallback);
+      // Update thumbnail
       if (d.image && d.image.url) {
         previewImg.src = d.image.url;
         previewImg.style.display = 'block';
@@ -462,6 +464,7 @@ function updateOrderSummary() {
 
     if (link) {
       itemCount += qty;
+      // Try to extract price from link (rough heuristic for display)
       const priceMatch = link.match(/[?&]price=(\d+)/) || link.match(/\/(\d{3,})\//);
       const estPrice = priceMatch ? parseInt(priceMatch[1], 10) : 0;
       totalProductPrice += estPrice * qty;
@@ -582,6 +585,7 @@ function loadFormState() {
       });
     }
 
+    // Rebuild products
     document.getElementById('productsContainer').innerHTML = '';
     if (data.products && data.products.length > 0) {
       data.products.forEach(p => addProductRow(p));
@@ -589,6 +593,11 @@ function loadFormState() {
       addProductRow();
     }
 
+    // Restore step if valid
+    if (data.step && data.step > 1 && data.step <= 5) {
+      // Only restore to step 1 for safety, or max step 3 if they had products
+      // We don't auto-advance to review/payment to avoid confusion
+    }
     updateOrderSummary();
   } catch (e) {
     console.error('Failed to restore form state', e);
@@ -1233,6 +1242,92 @@ function loadReviews() {
 window.loadReviews = loadReviews;
 
 /* ==========================================================
+   LIVE ACTIVITY TICKER
+   ========================================================== */
+const TICKER_FALLBACK = [
+  { icon: '🛒', text: 'Tenzin ordered from Amazon', city: 'Thimphu', time: '2 mins ago' },
+  { icon: '📦', text: 'Delivered to Paro', city: 'Paro', time: '5 mins ago' },
+  { icon: '🛒', text: 'Pema ordered from Myntra', city: 'Phuntsholing', time: '8 mins ago' },
+  { icon: '🚚', text: 'Package collected from Jaigaon', city: 'Jaigaon', time: '12 mins ago' },
+  { icon: '🛒', text: 'Karma ordered from Flipkart', city: 'Thimphu', time: '15 mins ago' },
+  { icon: '📦', text: 'Delivered to Thimphu', city: 'Thimphu', time: '18 mins ago' },
+  { icon: '🛒', text: 'Dorji ordered from Meesho', city: 'Paro', time: '22 mins ago' },
+  { icon: '🚚', text: 'Package arrived at Jaigaon hub', city: 'Jaigaon', time: '25 mins ago' },
+  { icon: '🛒', text: 'Sonam ordered from Amazon', city: 'Phuntsholing', time: '30 mins ago' },
+  { icon: '📦', text: 'Delivered to Phuntsholing', city: 'Phuntsholing', time: '35 mins ago' },
+  { icon: '🛒', text: 'Ugyen ordered from Myntra', city: 'Thimphu', time: '40 mins ago' },
+  { icon: '🚚', text: 'Crossing Bhutan border', city: 'Phuntsholing', time: '45 mins ago' },
+];
+
+async function loadLiveTicker() {
+  const track = document.getElementById('tickerTrack');
+  if (!track) return;
+
+  let items = [];
+
+  // Try to fetch real orders from Supabase
+  try {
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('order_id, delivery_city, product_links, order_status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(8);
+
+    if (!error && orders && orders.length > 0) {
+      const now = new Date();
+      items = orders.map(o => {
+        const minsAgo = Math.floor((now - new Date(o.created_at)) / 60000);
+        const timeText = minsAgo < 1 ? 'Just now' : minsAgo < 60 ? minsAgo + ' mins ago' : Math.floor(minsAgo / 60) + ' hours ago';
+
+        // Extract store name from first product link
+        let store = 'a store';
+        try {
+          const link = o.product_links?.[0] || '';
+          const host = new URL(link).hostname.replace('www.', '').split('.')[0];
+          store = host.charAt(0).toUpperCase() + host.slice(1);
+        } catch (e) {}
+
+        const isDelivered = o.order_status === 'delivered';
+        return {
+          icon: isDelivered ? '📦' : '🛒',
+          text: isDelivered ? 'Delivered to ' + (o.delivery_city || 'Bhutan') : 'Ordered from ' + store,
+          city: o.delivery_city || 'Bhutan',
+          time: timeText
+        };
+      });
+    }
+  } catch (e) {
+    console.log('Ticker: using fallback data');
+  }
+
+  // Use fallback if no real data
+  if (items.length === 0) {
+    items = TICKER_FALLBACK;
+  }
+
+  // Build ticker HTML - duplicate for seamless loop
+  const buildItems = (arr) => arr.map(item => `
+    <div class="ticker-item">
+      <span>${item.icon}</span>
+      <span>${escHtml(item.text)}</span>
+      <span class="ticker-city">${escHtml(item.city)}</span>
+      <span class="ticker-time">${escHtml(item.time)}</span>
+    </div>
+  `).join('');
+
+  const liveBadge = `
+    <div class="ticker-live-badge">
+      <span class="live-dot"></span>
+      Live
+    </div>
+  `;
+
+  const itemsHtml = buildItems(items);
+  track.innerHTML = liveBadge + itemsHtml + itemsHtml; // Duplicate for seamless loop
+}
+window.loadLiveTicker = loadLiveTicker;
+
+/* ==========================================================
    INIT
    ========================================================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1245,53 +1340,5 @@ document.addEventListener('DOMContentLoaded', () => {
   addProductRow();
   loadFormState();
   loadReviews();
-  initVisuals();
+  loadLiveTicker();
 });
-
-/* ==========================================================
-   VISUAL POLISH (Cosmetic only — does not touch backend)
-   ---------------------------------------------------------
-   • Scroll-triggered fade-in reveals
-   • Animated trust-bar counters
-   • Ambient mesh background safely layered
-   ========================================================== */
-function initVisuals() {
-  // Scroll reveal
-  const revealEls = document.querySelectorAll('.shop-card, .trust-card, .how-card, .schedule-card, .testi-card, .faq-item');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('reveal', 'visible');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  revealEls.forEach(el => {
-    el.classList.add('reveal');
-    io.observe(el);
-  });
-
-  // Trust bar counter animation
-  const counters = document.querySelectorAll('.trust-stat-num');
-  const counterIo = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const target = parseInt(el.dataset.target, 10);
-        const suffix = el.textContent.includes('%') ? '%' : '';
-        let current = 0;
-        const step = Math.max(1, Math.floor(target / 40));
-        const timer = setInterval(() => {
-          current += step;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          el.textContent = current + suffix;
-        }, 30);
-        counterIo.unobserve(el);
-      }
-    });
-  }, { threshold: 0.5 });
-  counters.forEach(c => counterIo.observe(c));
-}

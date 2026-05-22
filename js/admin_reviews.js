@@ -1329,6 +1329,358 @@ document.getElementById('tracking-modal')?.addEventListener('click', (e) => {
 });
 
 /* ==========================================================
+   NOTIFICATION SYSTEM
+   ========================================================== */
+let notifications = [];
+let notifRealtimeChannels = [];
+let notifSoundEnabled = false;
+const NOTIF_MAX_AGE_HOURS = 48;
+
+function initNotifications() {
+  loadNotifications();
+  setupNotificationRealtime();
+  setupNotificationUI();
+}
+
+/* ─── Load from localStorage (fallback if no DB table yet) ─── */
+function loadNotifications() {
+  try {
+    const raw = localStorage.getItem('s2b_admin_notifications');
+    if (raw) {
+      notifications = JSON.parse(raw).filter(n => {
+        const age = (Date.now() - new Date(n.created_at).getTime()) / 36e5;
+        return age < NOTIF_MAX_AGE_HOURS;
+      });
+    }
+  } catch (e) { notifications = []; }
+  updateNotifBadge();
+}
+
+function saveNotifications() {
+  localStorage.setItem('s2b_admin_notifications', JSON.stringify(notifications.slice(0, 50)));
+}
+
+/* ─── Realtime Subscriptions ─── */
+function setupNotificationRealtime() {
+  // New orders
+  const ordersChannel = supabase
+    .channel('notif-orders')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+      const order = payload.new;
+      addNotification({
+        type: 'order',
+        title: 'New Order Received',
+        message: `Order ${(order.order_id || '').slice(0, 12)} from ${order.delivery_city || 'Unknown'}`,
+        data: { order_id: order.id, tab: 1 },
+        icon: 'fa-shopping-bag'
+      });
+    })
+    .subscribe();
+
+  // New reviews
+  const reviewsChannel = supabase
+    .channel('notif-reviews')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, (payload) => {
+      const review = payload.new;
+      addNotification({
+        type: 'review',
+        title: 'New Review Submitted',
+        message: `${review.full_name || 'Someone'} rated ${review.rating || 0}★ — "${(review.message || '').slice(0, 40)}${(review.message || '').length > 40 ? '...' : ''}"`,
+        data: { review_id: review.id, tab: 0 },
+        icon: 'fa-star'
+      });
+    })
+    .subscribe();
+
+  // New payments
+  const paymentsChannel = supabase
+    .channel('notif-payments')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payments' }, (payload) => {
+      const pay = payload.new;
+      addNotification({
+        type: 'payment',
+        title: 'Payment Received',
+        message: `₹${Math.round(pay.total_amount || 0).toLocaleString('en-IN')} via ${pay.payment_method || '—'}`,
+        data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
+        icon: 'fa-money-bill-wave'
+      });
+    })
+    .subscribe();
+
+  // Payment status updates (advance → full)
+  const payUpdateChannel = supabase
+    .channel('notif-payments-updates')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments' }, (payload) => {
+      const pay = payload.new;
+      const old = payload.old;
+      if (old.status === 'pending' && pay.status === 'partial') {
+        addNotification({
+          type: 'payment',
+          title: '50% Advance Verified',
+          message: `Order payment partially confirmed. ₹${Math.round(pay.due_amount || 0).toLocaleString('en-IN')} still due.`,
+          data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
+          icon: 'fa-check-circle'
+        });
+      }
+      if (old.status === 'partial' && pay.status === 'verified') {
+        addNotification({
+          type: 'payment',
+          title: 'Full Payment Verified',
+          message: `Order fully paid. Ready to process.`,
+          data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
+          icon: 'fa-check-double'
+        });
+      }
+    })
+    .subscribe();
+
+  // New users
+  const usersChannel = supabase
+    .channel('notif-users')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
+      const user = payload.new;
+      addNotification({
+        type: 'user',
+        title: 'New Customer Registered',
+        message: `${user.full_name || 'New user'} (+975 ${user.whatsapp || '—'})`,
+        data: { user_id: user.id, tab: 3, subtab: 'users' },
+        icon: 'fa-user-plus'
+      });
+    })
+    .subscribe();
+
+  // Quotation responses (accepted/rejected)
+  const quotesChannel = supabase
+    .channel('notif-quotes')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quotations' }, (payload) => {
+      const q = payload.new;
+      const old = payload.old;
+      if (old.status === 'pending' && q.status === 'accepted') {
+        addNotification({
+          type: 'quotation',
+          title: 'Quotation Accepted',
+          message: `Customer accepted quote. Total: ₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}`,
+          data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
+          icon: 'fa-file-signature'
+        });
+      }
+      if (old.status === 'pending' && q.status === 'rejected') {
+        addNotification({
+          type: 'quotation',
+          title: 'Quotation Rejected',
+          message: `Customer rejected the quotation.`,
+          data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
+          icon: 'fa-times-circle'
+        });
+      }
+    })
+    .subscribe();
+
+  notifRealtimeChannels = [ordersChannel, reviewsChannel, paymentsChannel, payUpdateChannel, usersChannel, quotesChannel];
+}
+
+/* ─── Core Notification Logic ─── */
+function addNotification({ type, title, message, data = {}, icon = 'fa-bell' }) {
+  const notif = {
+    id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+    type,
+    title,
+    message,
+    data,
+    icon,
+    is_read: false,
+    created_at: new Date().toISOString()
+  };
+
+  // Prevent duplicates within 5 seconds
+  const recent = notifications.find(n => n.type === type && n.message === message && (Date.now() - new Date(n.created_at).getTime()) < 5000);
+  if (recent) return;
+
+  notifications.unshift(notif);
+  if (notifications.length > 50) notifications.pop();
+  saveNotifications();
+
+  updateNotifBadge();
+  renderNotificationList();
+  playNotifSound();
+
+  // Also show a toast for immediate attention
+  const toastType = type === 'payment' ? 'success' : type === 'order' ? 'info' : 'info';
+  showToast(title, toastType);
+}
+
+function updateNotifBadge() {
+  const unread = notifications.filter(n => !n.is_read).length;
+  const badge = document.getElementById('notif-badge');
+  const toggle = document.getElementById('notif-toggle');
+  const subtitle = document.getElementById('notif-subtitle');
+
+  if (!badge) return;
+
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : unread;
+    badge.classList.remove('hidden');
+    badge.classList.add('pulse');
+    toggle?.classList.add('has-new');
+    if (subtitle) subtitle.textContent = `${unread} unread notification${unread !== 1 ? 's' : ''}`;
+    setTimeout(() => badge.classList.remove('pulse'), 600);
+  } else {
+    badge.classList.add('hidden');
+    toggle?.classList.remove('has-new');
+    if (subtitle) subtitle.textContent = 'No new alerts';
+  }
+}
+
+function renderNotificationList() {
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+
+  if (notifications.length === 0) {
+    list.innerHTML = `
+      <div class="empty-notif">
+        <i class="fas fa-bell-slash text-gray-300"></i>
+        <p class="text-sm text-gray-500">You're all caught up</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = notifications.map(n => {
+    const timeAgo = getTimeAgo(n.created_at);
+    const unreadClass = n.is_read ? 'read' : 'unread';
+    const iconMap = {
+      order: 'fa-shopping-bag',
+      review: 'fa-star',
+      payment: 'fa-money-bill-wave',
+      user: 'fa-user-plus',
+      quotation: 'fa-file-signature',
+      tracking: 'fa-truck-fast'
+    };
+    const icon = iconMap[n.type] || n.icon || 'fa-bell';
+
+    return `
+      <div class="notif-item ${unreadClass}" onclick="window.handleNotifClick('${n.id}')" data-id="${n.id}">
+        <div class="notif-icon ${n.type}"><i class="fas ${icon}"></i></div>
+        <div class="notif-content">
+          <div class="notif-title">${esc(n.title)}</div>
+          <div class="notif-message">${esc(n.message)}</div>
+          <div class="notif-time"><i class="far fa-clock mr-1"></i>${timeAgo}</div>
+        </div>
+        <div class="notif-read-dot"></div>
+      </div>`;
+  }).join('');
+}
+
+function getTimeAgo(iso) {
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+/* ─── Interaction ─── */
+function setupNotificationUI() {
+  const toggle = document.getElementById('notif-toggle');
+  const dropdown = document.getElementById('notif-dropdown');
+  const markAll = document.getElementById('notif-mark-all');
+  const soundBtn = document.getElementById('notif-sound-toggle');
+
+  // Toggle dropdown
+  toggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isHidden = dropdown.classList.contains('hidden');
+    if (isHidden) {
+      dropdown.classList.remove('hidden');
+      renderNotificationList();
+    } else {
+      dropdown.classList.add('hidden');
+    }
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!dropdown?.contains(e.target) && e.target !== toggle && !toggle?.contains(e.target)) {
+      dropdown?.classList.add('hidden');
+    }
+  });
+
+  // Mark all read
+  markAll?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifications.forEach(n => n.is_read = true);
+    saveNotifications();
+    updateNotifBadge();
+    renderNotificationList();
+    showToast('All notifications marked as read', 'success');
+  });
+
+  // Sound toggle
+  soundBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifSoundEnabled = !notifSoundEnabled;
+    const icon = soundBtn.querySelector('i');
+    icon.className = notifSoundEnabled ? 'fas fa-volume-up text-xs' : 'fas fa-volume-mute text-xs';
+    soundBtn.classList.toggle('text-indigo-600', notifSoundEnabled);
+    showToast(notifSoundEnabled ? 'Notification sound enabled' : 'Notification sound muted', 'info');
+  });
+}
+
+function handleNotifClick(id) {
+  const notif = notifications.find(n => n.id === id);
+  if (!notif) return;
+
+  // Mark as read
+  notif.is_read = true;
+  saveNotifications();
+  updateNotifBadge();
+  renderNotificationList();
+
+  // Navigate
+  if (notif.data?.tab !== undefined) {
+    switchTab(notif.data.tab);
+    if (notif.data.subtab) {
+      if (notif.data.tab === 1) switchOrderSubTab(notif.data.subtab);
+      if (notif.data.tab === 3) switchPortalSubTab(notif.data.subtab);
+    }
+  }
+
+  document.getElementById('notif-dropdown')?.classList.add('hidden');
+}
+window.handleNotifClick = handleNotifClick;
+
+function playNotifSound() {
+  if (!notifSoundEnabled) return;
+  const audio = document.getElementById('notif-sound');
+  if (audio) {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }
+}
+
+/* ─── Manual notification helpers (for testing or custom events) ─── */
+function notifyNewOrder(order) {
+  addNotification({
+    type: 'order',
+    title: 'New Order',
+    message: `Order #${(order.order_id || '').slice(0, 12)} — ${order.delivery_city || 'Unknown'}`,
+    data: { tab: 1 },
+    icon: 'fa-shopping-bag'
+  });
+}
+window.notifyNewOrder = notifyNewOrder;
+
+function notifyPaymentVerified(amount, method) {
+  addNotification({
+    type: 'payment',
+    title: 'Payment Verified',
+    message: `₹${Math.round(amount).toLocaleString('en-IN')} via ${method || '—'}`,
+    data: { tab: 1, subtab: 'payments' },
+    icon: 'fa-check-circle'
+  });
+}
+window.notifyPaymentVerified = notifyPaymentVerified;
+
+/* ==========================================================
    START
    ========================================================== */
 init();
