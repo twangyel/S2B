@@ -370,6 +370,7 @@
     .stagger-4 { animation-delay: 0.4s; }
   </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
 
@@ -629,20 +630,26 @@
 
     const trackingStatusLabels = {
       pending: 'Order Received',
-      ordered: 'Payment Confirmed — Order Placed',
+      quoted: 'Quotation Sent',
+      confirmed: 'Payment Confirmed',
+      ordered: 'Order Placed with Seller',
       reached_jaigaon: 'Reached Jaigaon',
       reached_phuntsholing: 'Reached Phuntsholing',
       out_for_delivery: 'Out for Delivery',
+      shipped: 'Shipped',
       delivered: 'Delivered',
       cancelled: 'Cancelled'
     };
 
     const trackingStatusIcons = {
       pending: 'fa-clipboard-check',
+      quoted: 'fa-file-invoice-dollar',
+      confirmed: 'fa-check-circle',
       ordered: 'fa-cart-shopping',
       reached_jaigaon: 'fa-truck-ramp-box',
       reached_phuntsholing: 'fa-warehouse',
       out_for_delivery: 'fa-truck-fast',
+      shipped: 'fa-truck',
       delivered: 'fa-box-open',
       cancelled: 'fa-ban'
     };
@@ -655,8 +662,19 @@
       const trackBtn = document.getElementById('track-btn');
       const trackBtnText = document.getElementById('track-btn-text');
       const trackSpinner = document.getElementById('track-spinner');
-
-      if (!orderTextId) return;
+      //oder id fiel validation
+if (!orderTextId) {
+  errorEl.classList.remove('hidden');
+  errorEl.querySelector('.text-sm.font-semibold').textContent = 'Order ID required';
+  errorEl.querySelector('.text-xs').textContent = 'Please enter your Order ID to track your shipment.';
+  errorEl.classList.add('error-shake');
+  setTimeout(() => errorEl.classList.remove('error-shake'), 500);
+  trackBtn.disabled = false;
+  trackBtnText.classList.remove('hidden');
+  trackSpinner.classList.add('hidden');
+  input.focus();
+  return;
+}
 
       // Loading state
       trackBtn.disabled = true;
@@ -858,14 +876,17 @@
         }
 
         // Tracking timeline
-        if (tracking && tracking.length > 0 && !['pending', 'quoted', 'cancelled'].includes(order.order_status)) {
+        const hasTrackingEvents = tracking && Array.isArray(tracking) && tracking.length > 0;
+        const shouldShowTracking = hasTrackingEvents && !['pending', 'quoted', 'cancelled'].includes(order.order_status);
+
+        if (shouldShowTracking) {
           trackingPanel.classList.remove('hidden');
           const timeline = document.getElementById('tracking-timeline');
           timeline.innerHTML = tracking.map((t, i) => {
             const isLast = i === tracking.length - 1;
             const statusClass = isLast ? 'active' : 'completed';
             const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-            const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ');
+            const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\w/g, l => l.toUpperCase());
             const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
             return `
               <div class="timeline-item ${statusClass}">

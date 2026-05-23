@@ -1191,29 +1191,16 @@ async function submitReview() {
   btn.textContent = 'Submitting…';
 
   try {
-    let isVerified = false;
-    if (orderId) {
-      const { data: orderCheck, error: checkErr } = await supabase
-        .from('orders')
-        .select('order_id')
-        .eq('order_id', orderId)
-        .maybeSingle();
-      if (!checkErr && orderCheck) isVerified = true;
-    }
-
-    const { error } = await supabase
-      .from('reviews')
-      .insert([{
-        full_name: name,
-        city: location || 'Bhutan',
-        rating: parseInt(rating),
-        message: message,
-        order_id: orderId || null,
-        is_verified_buyer: isVerified,
-        is_approved: false,
-      }]);
+    const { data, error } = await supabase.rpc('submit_review', {
+      p_full_name: name,
+      p_city: location || 'Bhutan',
+      p_rating: parseInt(rating),
+      p_message: message,
+      p_order_id: orderId || null
+    });
 
     if (error) throw error;
+
     showToast('Review submitted! It will appear after approval.');
     closeReviewForm();
   } catch (err) {

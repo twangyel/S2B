@@ -125,6 +125,7 @@ async function loadReviews() {
 
   try {
     const { data, error } = await supabase
+    
       .from('reviews')
       .select('id, full_name, city, rating, message, is_approved, order_id, is_verified_buyer, created_at')
       .order('created_at', { ascending: false });
@@ -340,9 +341,11 @@ async function loadOrders() {
 
     if (allOrders.length === 0) {
       empty?.classList.remove('hidden');
+      wrap?.classList.add('hidden');
       return;
     }
 
+    empty?.classList.add('hidden');
     renderOrders(allOrders);
     wrap?.classList.remove('hidden');
   } catch (err) {
@@ -1534,16 +1537,17 @@ async function saveTracking() {
   }
 
   const btn = document.getElementById('save-tracking-btn');
-  if (btn.disabled) return;
+  if (!btn || btn.disabled) return;
 
   btn.disabled = true;
-  btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
+  const originalText = btn.textContent;
   btn.textContent = 'Updating...';
 
   const modalContent = document.getElementById('tracking-modal-content');
-  modalContent.style.pointerEvents = 'none';
+  if (modalContent) modalContent.style.pointerEvents = 'none';
 
   try {
+    // 1. Insert tracking event
     const { error: trackError } = await supabase.from('tracking_events').insert([{
       order_id: orderUuid,
       status: status,
@@ -1551,43 +1555,54 @@ async function saveTracking() {
       note: note || null,
       created_at: new Date().toISOString()
     }]);
-
     if (trackError) throw trackError;
 
+    // 2. Update order status
     const { error: orderError } = await supabase.from('orders').update({
       order_status: status,
       updated_at: new Date().toISOString()
     }).eq('id', orderUuid);
-
     if (orderError) throw orderError;
 
-    // Optimistically update local state
+    // 3. Close modal and show success
+    closeTrackingModal();
+    showToast('Tracking updated successfully', 'success');
+
+    // 4. Force immediate optimistic UI update
     const trackOrdIdx = allOrders.findIndex(o => o.id === orderUuid);
     if (trackOrdIdx >= 0) {
       allOrders[trackOrdIdx].order_status = status;
     }
-
-    closeTrackingModal();
-    showToast('Tracking updated successfully', 'success');
-    // Re-render immediately
-    if (currentOrderSubTab === 'orders') renderOrders(allOrders);
+    if (currentOrderSubTab === 'orders') {
+      renderOrders(allOrders);
+      const wrap = document.getElementById('orders-table-wrap');
+      if (wrap) wrap.classList.remove('hidden');
+    }
     if (currentOrderSubTab === 'quotations') renderQuotations(allQuotations);
     if (currentOrderSubTab === 'payments') renderPayments(allPayments);
-    // Background sync
-    await refreshOrders();
-    if (currentOrderSubTab === 'quotations') await refreshQuotations();
-    if (currentOrderSubTab === 'payments') await refreshPayments();
+
+    // 5. Background sync with server
+    try {
+      await refreshOrders();
+    } catch (refreshErr) {
+      console.warn('Background refresh orders failed:', refreshErr);
+    }
+    try {
+      if (currentOrderSubTab === 'quotations') await refreshQuotations();
+    } catch (e) {}
+    try {
+      if (currentOrderSubTab === 'payments') await refreshPayments();
+    } catch (e) {}
 
   } catch (err) {
     console.error('Save tracking failed:', err);
-    showToast('Failed to update tracking: ' + err.message, 'error');
+    showToast('Failed to update tracking: ' + (err.message || 'Unknown error'), 'error');
   } finally {
-    setTimeout(() => {
+    if (btn) {
       btn.disabled = false;
-      btn.textContent = btn.dataset.originalText;
-      modalContent.style.pointerEvents = '';
-      delete btn.dataset.originalText;
-    }, 300);
+      btn.textContent = originalText;
+    }
+    if (modalContent) modalContent.style.pointerEvents = '';
   }
 }
 window.saveTracking = saveTracking;
