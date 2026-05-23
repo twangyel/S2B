@@ -8,50 +8,41 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/admin_reviews.css" />
-  <style>
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-    h1, h2, h3, h4 { font-family: 'Sora', sans-serif; }
-    .tab-active { color: #4f46e5; border-bottom-color: #4f46e5; }
-    .subtab-active { color: #4f46e5; border-bottom-color: #4f46e5; }
-    .modal { transition: opacity 0.2s ease; }
-    .modal-content { transition: transform 0.2s ease; }
-    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
+<base target="_blank">
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen antialiased">
 
   <!-- Nav -->
-  <nav class="bg-white border-b border-gray-200">
+  <nav class="bg-white/80 border-b border-gray-200/80 backdrop-blur-xl sticky top-0 z-[100]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <a href="https://shop2bt.vercel.app/" class="flex items-center gap-2">
+        <a href="https://shop2bt.vercel.app/" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
           <img src="/image/logo.png" alt="Shop2Bhutan Logo" class="h-8 w-auto" />
         </a>
         <div class="flex items-center gap-3 sm:gap-4">
-          <a href="portal.html" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium hidden sm:inline">
-            <i class="fas fa-external-link-alt mr-1"></i> Customer Portal
+          <a href="portal.html" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium hidden sm:inline-flex items-center gap-1.5 transition-colors">
+            <i class="fas fa-external-link-alt text-xs"></i> Customer Portal
           </a>
 
           <!-- Notification Bell -->
           <div class="relative" id="notif-wrapper">
-            <button id="notif-toggle" class="relative w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors" title="Notifications">
+            <button id="notif-toggle" class="relative w-10 h-10 rounded-xl hover:bg-gray-100/80 flex items-center justify-center text-gray-600 transition-all" title="Notifications">
               <i class="fas fa-bell text-lg"></i>
-              <span id="notif-badge" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white hidden">0</span>
+              <span id="notif-badge" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white hidden scale-100">0</span>
             </button>
 
             <!-- Dropdown Panel -->
-            <div id="notif-dropdown" class="hidden absolute right-0 top-12 w-[360px] max-w-[92vw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[300] origin-top-right">
-              <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <div id="notif-dropdown" class="hidden absolute right-0 top-12 w-[360px] max-w-[92vw] bg-white rounded-2xl shadow-2xl border border-gray-100/80 overflow-hidden z-[300] origin-top-right">
+              <div class="p-4 border-b border-gray-100/80 flex items-center justify-between bg-gray-50/60">
                 <div>
                   <h3 class="text-sm font-bold text-gray-900">Notifications</h3>
                   <p class="text-xs text-gray-500 mt-0.5" id="notif-subtitle">No new alerts</p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button id="notif-sound-toggle" class="w-8 h-8 rounded-lg hover:bg-gray-200 flex items-center justify-center text-gray-400 transition-colors" title="Toggle sound">
+                  <button id="notif-sound-toggle" class="w-8 h-8 rounded-lg hover:bg-gray-200/70 flex items-center justify-center text-gray-400 transition-colors" title="Toggle sound">
                     <i class="fas fa-volume-mute text-xs"></i>
                   </button>
-                  <button id="notif-mark-all" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded-md hover:bg-indigo-50 transition-colors">Mark all read</button>
+                  <button id="notif-mark-all" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded-md hover:bg-indigo-50/80 transition-colors">Mark all read</button>
                 </div>
               </div>
               <div id="notif-list" class="max-h-[420px] overflow-y-auto">
@@ -62,14 +53,14 @@
                   <p class="text-sm text-gray-500">You're all caught up</p>
                 </div>
               </div>
-              <div class="p-3 border-t border-gray-100 bg-gray-50/50 text-center">
+              <div class="p-3 border-t border-gray-100/80 bg-gray-50/60 text-center">
                 <button onclick="window.switchTab(1)" class="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">View all activity →</button>
               </div>
             </div>
           </div>
 
-          <span id="admin-email-nav" class="text-sm text-gray-600 hidden sm:inline"></span>
-          <button id="logout-btn" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+          <span id="admin-email-nav" class="text-sm text-gray-600 hidden sm:inline-block max-w-[200px] truncate"></span>
+          <button id="logout-btn" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium shadow-sm shadow-red-200">
             Logout
           </button>
         </div>
@@ -79,33 +70,33 @@
 
   <!-- Tabs -->
   <div class="max-w-7xl mx-auto">
-    <div class="border-b bg-white px-4 sm:px-8">
-      <div class="flex gap-6 sm:gap-8 text-sm font-medium">
-        <button onclick="window.switchTab(0)" class="tab py-4 transition-colors border-b-2 border-transparent" id="tab-0">📋 Reviews</button>
-        <button onclick="window.switchTab(1)" class="tab py-4 transition-colors border-b-2 border-transparent" id="tab-1">📦 Orders</button>
-        <button onclick="window.switchTab(2)" class="tab py-4 transition-colors border-b-2 border-transparent" id="tab-2">📊 Analytics</button>
-        <button onclick="window.switchTab(3)" class="tab py-4 transition-colors border-b-2 border-transparent" id="tab-3">🔑 Portal</button>
+    <div class="border-b bg-white/70 backdrop-blur-md px-4 sm:px-8 sticky top-16 z-[90]">
+      <div class="flex gap-6 sm:gap-8 text-sm font-medium overflow-x-auto no-scrollbar">
+        <button onclick="window.switchTab(0)" class="tab py-4 transition-all border-b-2 border-transparent whitespace-nowrap" id="tab-0">📋 Reviews</button>
+        <button onclick="window.switchTab(1)" class="tab py-4 transition-all border-b-2 border-transparent whitespace-nowrap" id="tab-1">📦 Orders</button>
+        <button onclick="window.switchTab(2)" class="tab py-4 transition-all border-b-2 border-transparent whitespace-nowrap" id="tab-2">📊 Analytics</button>
+        <button onclick="window.switchTab(3)" class="tab py-4 transition-all border-b-2 border-transparent whitespace-nowrap" id="tab-3">🔑 Portal</button>
       </div>
     </div>
 
     <main class="px-4 sm:px-8 py-6">
-      
+
       <!-- REVIEWS TAB -->
       <div id="content-0" class="tab-content hidden">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Customer Reviews</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Customer Reviews</h2>
                 <p class="text-sm text-gray-500 mt-1">Approve, unapprove, or remove submitted remarks</p>
               </div>
               <div class="flex items-center gap-3">
                 <div class="relative">
                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                   <input type="text" id="review-search" placeholder="Search name, city, order, or review..." 
-                    class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-72 transition-all">
+                    class="pl-9 pr-4 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 w-full sm:w-72 transition-all">
                 </div>
-                <button onclick="window.refreshReviews()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+                <button onclick="window.refreshReviews()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                   <i class="fas fa-sync-alt text-sm"></i>
                 </button>
               </div>
@@ -113,12 +104,12 @@
           </div>
 
           <div id="reviews-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading reviews...</p>
           </div>
 
           <div id="reviews-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-comment-slash text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No reviews yet</h3>
@@ -128,7 +119,7 @@
           <div id="reviews-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Customer</th>
                   <th class="px-6 py-4">Order ID</th>
                   <th class="px-6 py-4">Rating</th>
@@ -147,27 +138,27 @@
 
       <!-- ORDERS TAB -->
       <div id="content-1" class="tab-content hidden">
-        <div class="bg-white rounded-t-xl border-b border-gray-200 px-6 pt-4 flex gap-6 text-sm font-medium">
-          <button onclick="window.switchOrderSubTab('orders')" id="subtab-orders" class="subtab subtab-active pb-3 border-b-2 border-indigo-600 text-indigo-700">📋 All Orders</button>
-          <button onclick="window.switchOrderSubTab('quotations')" id="subtab-quotations" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">💰 Quotations</button>
-          <button onclick="window.switchOrderSubTab('payments')" id="subtab-payments" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">💳 Payments</button>
+        <div class="bg-white rounded-t-xl border-b border-gray-200/80 px-6 pt-4 flex gap-6 text-sm font-medium overflow-x-auto no-scrollbar">
+          <button onclick="window.switchOrderSubTab('orders')" id="subtab-orders" class="subtab subtab-active pb-3 border-b-2 border-indigo-600 text-indigo-700 whitespace-nowrap">📋 All Orders</button>
+          <button onclick="window.switchOrderSubTab('quotations')" id="subtab-quotations" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">💰 Quotations</button>
+          <button onclick="window.switchOrderSubTab('payments')" id="subtab-payments" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">💳 Payments</button>
         </div>
 
         <!-- ALL ORDERS PANEL -->
-        <div id="panel-orders" class="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div id="panel-orders" class="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Order Requests</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Order Requests</h2>
                 <p class="text-sm text-gray-500 mt-1">View customer submissions and create quotations</p>
               </div>
               <div class="flex items-center gap-3">
                 <div class="relative">
                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                   <input type="text" id="order-search" placeholder="Search order ID, name, city..." 
-                    class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-64 transition-all">
+                    class="pl-9 pr-4 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 w-full sm:w-64 transition-all">
                 </div>
-                <button onclick="window.refreshOrders()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+                <button onclick="window.refreshOrders()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                   <i class="fas fa-sync-alt text-sm"></i>
                 </button>
               </div>
@@ -175,12 +166,12 @@
           </div>
 
           <div id="orders-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading orders...</p>
           </div>
 
           <div id="orders-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-box-open text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No orders yet</h3>
@@ -190,7 +181,7 @@
           <div id="orders-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Order ID</th>
                   <th class="px-6 py-4">Customer</th>
                   <th class="px-6 py-4">City</th>
@@ -206,26 +197,26 @@
         </div>
 
         <!-- QUOTATIONS PANEL -->
-        <div id="panel-quotations" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div id="panel-quotations" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Quotations</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Quotations</h2>
                 <p class="text-sm text-gray-500 mt-1">Track sent quotes and customer responses</p>
               </div>
-              <button onclick="window.refreshQuotations()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+              <button onclick="window.refreshQuotations()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                 <i class="fas fa-sync-alt text-sm"></i>
               </button>
             </div>
           </div>
 
           <div id="quotations-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading quotations...</p>
           </div>
 
           <div id="quotations-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-file-invoice-dollar text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No quotations yet</h3>
@@ -235,7 +226,7 @@
           <div id="quotations-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Order ID</th>
                   <th class="px-6 py-4">Customer</th>
                   <th class="px-6 py-4">Product Price</th>
@@ -251,20 +242,20 @@
         </div>
 
         <!-- PAYMENTS PANEL -->
-        <div id="panel-payments" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div id="panel-payments" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Payments</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Payments</h2>
                 <p class="text-sm text-gray-500 mt-1">Verify customer payments and mark orders for processing</p>
               </div>
               <div class="flex items-center gap-3">
                 <div class="relative">
                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                   <input type="text" id="payment-search" placeholder="Search order ID, name..." 
-                    class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-64 transition-all">
+                    class="pl-9 pr-4 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 w-full sm:w-64 transition-all">
                 </div>
-                <button onclick="window.refreshPayments()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+                <button onclick="window.refreshPayments()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                   <i class="fas fa-sync-alt text-sm"></i>
                 </button>
               </div>
@@ -272,12 +263,12 @@
           </div>
 
           <div id="payments-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading payments...</p>
           </div>
 
           <div id="payments-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-money-bill-wave text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No payments yet</h3>
@@ -287,7 +278,7 @@
           <div id="payments-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Order ID</th>
                   <th class="px-6 py-4">Customer</th>
                   <th class="px-6 py-4">Method</th>
@@ -305,36 +296,39 @@
 
       <!-- ANALYTICS TAB -->
       <div id="content-2" class="tab-content hidden">
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Analytics</h2>
-          <p class="text-gray-600">Analytics dashboard coming soon.</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-8 text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 mb-4">
+            <i class="fas fa-chart-pie text-indigo-400 text-2xl"></i>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">Analytics</h2>
+          <p class="text-gray-500 text-sm max-w-sm mx-auto">Analytics dashboard coming soon. Check back for insights on orders, revenue, and customer behavior.</p>
         </div>
       </div>
 
-      <!-- PORTAL TAB (NEW) -->
+      <!-- PORTAL TAB -->
       <div id="content-3" class="tab-content hidden">
-        <div class="bg-white rounded-t-xl border-b border-gray-200 px-6 pt-4 flex gap-6 text-sm font-medium">
-          <button onclick="window.switchPortalSubTab('otp')" id="portal-subtab-otp" class="subtab subtab-active pb-3 border-b-2 border-indigo-600 text-indigo-700">🔑 OTP Codes</button>
-          <button onclick="window.switchPortalSubTab('users')" id="portal-subtab-users" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700">👥 Customers</button>
+        <div class="bg-white rounded-t-xl border-b border-gray-200/80 px-6 pt-4 flex gap-6 text-sm font-medium overflow-x-auto no-scrollbar">
+          <button onclick="window.switchPortalSubTab('otp')" id="portal-subtab-otp" class="subtab subtab-active pb-3 border-b-2 border-indigo-600 text-indigo-700 whitespace-nowrap">🔑 OTP Codes</button>
+          <button onclick="window.switchPortalSubTab('users')" id="portal-subtab-users" class="subtab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">👥 Customers</button>
         </div>
 
         <!-- OTP CODES PANEL -->
-        <div id="portal-panel-otp" class="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div id="portal-panel-otp" class="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Portal OTP Codes</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Portal OTP Codes</h2>
                 <p class="text-sm text-gray-500 mt-1">Active login codes for customer portal access</p>
               </div>
               <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-500 font-medium">+975</span>
-                  <input type="tel" id="otp-gen-phone" placeholder="77113302" maxlength="8" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32">
-                  <button onclick="window.generateAdminOtp()" id="btn-gen-otp" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+                  <span class="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-lg">+975</span>
+                  <input type="tel" id="otp-gen-phone" placeholder="77113302" maxlength="8" class="px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 w-32 transition-all">
+                  <button onclick="window.generateAdminOtp()" id="btn-gen-otp" class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">
                     <i class="fas fa-plus mr-1"></i> Generate
                   </button>
                 </div>
-                <button onclick="window.refreshOtpCodes()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+                <button onclick="window.refreshOtpCodes()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                   <i class="fas fa-sync-alt text-sm"></i>
                 </button>
               </div>
@@ -342,12 +336,12 @@
           </div>
 
           <div id="otp-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading OTP codes...</p>
           </div>
 
           <div id="otp-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-key text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No OTP codes yet</h3>
@@ -357,7 +351,7 @@
           <div id="otp-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Phone</th>
                   <th class="px-6 py-4">Code</th>
                   <th class="px-6 py-4">Status</th>
@@ -372,20 +366,20 @@
         </div>
 
         <!-- CUSTOMERS PANEL -->
-        <div id="portal-panel-users" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 overflow-hidden">
-          <div class="p-6 border-b border-gray-100">
+        <div id="portal-panel-users" class="hidden bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 class="text-xl font-bold text-gray-900">Customers</h2>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">Customers</h2>
                 <p class="text-sm text-gray-500 mt-1">Registered users and their order history</p>
               </div>
               <div class="flex items-center gap-3">
                 <div class="relative">
                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                   <input type="text" id="user-search" placeholder="Search name, phone, email..." 
-                    class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full sm:w-64 transition-all">
+                    class="pl-9 pr-4 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 w-full sm:w-64 transition-all">
                 </div>
-                <button onclick="window.refreshPortalUsers()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Refresh">
+                <button onclick="window.refreshPortalUsers()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh">
                   <i class="fas fa-sync-alt text-sm"></i>
                 </button>
               </div>
@@ -393,12 +387,12 @@
           </div>
 
           <div id="users-loader" class="hidden py-16 text-center">
-            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-2xl mb-3"></i>
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
             <p class="text-gray-500 text-sm font-medium">Loading customers...</p>
           </div>
 
           <div id="users-empty" class="hidden py-16 text-center">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4">
               <i class="fas fa-users text-gray-300 text-2xl"></i>
             </div>
             <h3 class="text-gray-900 font-semibold mb-1">No customers yet</h3>
@@ -408,7 +402,7 @@
           <div id="users-table-wrap" class="hidden overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th class="px-6 py-4">Customer</th>
                   <th class="px-6 py-4">WhatsApp</th>
                   <th class="px-6 py-4">Email</th>
@@ -427,9 +421,9 @@
   </div>
 
   <!-- Create Quotation Modal -->
-  <div id="quote-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0">
+  <div id="quote-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto" id="quote-modal-content">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div class="p-6 border-b border-gray-100/80 flex items-center justify-between">
         <div>
           <h3 class="text-lg font-bold text-gray-900">Create Quotation</h3>
           <p class="text-sm text-gray-500 mt-1" id="quote-modal-subtitle">Order: —</p>
@@ -438,34 +432,34 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <div class="p-6 space-y-4">
         <input type="hidden" id="quote-order-id">
         <input type="hidden" id="quote-order-text-id">
-        
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Product Price (₹)</label>
-            <input type="number" id="quote-product-price" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+            <input type="number" id="quote-product-price" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" placeholder="0">
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Shipping Fee (₹)</label>
-            <input type="number" id="quote-shipping" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+            <input type="number" id="quote-shipping" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" placeholder="0">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Service Fee (₹)</label>
-            <input type="number" id="quote-service" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+            <input type="number" id="quote-service" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" placeholder="0">
           </div>
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Delivery Fee (₹)</label>
-            <input type="number" id="quote-delivery" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+            <input type="number" id="quote-delivery" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" placeholder="0">
           </div>
         </div>
 
-        <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+        <div class="bg-indigo-50/80 rounded-xl p-4 border border-indigo-100/60">
           <div class="flex items-center justify-between text-sm">
             <span class="font-medium text-gray-700">Total Amount</span>
             <span class="text-lg font-bold text-indigo-700" id="quote-total-display">₹ 0</span>
@@ -474,13 +468,13 @@
 
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Note to Customer</label>
-          <textarea id="quote-note" rows="3" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" placeholder="Any special instructions..."></textarea>
+          <textarea id="quote-note" rows="3" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 resize-none transition-all" placeholder="Any special instructions..."></textarea>
         </div>
       </div>
 
-      <div class="p-6 border-t border-gray-100 flex gap-3 justify-end">
-        <button onclick="window.closeQuoteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-        <button id="save-quote-btn" onclick="window.saveQuotation()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+      <div class="p-6 border-t border-gray-100/80 flex gap-3 justify-end">
+        <button onclick="window.closeQuoteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+        <button id="save-quote-btn" onclick="window.saveQuotation()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">
           Send Quotation
         </button>
       </div>
@@ -488,7 +482,7 @@
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div id="delete-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0">
+  <div id="delete-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200">
     <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 transform scale-95 transition-transform duration-200" id="delete-modal-content">
       <div class="flex items-center gap-4 mb-4">
         <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
@@ -500,16 +494,16 @@
         </div>
       </div>
       <div class="flex gap-3 justify-end mt-6">
-        <button onclick="window.closeAllModals()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-        <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm">Delete</button>
+        <button onclick="window.closeAllModals()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+        <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-all shadow-sm shadow-red-200 active:scale-95">Delete</button>
       </div>
     </div>
   </div>
 
   <!-- Update Tracking Modal -->
-  <div id="tracking-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0">
+  <div id="tracking-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-200" id="tracking-modal-content">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div class="p-6 border-b border-gray-100/80 flex items-center justify-between">
         <div>
           <h3 class="text-lg font-bold text-gray-900">Update Tracking</h3>
           <p class="text-sm text-gray-500 mt-1" id="tracking-modal-subtitle">Order: —</p>
@@ -518,14 +512,14 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <div class="p-6 space-y-4">
         <input type="hidden" id="tracking-order-id">
         <input type="hidden" id="tracking-order-text-id">
 
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
-          <select id="tracking-status" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <select id="tracking-status" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")] bg-no-repeat bg-[right_12px_center] pr-10">
             <option value="pending">Pending</option>
             <option value="ordered">Ordered (Payment Confirmed)</option>
             <option value="reached_jaigaon">Reached Jaigaon</option>
@@ -538,18 +532,42 @@
 
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
-          <input type="text" id="tracking-location" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Jaigaon, WB">
+          <input type="text" id="tracking-location" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" placeholder="e.g. Jaigaon, WB">
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Note</label>
-          <textarea id="tracking-note" rows="2" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" placeholder="Any update for customer..."></textarea>
+          <textarea id="tracking-note" rows="2" class="w-full px-3 py-2 bg-gray-50/80 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 resize-none transition-all" placeholder="Any update for customer..."></textarea>
         </div>
       </div>
 
-      <div class="p-6 border-t border-gray-100 flex gap-3 justify-end">
-        <button onclick="window.closeTrackingModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-        <button id="save-tracking-btn" onclick="window.saveTracking()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">Update Status</button>
+      <div class="p-6 border-t border-gray-100/80 flex gap-3 justify-end">
+        <button onclick="window.closeTrackingModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+        <button id="save-tracking-btn" onclick="window.saveTracking()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verify Payment Modal -->
+  <div id="verify-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-200" id="verify-modal-content">
+      <div class="p-6 border-b border-gray-100/80 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900" id="verify-modal-title">Verify Payment</h3>
+          <p class="text-sm text-gray-500 mt-1" id="verify-modal-subtitle">Order: —</p>
+        </div>
+        <button onclick="window.closeVerifyModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <div class="bg-gray-50/80 rounded-xl p-4 border border-gray-200/60 mb-4">
+          <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed" id="verify-modal-message"></p>
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button onclick="window.closeVerifyModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
+          <button id="confirm-verify-btn" onclick="window.confirmVerify()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">Verify</button>
+        </div>
       </div>
     </div>
   </div>
@@ -557,31 +575,7 @@
   <!-- Toast Container -->
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
-
-  <!-- Verify Payment Modal -->
-<div id="verify-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-200" id="verify-modal-content">
-    <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-      <div>
-        <h3 class="text-lg font-bold text-gray-900" id="verify-modal-title">Verify Payment</h3>
-        <p class="text-sm text-gray-500 mt-1" id="verify-modal-subtitle">Order: —</p>
-      </div>
-      <button onclick="window.closeVerifyModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    <div class="p-6">
-      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
-        <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed" id="verify-modal-message"></p>
-      </div>
-      <div class="flex gap-3 justify-end">
-        <button onclick="window.closeVerifyModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
-        <button id="confirm-verify-btn" onclick="window.confirmVerify()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">Verify</button>
-      </div>
-    </div>
-  </div>
-</div>
+  <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
   <script type="module" src="/js/admin_reviews.js"></script>
-     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 </body>
 </html>
