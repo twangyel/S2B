@@ -16,7 +16,6 @@
  <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
   <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
 </div>
-</div>
   <nav>
     <div class="container nav-content">
       <a href="https://shop2bt.vercel.app/" class="logo">
@@ -120,17 +119,30 @@
   <script type="module" src="/js/admin_login.js"></script>
   <script type="module">
 
+/* ========== PWA + OFFLINE DETECTION ========== */
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('SW registered:', reg.scope))
+      .catch((err) => console.log('SW registration failed:', err));
+  });
+}
+
+// Offline banner logic
 const offlineBanner = document.getElementById('offline-banner');
+
 function updateOnlineStatus() {
   if (navigator.onLine) {
-    offlineBanner?.classList.add('hidden');
+    offlineBanner.classList.add('hidden');
   } else {
-    offlineBanner?.classList.remove('hidden');
+    offlineBanner.classList.remove('hidden');
   }
 }
+
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
   </script>
   
 </body>
