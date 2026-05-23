@@ -344,6 +344,39 @@
       animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
 
+        /* Invoice Print Styles */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoice-print-area,
+      #invoice-print-area * {
+        visibility: visible;
+      }
+      #invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        box-shadow: none;
+        border: none;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    .invoice-download-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+    }
+    .invoice-download-btn:hover {
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+      transform: translateY(-1px);
+    }
+
     @keyframes shake {
       10%, 90% { transform: translateX(-1px); }
       20%, 80% { transform: translateX(2px); }
@@ -369,7 +402,6 @@
     .stagger-3 { animation-delay: 0.3s; }
     .stagger-4 { animation-delay: 0.4s; }
   </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
@@ -540,6 +572,80 @@
             </button>
           </div>
 
+          <!-- Payment Proof Upload Form -->
+          <div id="payment-form" class="hidden mt-6 space-y-5 animate-fade-in">
+            
+            <!-- Bank Details Card -->
+            <div class="p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center">
+                  <i class="fas fa-building-columns text-brand-600 text-sm"></i>
+                </div>
+                <div class="text-sm font-bold text-gray-900">Bank Transfer Details</div>
+              </div>
+              
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span class="text-gray-500">Bank of Bhutan</span>
+                  <span class="font-semibold text-gray-900">[YOUR_BANK_NAME]</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span class="text-gray-500">203149951</span>
+                  <span class="font-semibold text-gray-900 font-mono">[YOUR_ACCOUNT_NUMBER]</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span class="text-gray-500">SHOP2BHUTAN</span>
+                  <span class="font-semibold text-gray-900">[YOUR_BUSINESS_NAME]</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                  <span class="text-gray-500">IFSC / Branch Code</span>
+                  <span class="font-semibold text-gray-900 font-mono">[YOUR_IFSC_CODE]</span>
+                </div>
+              </div>
+              
+              <!-- QR Code -->
+              <div class="mt-5 flex flex-col items-center">
+                <div class="p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <img src="/image/qr_code.jpeg" alt="Scan to Pay" class="w-44 h-44 rounded-lg object-contain">
+                </div>
+                <div class="text-xs text-gray-500 mt-2 font-medium">Scan QR code with any UPI / banking app</div>
+              </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="space-y-2">
+              <label class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-receipt text-brand-500 text-xs"></i>
+                Upload Payment Screenshot
+              </label>
+              <div class="relative">
+                <input type="file" id="payment-screenshot" accept="image/png,image/jpeg,image/jpg" 
+                  class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 transition-all cursor-pointer">
+              </div>
+              <p class="text-xs text-gray-500">Upload a clear screenshot of your successful payment</p>
+            </div>
+
+            <!-- Image Preview -->
+            <div id="upload-preview" class="hidden">
+              <div class="relative rounded-xl overflow-hidden border border-gray-200">
+                <img id="preview-img" src="" class="w-full h-48 object-cover">
+                <button onclick="clearUpload()" class="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-lg flex items-center justify-center transition-colors">
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-2">
+              <button onclick="submitPaymentProof()" id="confirm-payment-btn" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                <i class="fas fa-check-double"></i> Confirm Payment
+              </button>
+              <button onclick="cancelPayment()" class="action-btn px-5 py-3.5 bg-white text-gray-600 border-2 border-gray-200 rounded-xl text-sm font-bold hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center gap-2 transition-all">
+                Cancel
+              </button>
+            </div>
+          </div>
+
           <div id="quote-accepted-msg" class="hidden mt-6 p-5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
             <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
               <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
@@ -557,6 +663,134 @@
             </div>
             <div class="font-bold text-red-800 text-lg mb-1">Quotation Rejected</div>
             <p class="text-sm text-red-600 leading-relaxed">Please contact us if you have any concerns.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking Timeline -->
+      <div id="tracking-panel" class="hidden glass-card p-6 animate-slide-up stagger-3">
+           <!-- Invoice Panel -->
+      <div id="invoice-panel" class="hidden glass-card p-0 overflow-hidden animate-slide-up stagger-4">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="fas fa-file-invoice text-white text-sm"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Tax Invoice</h2>
+                <div class="text-xs text-gray-500">Official receipt for your order</div>
+              </div>
+            </div>
+            <span id="invoice-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-700 border-emerald-200">
+              <i class="fas fa-check-circle mr-1"></i> Delivered
+            </span>
+          </div>
+
+          <div id="invoice-loading" class="hidden text-center py-8">
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <div class="text-sm text-gray-500">Generating invoice...</div>
+          </div>
+
+          <div id="invoice-not-ready" class="hidden text-center py-8">
+            <div class="empty-state-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-file-invoice text-gray-300 text-2xl"></i>
+            </div>
+            <h3 class="text-gray-700 font-bold mb-1">Invoice Not Available</h3>
+            <p class="text-gray-500 text-sm">Your invoice will be generated once your order is delivered.</p>
+          </div>
+
+          <div id="invoice-content" class="hidden">
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" id="invoice-print-area">
+              <!-- Invoice Header -->
+              <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="text-2xl font-extrabold tracking-tight">Shop2Bhutan</div>
+                    <div class="text-gray-400 text-xs mt-1">TAX INVOICE</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Invoice No</div>
+                    <div class="font-mono font-bold text-lg" id="inv-number">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Invoice Body -->
+              <div class="p-6 space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                  <div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</div>
+                    <div class="text-sm font-semibold text-gray-900" id="inv-customer-name">—</div>
+                    <div class="text-sm text-gray-600 mt-0.5" id="inv-customer-phone">—</div>
+                    <div class="text-sm text-gray-600" id="inv-customer-city">—</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Details</div>
+                    <div class="text-sm text-gray-900"><span class="text-gray-500">Order ID:</span> <span class="font-mono font-semibold" id="inv-order-id">—</span></div>
+                    <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Date:</span> <span id="inv-date">—</span></div>
+                    <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Payment:</span> <span id="inv-payment-method">—</span></div>
+                  </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        <th class="text-left py-2">Description</th>
+                        <th class="text-right py-2">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                      <tr class="border-b border-gray-50">
+                        <td class="py-3 flex items-center gap-2">
+                          <i class="fas fa-tag text-gray-300 text-xs"></i> Product Price
+                        </td>
+                        <td class="py-3 text-right font-medium" id="inv-product">₹ 0</td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="py-3 flex items-center gap-2">
+                          <i class="fas fa-plane text-gray-300 text-xs"></i> Shipping Fee
+                        </td>
+                        <td class="py-3 text-right font-medium" id="inv-shipping">₹ 0</td>
+                      </tr>
+                      <tr class="border-b border-gray-50">
+                        <td class="py-3 flex items-center gap-2">
+                          <i class="fas fa-concierge-bell text-gray-300 text-xs"></i> Service Fee
+                        </td>
+                        <td class="py-3 text-right font-medium" id="inv-service">₹ 0</td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 flex items-center gap-2">
+                          <i class="fas fa-truck text-gray-300 text-xs"></i> Delivery Fee
+                        </td>
+                        <td class="py-3 text-right font-medium" id="inv-delivery">₹ 0</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="border-t-2 border-gray-200">
+                        <td class="py-4 text-sm font-bold text-gray-900">Total Amount</td>
+                        <td class="py-4 text-right font-extrabold text-lg text-gray-900" id="inv-total">₹ 0</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 text-center">
+                  <div class="text-xs text-gray-500 mb-1">Thank you for shopping with us!</div>
+                  <div class="text-xs text-gray-400">For support: +975 77113302 | shop2bt.vercel.app</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-5">
+              <button onclick="printInvoice()" class="action-btn flex-1 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2">
+                <i class="fas fa-print"></i> Print / Save as PDF
+              </button>
+              <a id="inv-download-link" href="#" target="_blank" class="action-btn flex-1 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 text-center no-underline">
+                <i class="fas fa-download"></i> Download PDF
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -601,7 +835,7 @@
     <span id="toast-text"></span>
   </div>
 
-  <script type="module">
+    <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(
       "https://deecrnfbvgbzyybqhywy.supabase.co",
@@ -654,6 +888,137 @@
       cancelled: 'fa-ban'
     };
 
+    /* ==========================================================
+       INVOICE FUNCTIONS (defined BEFORE trackOrder)
+       ========================================================== */
+        async function handleInvoice(order, paymentInfo, quotes) {
+      const panel = document.getElementById('invoice-panel');
+      const loading = document.getElementById('invoice-loading');
+      const notReady = document.getElementById('invoice-not-ready');
+      const content = document.getElementById('invoice-content');
+
+      if (!panel || !loading || !notReady || !content) return;
+
+      if (order.order_status !== 'delivered') {
+        panel.classList.add('hidden');
+        return;
+      }
+
+      panel.classList.remove('hidden');
+
+      if (order.invoice_url && order.invoice_number) {
+        notReady.classList.add('hidden');
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        fillInvoice(order, paymentInfo, quotes);
+        const dlLink = document.getElementById('inv-download-link');
+        if (dlLink) dlLink.href = order.invoice_url;
+        return;
+      }
+
+      notReady.classList.add('hidden');
+      loading.classList.remove('hidden');
+      content.classList.add('hidden');
+
+      try {
+        await loadHtml2Pdf();
+
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+        const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const invoiceNumber = `INV-${dateStr}-${randomStr}`;
+
+        fillInvoice(order, paymentInfo, quotes, invoiceNumber);
+
+        const element = document.getElementById('invoice-print-area');
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: `Shop2Bhutan-Invoice-${invoiceNumber}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+        const fileName = `invoices/invoice-${order.order_id}-${Date.now()}.pdf`;
+        const { error: upErr } = await supabase.storage
+          .from('payment-proofs')
+          .upload(fileName, pdfBlob, { contentType: 'application/pdf' });
+
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(fileName);
+
+        await supabase.from('orders').update({
+          invoice_url: publicUrl,
+          invoice_number: invoiceNumber,
+          updated_at: now.toISOString()
+        }).eq('id', order.id);
+
+        order.invoice_url = publicUrl;
+        order.invoice_number = invoiceNumber;
+
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        const dlLink = document.getElementById('inv-download-link');
+        if (dlLink) dlLink.href = publicUrl;
+
+        showToast('Invoice generated!', 'success');
+
+      } catch (err) {
+        console.error('Invoice error:', err);
+        loading.classList.add('hidden');
+        notReady.classList.remove('hidden');
+        notReady.innerHTML = `
+          <div class="empty-state-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-exclamation-triangle text-amber-300 text-2xl"></i>
+          </div>
+          <h3 class="text-gray-700 font-bold mb-1">Could Not Generate Invoice</h3>
+          <p class="text-gray-500 text-sm">Please refresh the page or contact support.</p>
+        `;
+      }
+    }
+
+    function fillInvoice(order, paymentInfo, quotes, invNumber) {
+      const user = order.users || {};
+      const q = quotes || {};
+      const p = paymentInfo || {};
+      const now = new Date();
+
+      document.getElementById('inv-number').textContent = invNumber || order.invoice_number || '—';
+      document.getElementById('inv-customer-name').textContent = user.full_name || '—';
+      document.getElementById('inv-customer-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+      document.getElementById('inv-customer-city').textContent = order.delivery_city || '—';
+      document.getElementById('inv-order-id').textContent = order.order_id;
+      document.getElementById('inv-date').textContent = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      document.getElementById('inv-payment-method').textContent = p.payment_method || '—';
+      document.getElementById('inv-product').textContent = '₹ ' + Math.round(q.product_price || 0).toLocaleString('en-IN');
+      document.getElementById('inv-shipping').textContent = '₹ ' + Math.round(q.shipping_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-service').textContent = '₹ ' + Math.round(q.service_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-delivery').textContent = '₹ ' + Math.round(q.delivery_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-total').textContent = '₹ ' + Math.round(q.total_amount || 0).toLocaleString('en-IN');
+    }
+
+    function loadHtml2Pdf() {
+      return new Promise((resolve, reject) => {
+        if (window.html2pdf) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('html2pdf load failed'));
+        document.head.appendChild(s);
+      });
+    }
+
+    function printInvoice() { window.print(); }
+    window.printInvoice = printInvoice;
+
+    /* ==========================================================
+       TRACK ORDER
+       ========================================================== */
     async function trackOrder() {
       const input = document.getElementById('track-input');
       const orderTextId = input.value.trim().toUpperCase();
@@ -662,21 +1027,17 @@
       const trackBtn = document.getElementById('track-btn');
       const trackBtnText = document.getElementById('track-btn-text');
       const trackSpinner = document.getElementById('track-spinner');
-      //oder id fiel validation
-if (!orderTextId) {
-  errorEl.classList.remove('hidden');
-  errorEl.querySelector('.text-sm.font-semibold').textContent = 'Order ID required';
-  errorEl.querySelector('.text-xs').textContent = 'Please enter your Order ID to track your shipment.';
-  errorEl.classList.add('error-shake');
-  setTimeout(() => errorEl.classList.remove('error-shake'), 500);
-  trackBtn.disabled = false;
-  trackBtnText.classList.remove('hidden');
-  trackSpinner.classList.add('hidden');
-  input.focus();
-  return;
-}
 
-      // Loading state
+      if (!orderTextId) {
+        errorEl.classList.remove('hidden');
+        errorEl.querySelector('.text-sm.font-semibold').textContent = 'Order ID required';
+        errorEl.querySelector('.text-xs').textContent = 'Please enter your Order ID to track your shipment.';
+        errorEl.classList.add('error-shake');
+        setTimeout(() => errorEl.classList.remove('error-shake'), 500);
+        input.focus();
+        return;
+      }
+
       trackBtn.disabled = true;
       trackBtnText.classList.add('hidden');
       trackSpinner.classList.remove('hidden');
@@ -684,10 +1045,9 @@ if (!orderTextId) {
       results.classList.add('hidden');
 
       try {
-        // Fetch order by text order_id
         const { data: orders, error: orderErr } = await supabase
           .from('orders')
-          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, users(full_name, whatsapp, email)')
+          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, invoice_url, invoice_number, users(full_name, whatsapp, email)')
           .eq('order_id', orderTextId)
           .limit(1);
 
@@ -703,7 +1063,6 @@ if (!orderTextId) {
         currentOrder = order;
         const user = order.users || {};
 
-        // Fetch quotation by UUID order_id
         const { data: quotes } = await supabase
           .from('quotations')
           .select('*')
@@ -711,19 +1070,17 @@ if (!orderTextId) {
           .maybeSingle();
         currentQuote = quotes;
 
-        // Fetch tracking events by UUID order_id
         const { data: tracking } = await supabase
           .from('tracking_events')
           .select('*')
           .eq('order_id', order.id)
           .order('created_at', { ascending: true });
 
-        // Fetch payment info
         let paymentInfo = null;
         try {
           const pmtRes = await supabase
             .from('payments')
-            .select('status, advance_paid, due_amount, total_amount, payment_method, delivery_fee, product_price')
+            .select('status, advance_paid, due_amount, total_amount, payment_method, delivery_fee, product_price, payment_proof_url')
             .eq('order_id', order.order_id)
             .maybeSingle();
           if (pmtRes.data) paymentInfo = pmtRes.data;
@@ -732,14 +1089,12 @@ if (!orderTextId) {
         }
         currentPaymentInfo = paymentInfo;
 
-        // Populate header
         document.getElementById('res-order-id').textContent = order.order_id;
         document.getElementById('res-name').textContent = user.full_name || '—';
         document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
         document.getElementById('res-city').textContent = order.delivery_city || '—';
         document.getElementById('res-payment').textContent = paymentInfo?.payment_method || '—';
 
-        // Payment status display
         const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
         const paymentStatusEl = document.getElementById('res-payment-status');
 
@@ -766,6 +1121,9 @@ if (!orderTextId) {
           } else if (isPartial) {
             statusHtml = `<span class="text-blue-600 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-blue-500"></i> Partial Payment</span>
               <div class="text-xs text-gray-500 mt-1.5">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (isPending && paymentInfo.payment_proof_url) {
+            statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hourglass-half text-brand-500"></i> Proof Uploaded</span>
+              <div class="text-xs text-gray-500 mt-1.5">Payment proof submitted. Awaiting admin verification.</div>`;
           } else if (!hasQuotation) {
             statusHtml = `<span class="text-gray-500 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-gray-400"></i> Awaiting Quotation</span>
               <div class="text-xs text-gray-500 mt-1.5">Your order is being reviewed. You'll receive a price quote soon.</div>`;
@@ -794,7 +1152,6 @@ if (!orderTextId) {
         statusEl.textContent = cfg.label;
         statusEl.className = `status-badge px-4 py-1.5 rounded-full text-xs font-bold border ${cfg.color}`;
 
-        // Quotation panel
         const quotePanel = document.getElementById('quote-panel');
         const noQuotePanel = document.getElementById('no-quote-panel');
         const trackingPanel = document.getElementById('tracking-panel');
@@ -828,45 +1185,62 @@ if (!orderTextId) {
 
           if (qStatus === 'pending') {
             document.getElementById('quote-actions').classList.remove('hidden');
+            document.getElementById('payment-form').classList.add('hidden');
             document.getElementById('quote-accepted-msg').classList.add('hidden');
             document.getElementById('quote-rejected-msg').classList.add('hidden');
           } else if (qStatus === 'accepted') {
             document.getElementById('quote-actions').classList.add('hidden');
+            document.getElementById('payment-form').classList.add('hidden');
             document.getElementById('quote-accepted-msg').classList.remove('hidden');
             document.getElementById('quote-rejected-msg').classList.add('hidden');
 
             const total = Math.round(quotes.total_amount || 0);
             const isFullPaymentMethod = paymentInfo?.payment_method === 'Full Payment';
+            const hasProof = paymentInfo?.payment_proof_url;
 
             const msgText = document.getElementById('accepted-msg-text');
-            if (msgText) {
+            const waBtn = document.getElementById('wa-pay-btn');
+
+            if (hasProof) {
+              msgText.innerHTML = `Your payment proof has been uploaded and is <strong>awaiting admin verification</strong>. We'll notify you shortly.`;
+              waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Follow up on WhatsApp';
+              waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(`Hello, I uploaded payment proof for Order ${order.order_id}. Please verify.`);
+            } else {
               if (isFullPaymentMethod) {
                 msgText.innerHTML = `Please pay <strong>₹${total.toLocaleString('en-IN')}</strong> (full amount) via WhatsApp to confirm your order.`;
+              } else if (paymentInfo?.payment_method === 'Cash on Delivery') {
+                msgText.innerHTML = `Your Cash on Delivery order is confirmed. Total: <strong>₹${total.toLocaleString('en-IN')}</strong>`;
               } else {
                 const advance = Math.round(total * 0.5);
                 const due = total - advance;
                 msgText.innerHTML = `Please pay <strong>₹${advance.toLocaleString('en-IN')}</strong> (50% advance) via WhatsApp to confirm your order.<br><span class="text-xs text-emerald-600 mt-1.5 inline-block">Balance due before delivery: ₹${due.toLocaleString('en-IN')}</span>`;
               }
-            }
 
-            const waBtn = document.getElementById('wa-pay-btn');
-            if (waBtn) {
-              waBtn.innerHTML = isFullPaymentMethod 
-                ? '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay Full Amount'
-                : '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay 50% Advance';
-            }
+              if (waBtn) {
+                if (isFullPaymentMethod) {
+                  waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay Full Amount';
+                } else if (paymentInfo?.payment_method === 'Cash on Delivery') {
+                  waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Confirm on WhatsApp';
+                } else {
+                  waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay 50% Advance';
+                }
+              }
 
-            let msg;
-            if (isFullPaymentMethod) {
-              msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nPayment Method: Full Payment\n\nPlease share payment details for the full amount.`;
-            } else {
-              const advance = Math.round(total * 0.5);
-              const due = total - advance;
-              msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance Payment (50%): ₹${advance}\nBalance Due: ₹${due}\n\nPlease share payment details for the advance amount.`;
+              let msg;
+              if (isFullPaymentMethod) {
+                msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nPayment Method: Full Payment\n\nPlease share payment details for the full amount.`;
+              } else if (paymentInfo?.payment_method === 'Cash on Delivery') {
+                msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id} (Cash on Delivery).\nTotal: ₹${total}\n\nPlease confirm my order.`;
+              } else {
+                const advance = Math.round(total * 0.5);
+                const due = total - advance;
+                msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance Payment (50%): ₹${advance}\nBalance Due: ₹${due}\n\nPlease share payment details for the advance amount.`;
+              }
+              if (waBtn) waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
             }
-            document.getElementById('wa-pay-btn').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
           } else {
             document.getElementById('quote-actions').classList.add('hidden');
+            document.getElementById('payment-form').classList.add('hidden');
             document.getElementById('quote-accepted-msg').classList.add('hidden');
             document.getElementById('quote-rejected-msg').classList.remove('hidden');
           }
@@ -875,18 +1249,16 @@ if (!orderTextId) {
           noQuotePanel.classList.remove('hidden');
         }
 
-        // Tracking timeline
         const hasTrackingEvents = tracking && Array.isArray(tracking) && tracking.length > 0;
         const shouldShowTracking = hasTrackingEvents && !['pending', 'quoted', 'cancelled'].includes(order.order_status);
 
         if (shouldShowTracking) {
-          trackingPanel.classList.remove('hidden');
           const timeline = document.getElementById('tracking-timeline');
           timeline.innerHTML = tracking.map((t, i) => {
             const isLast = i === tracking.length - 1;
             const statusClass = isLast ? 'active' : 'completed';
             const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-            const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\w/g, l => l.toUpperCase());
+            const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
             return `
               <div class="timeline-item ${statusClass}">
@@ -903,9 +1275,13 @@ if (!orderTextId) {
               </div>
             `;
           }).join('');
+          trackingPanel.classList.remove('hidden');
         } else {
           trackingPanel.classList.add('hidden');
         }
+
+        // Handle invoice (only for delivered orders)
+        await handleInvoice(order, paymentInfo, quotes);
 
         results.classList.remove('hidden');
       } catch (err) {
@@ -919,72 +1295,59 @@ if (!orderTextId) {
     }
     window.trackOrder = trackOrder;
 
+    /* ==========================================================
+       QUOTE RESPONSE
+       ========================================================== */
     async function respondQuote(response) {
       if (!currentQuote || !currentOrder) return;
 
-      const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
-      const originalText = btn.innerHTML;
-      if (btn) { 
-        btn.disabled = true; 
-        btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; 
+      if (response === 'accepted') {
+        if (currentPaymentInfo?.payment_method === 'Cash on Delivery') {
+          const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+          const originalText = btn?.innerHTML;
+          if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
+          
+          try {
+            const { error: qErr } = await supabase
+              .from('quotations')
+              .update({ status: 'accepted', updated_at: new Date().toISOString() })
+              .eq('id', currentQuote.id);
+            if (qErr) throw qErr;
+
+            await supabase.from('orders').update({ order_status: 'quoted' }).eq('id', currentOrder.id);
+
+            const total = Math.round(currentQuote.total_amount || 0);
+            const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* (Cash on Delivery).\nTotal: ₹${total}\n\nPlease confirm my order for delivery.`;
+            
+            showToast('Quotation accepted!', 'success');
+            setTimeout(() => {
+              window.open('https://wa.me/97577113302?text=' + encodeURIComponent(msg), '_blank');
+              trackOrder();
+            }, 1000);
+          } catch (err) {
+            console.error('COD accept error:', err);
+            showToast('Failed to accept. Please try again.', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+          }
+          return;
+        }
+
+        document.getElementById('quote-actions').classList.add('hidden');
+        document.getElementById('payment-form').classList.remove('hidden');
+        return;
       }
 
+      const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+      const originalText = btn?.innerHTML;
+      if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
+
       try {
-        // 1. Update quotation status
         const { error: qErr } = await supabase
           .from('quotations')
           .update({ status: response, updated_at: new Date().toISOString() })
           .eq('id', currentQuote.id);
-
         if (qErr) throw qErr;
-
-        // 2. If accepted, update payment tracking
-        if (response === 'accepted') {
-          const total = currentQuote.total_amount || 0;
-          const { data: currentPmt } = await supabase
-            .from('payments')
-            .select('advance_paid, payment_method, status')
-            .eq('order_id', currentOrder.order_id)
-            .maybeSingle();
-
-          const isCod = currentPmt?.payment_method === 'Cash on Delivery';
-          const isFullPayment = currentPmt?.payment_method === 'Full Payment';
-
-          if (!isCod) {
-            const paymentUpdate = {
-              product_price: currentQuote.product_price || 0,
-              shipping_fee: currentQuote.shipping_fee || 0,
-              service_fee: currentQuote.service_fee || 0,
-              delivery_fee: currentQuote.delivery_fee || 0,
-              total_amount: total,
-              updated_at: new Date().toISOString()
-            };
-
-            if (isFullPayment) {
-              paymentUpdate.advance_paid = 0;
-              paymentUpdate.due_amount = total;
-              paymentUpdate.status = 'pending';
-            } else {
-              paymentUpdate.advance_paid = 0;
-              paymentUpdate.due_amount = total;
-              paymentUpdate.status = 'pending';
-            }
-
-            const { error: pErr } = await supabase
-              .from('payments')
-              .update(paymentUpdate)
-              .eq('order_id', currentOrder.order_id);
-            if (pErr) throw pErr;
-          }
-
-          const newOrderStatus = isCod ? 'quoted' : 'confirmed';
-          await supabase
-            .from('orders')
-            .update({ order_status: newOrderStatus })
-            .eq('id', currentOrder.id);
-        }
-
-        showToast(response === 'accepted' ? 'Quotation accepted successfully!' : 'Quotation rejected.', 'success');
+        showToast('Quotation rejected.', 'success');
         trackOrder();
       } catch (err) {
         console.error('Respond error:', err);
@@ -994,6 +1357,128 @@ if (!orderTextId) {
     }
     window.respondQuote = respondQuote;
 
+    /* ==========================================================
+       PAYMENT PROOF
+       ========================================================== */
+    async function submitPaymentProof() {
+      if (!currentQuote || !currentOrder) return;
+
+      const fileInput = document.getElementById('payment-screenshot');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        showToast('Please upload a payment screenshot first', 'error');
+        fileInput.parentElement.classList.add('error-shake');
+        setTimeout(() => fileInput.parentElement.classList.remove('error-shake'), 500);
+        return;
+      }
+
+      const btn = document.getElementById('confirm-payment-btn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loading-spinner mr-2"></div> Processing...';
+
+      try {
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const fileName = `payment-${currentOrder.order_id}-${Date.now()}.${fileExt}`;
+        const filePath = `payment-proofs/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('payment-proofs')
+          .upload(filePath, file, { contentType: file.type });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(filePath);
+
+        const { error: qErr } = await supabase
+          .from('quotations')
+          .update({ status: 'accepted', updated_at: new Date().toISOString() })
+          .eq('id', currentQuote.id);
+        if (qErr) throw qErr;
+
+        const total = currentQuote.total_amount || 0;
+        const { data: currentPmt } = await supabase
+          .from('payments')
+          .select('payment_method, status')
+          .eq('order_id', currentOrder.order_id)
+          .maybeSingle();
+
+        const isFullPayment = currentPmt?.payment_method === 'Full Payment';
+
+        const paymentUpdate = {
+          product_price: currentQuote.product_price || 0,
+          shipping_fee: currentQuote.shipping_fee || 0,
+          service_fee: currentQuote.service_fee || 0,
+          delivery_fee: currentQuote.delivery_fee || 0,
+          total_amount: total,
+          payment_proof_url: publicUrl,
+          status: 'pending',
+          updated_at: new Date().toISOString()
+        };
+
+        if (isFullPayment) {
+          paymentUpdate.advance_paid = 0;
+          paymentUpdate.due_amount = total;
+        } else {
+          paymentUpdate.advance_paid = 0;
+          paymentUpdate.due_amount = total;
+        }
+
+        const { error: pErr } = await supabase
+          .from('payments')
+          .update(paymentUpdate)
+          .eq('order_id', currentOrder.order_id);
+        if (pErr) throw pErr;
+
+        await supabase
+          .from('orders')
+          .update({ order_status: 'confirmed', updated_at: new Date().toISOString() })
+          .eq('id', currentOrder.id);
+
+        let msg;
+        if (isFullPayment) {
+          msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* and uploaded my payment proof.\n\nTotal: ₹${total}\nPayment Method: Full Payment\nProof: ${publicUrl}\n\nPlease verify and confirm my order.`;
+        } else {
+          const advance = Math.round(total * 0.5);
+          const due = total - advance;
+          msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* and uploaded my payment proof.\n\nTotal: ₹${total}\nAdvance (50%): ₹${advance}\nBalance Due: ₹${due}\nProof: ${publicUrl}\n\nPlease verify and confirm my order.`;
+        }
+
+        showToast('Payment proof uploaded! Opening WhatsApp...', 'success');
+        setTimeout(() => {
+          window.open('https://wa.me/97577113302?text=' + encodeURIComponent(msg), '_blank');
+          trackOrder();
+        }, 1000);
+
+      } catch (err) {
+        console.error('Payment proof error:', err);
+        showToast('Failed to submit: ' + (err.message || 'Upload failed'), 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+    window.submitPaymentProof = submitPaymentProof;
+
+    function cancelPayment() {
+      document.getElementById('payment-form').classList.add('hidden');
+      document.getElementById('quote-actions').classList.remove('hidden');
+      document.getElementById('payment-screenshot').value = '';
+      document.getElementById('upload-preview').classList.add('hidden');
+    }
+    window.cancelPayment = cancelPayment;
+
+    function clearUpload() {
+      document.getElementById('payment-screenshot').value = '';
+      document.getElementById('upload-preview').classList.add('hidden');
+    }
+    window.clearUpload = clearUpload;
+
+    /* ==========================================================
+       TOAST
+       ========================================================== */
     function showToast(msg, type = 'info') {
       const t = document.getElementById('toast');
       const icon = document.getElementById('toast-icon');
@@ -1018,7 +1503,21 @@ if (!orderTextId) {
       }, 3000);
     }
 
-    // Enter key support
+    /* ==========================================================
+       EVENT LISTENERS
+       ========================================================== */
+    document.getElementById('payment-screenshot')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('preview-img').src = e.target.result;
+          document.getElementById('upload-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
     document.getElementById('track-input')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') trackOrder();
     });

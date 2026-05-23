@@ -125,7 +125,6 @@ async function loadReviews() {
 
   try {
     const { data, error } = await supabase
-    
       .from('reviews')
       .select('id, full_name, city, rating, message, is_approved, order_id, is_verified_buyer, created_at')
       .order('created_at', { ascending: false });
@@ -317,7 +316,6 @@ async function loadOrders() {
 
     if (paymentsError) console.warn('Payments fetch warning:', paymentsError);
 
-    // Also fetch quotations so renderOrders can check hasQuote correctly
     const { data: quotesData, error: quotesError } = await supabase
       .from('quotations')
       .select('order_id, status');
@@ -418,7 +416,7 @@ function renderOrders(orders) {
         <div>
           <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact</h4>
           <p class="text-sm text-gray-800 bg-white rounded-lg p-3 border border-gray-200">
-            ${esc(name)}<br>
+            ${esc(name)}<<br>
             <span class="text-gray-500">+975 ${esc(phone)}</span>
           </p>
         </div>
@@ -657,7 +655,6 @@ async function saveQuotation() {
 
     let error;
     if (existing) {
-      // Preserve existing status so accepted/rejected quotes don't reset to pending
       payload.status = existing.status || 'pending';
       ({ error } = await supabase.from('quotations').update(payload).eq('id', existing.id));
     } else {
@@ -688,7 +685,6 @@ async function saveQuotation() {
       }).eq('order_id', orderTextId);
     }
 
-    // Optimistically update local state for instant UI feedback
     const existingQuote = allQuotations.find(q => q.order_id === orderUuid);
     if (existingQuote) {
       existingQuote.product_price = Math.round(productPrice);
@@ -717,11 +713,9 @@ async function saveQuotation() {
 
     closeQuoteModal();
     showToast('Quotation saved successfully', 'success');
-    // Re-render immediately with updated local state
     renderOrders(allOrders);
     if (currentOrderSubTab === 'quotations') renderQuotations(allQuotations);
     if (currentOrderSubTab === 'payments') renderPayments(allPayments);
-    // Then do background refresh to sync with server
     await refreshQuotations();
     await refreshOrders();
   } catch (err) {
@@ -908,10 +902,8 @@ function renderPayments(payments) {
     const due = p.due_amount || 0;
     const deliveryFee = p.delivery_fee || 0;
 
-    // Quotation exists if total > delivery_fee (meaning product_price, etc. were added)
     const hasQuotation = total > deliveryFee;
 
-    // Determine what to show under Total column
     let extraInfo = '';
     if (!hasQuotation && isPending) {
       extraInfo = `<div class="text-xs text-gray-500 mt-0.5">Awaiting quotation</div>`;
@@ -925,7 +917,6 @@ function renderPayments(payments) {
       extraInfo = `<div class="text-xs text-blue-600 mt-0.5">Paid: ₹${Math.round(advance).toLocaleString('en-IN')} | Due: ₹${Math.round(due).toLocaleString('en-IN')}</div>`;
     }
 
-    // Determine action buttons
     let actionBtn = '';
     if (!hasQuotation && isPending) {
       actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-clock mr-1"></i>Awaiting quote</span>`;
@@ -954,6 +945,7 @@ function renderPayments(payments) {
         <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            ${p.payment_proof_url ? `<a href="${esc(p.payment_proof_url)}" target="_blank" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Payment Proof"><i class="fas fa-receipt text-xs"></i></a>` : ''}
             ${actionBtn}
           </div>
         </td>
@@ -1015,8 +1007,6 @@ async function confirmVerify() {
 }
 window.confirmVerify = confirmVerify;
 
-
-//VERIFY PAYMENT LOGIC BASED ON METHOD AND CURRENT STATUS
 async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
   const { data: payment, error: fetchErr } = await supabase
     .from('payments')
@@ -1079,7 +1069,6 @@ async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
         if (tErr) throw tErr;
       }
 
-      // Optimistically update local state
       const pmtIdx = allPayments.findIndex(p => p.id === paymentId);
       if (pmtIdx >= 0) {
         allPayments[pmtIdx].status = newPaymentStatus;
@@ -1098,11 +1087,9 @@ async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
 
       closeVerifyModal();
       showToast(toastMsg, 'success');
-      // Re-render immediately
       if (currentOrderSubTab === 'orders') renderOrders(allOrders);
       if (currentOrderSubTab === 'payments') renderPayments(allPayments);
       if (currentOrderSubTab === 'quotations') renderQuotations(allQuotations);
-      // Background sync
       await refreshPayments();
       await refreshOrders();
       if (currentOrderSubTab === 'quotations') await refreshQuotations();
@@ -1143,7 +1130,6 @@ async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
     whatsappMsg = `Hello,\n\nYour full payment for Order *${orderTextId}* has been verified ✅.\n\nTotal Paid: ₹${Math.round(total).toLocaleString('en-IN')}\n\nYour order has been placed with the seller. Track live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan`;
 
   } else if (currentStatus === 'pending') {
-    // 50% advance logic for all other methods
     newAdvance = Math.round(total * 0.5);
     newDue = total - newAdvance;
     newPaymentStatus = 'partial';
@@ -1547,7 +1533,6 @@ async function saveTracking() {
   if (modalContent) modalContent.style.pointerEvents = 'none';
 
   try {
-    // 1. Insert tracking event
     const { error: trackError } = await supabase.from('tracking_events').insert([{
       order_id: orderUuid,
       status: status,
@@ -1557,18 +1542,15 @@ async function saveTracking() {
     }]);
     if (trackError) throw trackError;
 
-    // 2. Update order status
     const { error: orderError } = await supabase.from('orders').update({
       order_status: status,
       updated_at: new Date().toISOString()
     }).eq('id', orderUuid);
     if (orderError) throw orderError;
 
-    // 3. Close modal and show success
     closeTrackingModal();
     showToast('Tracking updated successfully', 'success');
 
-    // 4. Force immediate optimistic UI update
     const trackOrdIdx = allOrders.findIndex(o => o.id === orderUuid);
     if (trackOrdIdx >= 0) {
       allOrders[trackOrdIdx].order_status = status;
@@ -1581,7 +1563,6 @@ async function saveTracking() {
     if (currentOrderSubTab === 'quotations') renderQuotations(allQuotations);
     if (currentOrderSubTab === 'payments') renderPayments(allPayments);
 
-    // 5. Background sync with server
     try {
       await refreshOrders();
     } catch (refreshErr) {
