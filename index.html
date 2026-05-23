@@ -18,7 +18,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <base target="_blank">
 
   <style>
@@ -1104,8 +1106,7 @@
 </head>
 <body>
 
-  <!-- Offline Banner -->
-<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium transition-opacity duration-300" style="display: none;">
+<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
   <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
 </div>
 
@@ -1854,7 +1855,33 @@
     });
   }
 </script>
+<script>
+  /* ========== PWA + OFFLINE ========== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('SW registered:', reg.scope))
+      .catch((err) => console.log('SW registration failed:', err));
+  });
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+  const banner = document.getElementById('offline-banner');
+  if (!banner) return;
+
+  function updateStatus() {
+    if (navigator.onLine) {
+      banner.classList.add('hidden');
+    } else {
+      banner.classList.remove('hidden');
+    }
+  }
+
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+  updateStatus();
+});
+</script>
 
 
 <!-- ── MAIN MODULE ── -->
