@@ -1,13 +1,11 @@
 // ==========================================================
-//  Shop2Bhutan — main.js v3 (UX Enhanced)
+//  Shop2Bhutan — main.js v4.1 (Fixed Preview + Search Hub + Quick Cart)
 //  ---------------------------------------------------------
-//  Backend logic 100% preserved. UX layer completely rebuilt:
-//  • Cart-first product flow with visual previews
-//  • Sticky order summary with live estimates
-//  • Auto-save to localStorage (never lose progress)
-//  • Smooth step transitions & micro-interactions
-//  • Drag & drop file uploads
-//  • Mobile-optimized floating summary
+//  Preview fix: Multi-layer fallback for URL metadata extraction
+//  • Microlink API (primary)
+//  • URL slug parsing (fallback 1)
+//  • Domain-based branding (fallback 2)
+//  • Always renders something usable
 // ==========================================================
 
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -250,7 +248,6 @@ function buildProductRow(data = {}) {
       </button>
     </div>
   `;
-  // Trigger preview if link exists
   if (data.link) {
     setTimeout(() => {
       const input = row.querySelector('input[name="product_links"]');
@@ -297,7 +294,7 @@ function adjustQty(btn, delta) {
 window.adjustQty = adjustQty;
 
 /* ==========================================================
-   URL VALIDATION & PREVIEW
+   URL VALIDATION & PREVIEW (FIXED — Multi-layer fallback)
    ========================================================== */
 const SUPPORTED = ['amazon.in', 'flipkart.com', 'myntra.com', 'meesho.com'];
 function isSupported(url) {
@@ -305,6 +302,42 @@ function isSupported(url) {
     const host = new URL(url).hostname.replace('www.', '');
     return SUPPORTED.some(s => host === s || host.endsWith('.' + s));
   } catch (e) { return false; }
+}
+
+// Extract readable title from URL pathname
+function extractTitleFromUrl(url) {
+  try {
+    const pathname = decodeURIComponent(new URL(url).pathname);
+    // Find the longest path segment that looks like a product slug
+    const segments = pathname.split('/').filter(Boolean);
+    const slug = segments.find(s => 
+      s.length > 5 && 
+      !/^[0-9]+$/.test(s) && 
+      !/^[A-Z0-9]{10}$/.test(s) && // Amazon ASIN
+      !/^[a-z]+=[a-z0-9]+$/i.test(s)
+    );
+    
+    if (slug) {
+      return slug
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 80);
+    }
+  } catch (e) {}
+  return null;
+}
+
+// Get store brand from URL
+function getStoreBrand(url) {
+  try {
+    const host = new URL(url).hostname.replace('www.', '');
+    const brand = host.split('.')[0];
+    return brand.charAt(0).toUpperCase() + brand.slice(1);
+  } catch (e) {
+    return 'Product';
+  }
 }
 
 const debounceMap = {};
@@ -337,7 +370,7 @@ function onLinkInput(input) {
   preview.style.display = 'block';
   preview.innerHTML = '<div class="preview-status"><div class="preview-spinner"></div> Fetching preview…</div>';
 
-  debounceMap[id] = setTimeout(() => fetchPreview(input, val), 900);
+  debounceMap[id] = setTimeout(() => fetchPreview(input, val), 600);
   updateOrderSummary();
 }
 window.onLinkInput = onLinkInput;
@@ -352,48 +385,52 @@ function fetchPreview(input, url) {
 
   if (input.value.trim() !== url) return;
 
-  let brandFallback = 'Product';
-  try {
-    const host = new URL(url).hostname.replace('www.', '');
-    const brand = host.split('.')[0];
-    brandFallback = brand.charAt(0).toUpperCase() + brand.slice(1);
-  } catch (e) {}
-
+  const brandFallback = getStoreBrand(url);
+  const urlTitle = extractTitleFromUrl(url);
+  
   let done = false;
-  function showFallback() {
+
+  function showFallback(imgUrl = '') {
     if (done) return;
     done = true;
-    let slug = '';
-    try {
-      slug = decodeURIComponent(new URL(url).pathname)
-        .split('/').filter(Boolean)
-        .find(s => s.length > 8 && !/^[0-9]+$/.test(s)) || '';
-      slug = slug.replace(/[-_]/g, ' ').replace(/\w/g, c => c.toUpperCase());
-      if (slug.length > 80) slug = slug.slice(0, 80) + '…';
-    } catch (e) {}
-    renderPreview(preview, slug || brandFallback + ' product', '', brandFallback, true);
-    // Update thumbnail
-    previewPlaceholder.style.display = 'none';
-    previewContent.style.display = 'none';
+    const title = urlTitle || brandFallback + ' Product';
+    renderPreview(preview, title, imgUrl, brandFallback, !imgUrl);
+    previewPlaceholder.style.display = imgUrl ? 'none' : 'grid';
+    previewContent.style.display = imgUrl ? 'block' : 'none';
+    if (imgUrl) previewImg.src = imgUrl;
     updateOrderSummary();
   }
 
+  // Try Microlink with timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   fetch(
     'https://api.microlink.io/?url=' + encodeURIComponent(url) +
-    '&palette=false&audio=false&video=false&iframe=false'
+    '&palette=false&audio=false&video=false&iframe=false',
+    { signal: controller.signal }
   )
-    .then(r => r.json())
+    .then(r => {
+      clearTimeout(timeoutId);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(data => {
       if (done) return;
-      if (data.status !== 'success') { showFallback(); return; }
+      if (data.status !== 'success') throw new Error('Microlink failed');
+      
       done = true;
       const d = data.data;
       let title = (d.title || '').replace(/\s*[-|–]\s*(Amazon|Flipkart|Myntra|Meesho).*/i, '').trim();
       if (title.length > 100) title = title.slice(0, 100) + '…';
-      renderPreview(preview, title || brandFallback + ' product', (d.image && d.image.url) || '', d.publisher || brandFallback);
-      // Update thumbnail
-      if (d.image && d.image.url) {
-        previewImg.src = d.image.url;
+      
+      const finalTitle = title || urlTitle || brandFallback + ' Product';
+      const imgUrl = (d.image && d.image.url) || '';
+      
+      renderPreview(preview, finalTitle, imgUrl, d.publisher || brandFallback, false);
+      
+      if (imgUrl) {
+        previewImg.src = imgUrl;
         previewImg.style.display = 'block';
         previewPlaceholder.style.display = 'none';
         previewContent.style.display = 'block';
@@ -403,9 +440,19 @@ function fetchPreview(input, url) {
       }
       updateOrderSummary();
     })
-    .catch(showFallback);
+    .catch(err => {
+      clearTimeout(timeoutId);
+      console.log('Preview fetch failed:', err.message);
+      showFallback();
+    });
 
-  setTimeout(showFallback, 6000);
+  // Hard timeout fallback
+  setTimeout(() => {
+    if (!done) {
+      controller.abort();
+      showFallback();
+    }
+  }, 5500);
 }
 
 function renderPreview(preview, title, imgUrl, source, isFallback) {
@@ -421,7 +468,7 @@ function renderPreview(preview, title, imgUrl, source, isFallback) {
     ? '<img class="preview-img" src="' + escHtml(imgUrl) + '" alt="Product" onerror="this.style.display=\'none\'">'
     : '';
   const fallbackNote = isFallback
-    ? '<div style="font-size:0.78rem;color:#f97316;margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Preview unavailable — link saved.</div>'
+    ? '<div style="font-size:0.78rem;color:#f59e0b;margin-top:4px;"><i class="fa-solid fa-circle-info"></i> Preview unavailable — link saved.</div>'
     : '';
 
   preview.innerHTML = `
@@ -464,7 +511,6 @@ function updateOrderSummary() {
 
     if (link) {
       itemCount += qty;
-      // Try to extract price from link (rough heuristic for display)
       const priceMatch = link.match(/[?&]price=(\d+)/) || link.match(/\/(\d{3,})\//);
       const estPrice = priceMatch ? parseInt(priceMatch[1], 10) : 0;
       totalProductPrice += estPrice * qty;
@@ -585,7 +631,6 @@ function loadFormState() {
       });
     }
 
-    // Rebuild products
     document.getElementById('productsContainer').innerHTML = '';
     if (data.products && data.products.length > 0) {
       data.products.forEach(p => addProductRow(p));
@@ -593,11 +638,6 @@ function loadFormState() {
       addProductRow();
     }
 
-    // Restore step if valid
-    if (data.step && data.step > 1 && data.step <= 5) {
-      // Only restore to step 1 for safety, or max step 3 if they had products
-      // We don't auto-advance to review/payment to avoid confusion
-    }
     updateOrderSummary();
   } catch (e) {
     console.error('Failed to restore form state', e);
@@ -960,7 +1000,6 @@ form.addEventListener('submit', async function(e) {
     }
   });
 
-  // Validation
   let hasError = false;
   showErr('err-name', !nameVal);
   showErr('err-phone', !validatePhone(phoneVal));
@@ -1001,7 +1040,6 @@ form.addEventListener('submit', async function(e) {
   }
 
   try {
-    // User lookup / creation
     let { data: user, error: userErr } = await supabase
       .from('users')
       .select('id, full_name, email')
@@ -1039,7 +1077,6 @@ form.addEventListener('submit', async function(e) {
         .eq('id', user.id);
     }
 
-    // Insert order
     const { data: orderInsertData, error: orderError } = await supabase.from('orders').insert([{
       order_id: orderId,
       user_id: user.id,
@@ -1055,7 +1092,6 @@ form.addEventListener('submit', async function(e) {
     if (orderError) throw orderError;
     const orderUuid = orderInsertData[0].id;
 
-    // Insert payment
     const { error: paymentError } = await supabase.from('payments').insert([{
       order_id: orderId,
       user_id: user.id,
@@ -1071,7 +1107,6 @@ form.addEventListener('submit', async function(e) {
 
     if (paymentError) throw paymentError;
 
-    // WhatsApp message
     const productsText = links.map((link, i) => {
       return '  ' + (i + 1) + '. ' + link + ' (Qty: ' + (qtys[i] || 1) + ')';
     }).join('\n');
@@ -1099,7 +1134,6 @@ form.addEventListener('submit', async function(e) {
     document.getElementById('popupOrderId').textContent = orderId;
     document.getElementById('successPopup').classList.add('open');
 
-    // Clear saved state on success
     localStorage.removeItem(STORAGE_KEY);
 
   } catch (err) {
@@ -1265,7 +1299,6 @@ async function loadLiveTicker() {
 
   let items = [];
 
-  // Try to fetch real orders from Supabase
   try {
     const { data: orders, error } = await supabase
       .from('orders')
@@ -1279,7 +1312,6 @@ async function loadLiveTicker() {
         const minsAgo = Math.floor((now - new Date(o.created_at)) / 60000);
         const timeText = minsAgo < 1 ? 'Just now' : minsAgo < 60 ? minsAgo + ' mins ago' : Math.floor(minsAgo / 60) + ' hours ago';
 
-        // Extract store name from first product link
         let store = 'a store';
         try {
           const link = o.product_links?.[0] || '';
@@ -1300,12 +1332,10 @@ async function loadLiveTicker() {
     console.log('Ticker: using fallback data');
   }
 
-  // Use fallback if no real data
   if (items.length === 0) {
     items = TICKER_FALLBACK;
   }
 
-  // Build ticker HTML - duplicate for seamless loop
   const buildItems = (arr) => arr.map(item => `
     <div class="ticker-item">
       <span>${item.icon}</span>
@@ -1323,15 +1353,315 @@ async function loadLiveTicker() {
   `;
 
   const itemsHtml = buildItems(items);
-  track.innerHTML = liveBadge + itemsHtml + itemsHtml; // Duplicate for seamless loop
+  track.innerHTML = liveBadge + itemsHtml + itemsHtml;
 }
 window.loadLiveTicker = loadLiveTicker;
+
+/* ==========================================================
+   SEARCH HUB — NEW
+   ========================================================== */
+let quickCart = [];
+const QUICK_CART_KEY = 's2b_quick_cart';
+
+function loadQuickCart() {
+  try {
+    const raw = localStorage.getItem(QUICK_CART_KEY);
+    if (raw) quickCart = JSON.parse(raw);
+  } catch(e) {}
+  renderQuickCart();
+}
+window.loadQuickCart = loadQuickCart;
+
+function saveQuickCart() {
+  localStorage.setItem(QUICK_CART_KEY, JSON.stringify(quickCart));
+  renderQuickCart();
+}
+window.saveQuickCart = saveQuickCart;
+
+function searchAllPlatforms() {
+  const query = document.getElementById('globalSearch').value.trim();
+  if (!query) {
+    showToast('Enter a product name to search');
+    return;
+  }
+  const grid = document.getElementById('platformGrid');
+  grid.innerHTML = `
+    <a class="platform-card" href="https://www.amazon.in/s?k=${encodeURIComponent(query)}" target="_blank" rel="noopener">
+      <div class="platform-logo" style="background:#ff9900;color:#000;">AMZ</div>
+      <div>
+        <div class="platform-name">Search Amazon</div>
+        <div class="platform-desc">Electronics, books, fashion & more</div>
+      </div>
+      <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left:auto;color:rgba(255,255,255,0.5);"></i>
+    </a>
+    <a class="platform-card" href="https://www.flipkart.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">
+      <div class="platform-logo" style="background:#2874f0;">FK</div>
+      <div>
+        <div class="platform-name">Search Flipkart</div>
+        <div class="platform-desc">Wide range of products</div>
+      </div>
+      <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left:auto;color:rgba(255,255,255,0.5);"></i>
+    </a>
+    <a class="platform-card" href="https://www.myntra.com/search?searchQuery=${encodeURIComponent(query)}&query=${encodeURIComponent(query)}" target="_blank" rel="noopener">
+      <div class="platform-logo" style="background:#ff3f6c;">MYN</div>
+      <div>
+        <div class="platform-name">Search Myntra</div>
+        <div class="platform-desc">Fashion & lifestyle</div>
+      </div>
+      <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left:auto;color:rgba(255,255,255,0.5);"></i>
+    </a>
+    <a class="platform-card" href="https://www.meesho.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">
+      <div class="platform-logo" style="background:#9400d3;">MS</div>
+      <div>
+        <div class="platform-name">Search Meesho</div>
+        <div class="platform-desc">Budget-friendly finds</div>
+      </div>
+      <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left:auto;color:rgba(255,255,255,0.5);"></i>
+    </a>
+  `;
+  document.getElementById('quickAddArea').classList.add('show');
+  showToast('Click a store to browse results in a new tab');
+}
+window.searchAllPlatforms = searchAllPlatforms;
+
+/* ==========================================================
+   QUICK ADD PREVIEW (FIXED — Robust paste handling + visibility)
+   ========================================================== */
+let _pendingQuickFile = null;
+
+// Handle paste event explicitly (more reliable than oninput for long URLs)
+function handleQuickPaste(e) {
+  // Small delay to let the paste complete before reading value
+  setTimeout(() => {
+    const input = e.target;
+    previewQuickAdd(input);
+  }, 50);
+}
+window.handleQuickPaste = handleQuickPaste;
+
+function previewQuickAdd(input) {
+  const url = input.value.trim();
+  const btn = document.getElementById('quickAddBtn');
+  const preview = document.getElementById('quickPreview');
+
+  console.log('previewQuickAdd called, url:', url ? url.substring(0, 60) + '...' : 'empty');
+
+  if (!url || !url.startsWith('http')) {
+    preview.style.display = 'none';
+    btn.disabled = true;
+    _pendingQuickFile = null;
+    return;
+  }
+
+  btn.disabled = false;
+  preview.style.display = 'block';
+  
+  // Show immediate spinner
+  preview.innerHTML = `
+    <div class="preview-status">
+      <div class="preview-spinner"></div>
+      <span>Fetching product info…</span>
+    </div>
+  `;
+
+  const brandFallback = getStoreBrand(url);
+  const urlTitle = extractTitleFromUrl(url);
+
+  // Show immediate fallback title while fetching
+  const immediateTitle = urlTitle || brandFallback + ' Product';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+  fetch('https://api.microlink.io/?url=' + encodeURIComponent(url) + '&palette=false&audio=false&video=false&iframe=false', {
+    signal: controller.signal
+  })
+    .then(r => {
+      clearTimeout(timeoutId);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      if (data.status !== 'success') throw new Error('Microlink failed');
+      const d = data.data;
+      let title = (d.title || '').replace(/\s*[-|–]\s*(Amazon|Flipkart|Myntra|Meesho).*/i, '').trim();
+      if (title.length > 100) title = title.slice(0, 100) + '…';
+      
+      const finalTitle = title || urlTitle || brandFallback + ' Product';
+      const imgUrl = d.image?.url || '';
+
+      preview.innerHTML = `
+        <div class="preview-inner">
+          ${imgUrl ? `<img class="preview-img" src="${escHtml(imgUrl)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.marginLeft='0'">` : ''}
+          <div class="preview-info">
+            <div class="preview-title">${escHtml(finalTitle)}</div>
+            <div class="preview-source">${escHtml(d.publisher || brandFallback)}</div>
+          </div>
+        </div>
+      `;
+      _pendingQuickFile = null;
+    })
+    .catch(err => {
+      clearTimeout(timeoutId);
+      console.log('Quick preview failed:', err.message);
+      
+      // ALWAYS show something useful — never blank
+      const title = urlTitle || brandFallback + ' Product';
+      
+      preview.innerHTML = `
+        <div class="preview-inner">
+          <div class="preview-info" style="flex:1;">
+            <div class="preview-title">${escHtml(title)}</div>
+            <div class="preview-source">${escHtml(brandFallback)}</div>
+            <div class="preview-fallback-note">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>Preview unavailable — product link will be saved</span>
+            </div>
+            <button type="button" class="snap-add-btn" onclick="triggerQuickSnap()">
+              <i class="fa-solid fa-camera"></i> Snap & Add screenshot
+            </button>
+            <span class="snap-status" id="snapStatus"></span>
+          </div>
+        </div>
+      `;
+    });
+}
+window.previewQuickAdd = previewQuickAdd;
+
+// Hidden file input for Snap & Add
+const _quickSnapInput = document.createElement('input');
+_quickSnapInput.type = 'file';
+_quickSnapInput.accept = 'image/*';
+_quickSnapInput.style.display = 'none';
+_quickSnapInput.addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) {
+    _pendingQuickFile = e.target.files[0];
+    const statusEl = document.getElementById('snapStatus');
+    if (statusEl) {
+      statusEl.innerHTML = `<i class="fa-solid fa-check" style="color:#34d399;"></i> ${e.target.files[0].name}`;
+    }
+    showToast('Screenshot attached — click Add to Cart');
+  }
+});
+document.body.appendChild(_quickSnapInput);
+
+function triggerQuickSnap() {
+  _quickSnapInput.click();
+}
+window.triggerQuickSnap = triggerQuickSnap;
+
+function addToQuickCart() {
+  const input = document.getElementById('quickAddUrl');
+  const url = input.value.trim();
+  if (!url || !url.startsWith('http')) return;
+
+  if (quickCart.find(p => p.link === url)) {
+    showToast('This product is already in your Quick Cart');
+    return;
+  }
+
+  const previewEl = document.getElementById('quickPreview');
+  const titleEl = previewEl.querySelector('.preview-title');
+  const imgEl = previewEl.querySelector('.preview-img');
+
+  const item = {
+    link: url,
+    title: titleEl ? titleEl.textContent : (extractTitleFromUrl(url) || getStoreBrand(url) + ' Product'),
+    image: imgEl && imgEl.src && imgEl.style.display !== 'none' ? imgEl.src : '',
+    qty: 1,
+    notes: '',
+    hasScreenshot: !!_pendingQuickFile,
+    screenshotName: _pendingQuickFile ? _pendingQuickFile.name : null
+  };
+
+  quickCart.push(item);
+  saveQuickCart();
+  
+  // Reset
+  input.value = '';
+  previewEl.style.display = 'none';
+  document.getElementById('quickAddBtn').disabled = true;
+  _pendingQuickFile = null;
+  
+  showToast(item.hasScreenshot ? 'Added to Quick Cart with screenshot' : 'Added to Quick Cart');
+}
+window.addToQuickCart = addToQuickCart;
+
+/* ==========================================================
+   QUICK CART RENDER (Updated with screenshot badge)
+   ========================================================== */
+function renderQuickCart() {
+  const float = document.getElementById('quickCartFloat');
+  const count = document.getElementById('quickCartCount');
+  const items = document.getElementById('quickCartItems');
+
+  if (quickCart.length === 0) {
+    float.style.display = 'none';
+    return;
+  }
+
+  float.style.display = 'block';
+  count.textContent = quickCart.length;
+
+  items.innerHTML = quickCart.map((p, i) => `
+    <div class="quick-cart-item">
+      <div class="quick-cart-thumb">
+        ${p.image ? `<img src="${escHtml(p.image)}" alt="">` : '<i class="fa-solid fa-link"></i>'}
+      </div>
+      <div class="quick-cart-info">
+        <div class="quick-cart-title">
+          ${escHtml(p.title)}
+          ${p.hasScreenshot ? '<span class="quick-cart-badge"><i class="fa-solid fa-camera"></i> Snap</span>' : ''}
+        </div>
+        <div class="quick-cart-link">${escHtml(p.link)}</div>
+      </div>
+      <button class="remove-btn" onclick="removeFromQuickCart(${i})" aria-label="Remove">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  `).join('');
+}
+window.renderQuickCart = renderQuickCart;
+
+function removeFromQuickCart(index) {
+  quickCart.splice(index, 1);
+  saveQuickCart();
+}
+window.removeFromQuickCart = removeFromQuickCart;
+
+function toggleQuickCart() {
+  document.getElementById('quickCartBody').classList.toggle('open');
+  const chevron = document.getElementById('quickCartChevron');
+  chevron.classList.toggle('fa-chevron-up');
+  chevron.classList.toggle('fa-chevron-down');
+}
+window.toggleQuickCart = toggleQuickCart;
+
+function proceedToOrderForm() {
+  if (quickCart.length === 0) return;
+
+  const count = quickCart.length;
+  document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
+
+  setTimeout(() => {
+    quickCart.forEach(p => {
+      addProductRow({ link: p.link, qty: p.qty || 1, notes: p.notes || '' });
+    });
+
+    quickCart = [];
+    localStorage.removeItem(QUICK_CART_KEY);
+    renderQuickCart();
+
+    goStep(3);
+    showToast(`${count} product(s) added to your order`);
+  }, 600);
+}
+window.proceedToOrderForm = proceedToOrderForm;
 
 /* ==========================================================
    INIT
    ========================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Show mobile summary bar on small screens
   if (window.innerWidth <= 1024) {
     const toggle = document.getElementById('summaryToggle');
     if (toggle) toggle.style.display = 'flex';
@@ -1341,4 +1671,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFormState();
   loadReviews();
   loadLiveTicker();
+  loadQuickCart();
 });

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms & Conditions | Shop2Bhutan</title>
+  <meta name="description" content="Terms and conditions for using Shop2Bhutan cross-border shopping and delivery service." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <base target="_blank">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #e0e7ff;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.06);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { font-family: 'Sora', sans-serif; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; }
+    .container { width: 92%; max-width: 800px; margin: 0 auto; }
+    #mainNav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .nav-content { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+    .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text); font-weight: 800; font-family: 'Sora', sans-serif; font-size: 1.25rem; }
+    .logo-icon { width: 40px; height: 40px; border-radius: var(--radius); background: var(--primary); color: white; display: grid; place-items: center; }
+    .nav-actions { display: flex; gap: 0.75rem; }
+    .nav-btn { padding: 0.625rem 1.125rem; font-size: 0.875rem; border-radius: var(--radius); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: var(--transition); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; }
+    .hamburger span { display: block; width: 24px; height: 2.5px; background: var(--text); border-radius: 2px; }
+    .mobile-menu { display: none; position: absolute; top: 72px; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 1.5rem; flex-direction: column; gap: 0.75rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.08); }
+    .mobile-menu.open { display: flex; }
+    @media (max-width: 768px) { .nav-actions { display: none; } .hamburger { display: flex; } }
+    .hero { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); color: white; padding: 4rem 0 5rem; position: relative; overflow: hidden; text-align: center; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(79,70,229,0.15) 0%, transparent 60%); pointer-events: none; }
+    .hero-content { position: relative; z-index: 1; }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 0.75rem; }
+    .hero p { color: rgba(255,255,255,0.7); font-size: 1.0625rem; max-width: 500px; margin: 0 auto; }
+    .content-section { padding: 3rem 0 5rem; }
+    .policy-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2.5rem; box-shadow: var(--shadow); }
+    .policy-card h2 { font-size: 1.35rem; color: var(--text); margin: 2rem 0 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border); }
+    .policy-card h2:first-child { margin-top: 0; }
+    .policy-card h3 { font-size: 1.05rem; color: var(--primary-dark); margin: 1.5rem 0 0.75rem; }
+    .policy-card p, .policy-card li { color: var(--text-secondary); font-size: 0.9375rem; margin-bottom: 0.875rem; }
+    .policy-card ul { margin-left: 1.25rem; margin-bottom: 1rem; }
+    .policy-card li { margin-bottom: 0.5rem; }
+    .highlight-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 1rem 1.25rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 1.25rem 0; }
+    .highlight-box p { margin: 0; color: var(--primary-dark); font-weight: 500; }
+    .updated-tag { display: inline-block; background: var(--primary-ghost); color: var(--primary); font-size: 0.8125rem; font-weight: 600; padding: 0.375rem 1rem; border-radius: 999px; margin-bottom: 1.5rem; }
+    footer { background: #0f172a; color: rgba(255,255,255,0.7); padding: 3rem 0 1.5rem; margin-top: 3rem; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+    .footer-logo { display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-family: 'Sora', sans-serif; font-size: 1.1rem; margin-bottom: 0.75rem; }
+    .footer-brand p { color: rgba(255,255,255,0.6); font-size: 0.875rem; line-height: 1.6; }
+    .footer-title { color: white; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .footer-list { list-style: none; }
+    .footer-list li { margin-bottom: 0.5rem; }
+    .footer-list a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.875rem; transition: var(--transition); }
+    .footer-list a:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; gap: 0.5rem; } }
+  </style>
+<base target="_blank">
+</head>
+<body>
+
+<nav id="mainNav">
+  <div class="container nav-content">
+    <a href="index.html" class="logo" target="_self">
+      <div class="logo-icon"><i class="fa-solid fa-truck-fast"></i></div>
+      Shop2Bhutan
+    </a>
+    <div class="nav-actions">
+      <a href="index.html#order-form" class="nav-btn btn-primary" target="_self">Order Now</a>
+      <a href="https://wa.me/97577113302" class="nav-btn btn-secondary"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> WhatsApp</a>
+    </div>
+    <button class="hamburger" onclick="document.getElementById('mobileMenu').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html#order-form" class="nav-btn btn-primary" style="justify-content:center;" target="_self">Order Now</a>
+    <a href="https://wa.me/97577113302" class="nav-btn btn-secondary" style="justify-content:center;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-content">
+    <h1>Terms & Conditions</h1>
+    <p>Please read these terms carefully before using our service.</p>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="policy-card">
+      <span class="updated-tag"><i class="fa-solid fa-calendar-days"></i> Last updated: 23 May 2026</span>
+
+      <h2><i class="fa-solid fa-handshake" style="color:var(--primary); margin-right:0.5rem;"></i>1. Introduction</h2>
+      <p>Welcome to <strong>Shop2Bhutan</strong> (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;). These Terms and Conditions govern your use of our cross-border shopping and delivery service, which enables customers in Bhutan to purchase products from Indian e-commerce platforms without needing an Indian payment card, shipping address, or SIM card.</p>
+      <p>By submitting an order request, using our WhatsApp support, or browsing our website, you agree to be bound by these terms. If you do not agree, please do not use our service.</p>
+
+      <h2><i class="fa-solid fa-briefcase" style="color:var(--primary); margin-right:0.5rem;"></i>2. Our Service</h2>
+      <p>Shop2Bhutan operates as a <strong>personal procurement and logistics facilitator</strong>. We do not sell products directly. Instead, we:</p>
+      <ul>
+        <li>Receive your product requests (links or screenshots) via our order form or WhatsApp.</li>
+        <li>Purchase the requested items from Indian e-commerce sellers using our own accounts and payment methods.</li>
+        <li>Collect the items personally from Jaigaon, West Bengal.</li>
+        <li>Deliver them to your specified address in Thimphu, Phuntsholing, or Paro.</li>
+      </ul>
+      <div class="highlight-box">
+        <p><i class="fa-solid fa-triangle-exclamation" style="margin-right:0.5rem;"></i>We are not the manufacturer, importer, or direct seller of any product. Product quality, authenticity, and warranty claims must be directed to the original Indian seller or brand.</p>
+      </div>
+
+      <h2><i class="fa-solid fa-cart-shopping" style="color:var(--primary); margin-right:0.5rem;"></i>3. Orders & Payment</h2>
+      <h3>3.1 Order Placement</h3>
+      <p>Submitting the order form constitutes a <strong>request</strong>, not a confirmed order. A binding order is only created after:</p>
+      <ul>
+        <li>We confirm product availability and total price (including service charge, shipping, and delivery fee) via WhatsApp.</li>
+        <li>You confirm acceptance of the total price.</li>
+        <li>We receive your payment (full or 50% advance, depending on your selected payment method).</li>
+      </ul>
+
+      <h3>3.2 Pricing</h3>
+      <ul>
+        <li><strong>Product price:</strong> The listed INR price at the time of order confirmation.</li>
+        <li><strong>Service charge:</strong> 15% for orders under ₹2,000; 10% for ₹2,000–₹5,999; 8% for ₹6,000+.</li>
+        <li><strong>India shipping:</strong> Estimated ₹50–₹150, confirmed at order time.</li>
+        <li><strong>Bhutan delivery:</strong> ₹150 (Phuntsholing), ₹350 (Thimphu), ₹400 (Paro).</li>
+        <li>Exchange rate fluctuations may cause minor adjustments. You will be notified before confirmation.</li>
+      </ul>
+
+      <h3>3.3 Payment Methods</h3>
+      <ul>
+        <li><strong>Full Payment:</strong> 100% upfront via bank transfer or mobile money.</li>
+        <li><strong>Partial Payment (50/50):</strong> 50% advance to place the order; remaining 50% due on delivery.</li>
+      </ul>
+      <p>Orders are placed with Indian sellers <strong>only after</strong> advance payment is received. We do not cover product costs on credit.</p>
+
+      <h2><i class="fa-solid fa-truck-fast" style="color:var(--primary); margin-right:0.5rem;"></i>4. Delivery</h2>
+      <ul>
+        <li>Typical delivery time is <strong>5–10 days</strong> from order confirmation, depending on the Indian seller's dispatch speed.</li>
+        <li>We deliver weekly. Order cutoff is typically <strong>Friday 6 PM</strong> for weekend sourcing and Monday–Wednesday delivery.</li>
+        <li>Delivery is made to the address you provide. You or an authorized person must be available to receive the item.</li>
+        <li>We are not liable for delays caused by Indian seller dispatch delays, courier issues, weather, customs inspection, or force majeure events.</li>
+      </ul>
+
+      <h2><i class="fa-solid fa-ban" style="color:var(--primary); margin-right:0.5rem;"></i>5. Prohibited & Restricted Items</h2>
+      <p>You may not order items that are illegal, hazardous, or commercially restricted. This includes but is not limited to:</p>
+      <ul>
+        <li>Flammable, explosive, or toxic substances</li>
+        <li>Weapons, ammunition, or military-grade equipment</li>
+        <li>Narcotics or controlled substances</li>
+        <li>Live animals or prohibited wildlife products</li>
+        <li>Counterfeit currency or forged documents</li>
+        <li>Oversized furniture or appliances exceeding 25 kg without prior approval</li>
+        <li>Items restricted by Bhutan Customs or Indian export regulations</li>
+      </ul>
+      <p>If you submit a request for a prohibited item, we reserve the right to reject the order without liability. If a prohibited item is seized by customs, you bear full responsibility and no refund will be issued.</p>
+
+      <h2><i class="fa-solid fa-shield-halved" style="color:var(--primary); margin-right:0.5rem;"></i>6. Liability & Disclaimers</h2>
+      <ul>
+        <li>We act solely as a facilitator. We do not guarantee product quality, fit, colour accuracy, or manufacturer warranty coverage.</li>
+        <li>We are not liable for defects, damages, or inconsistencies originating from the Indian seller or manufacturer.</li>
+        <li>Our maximum liability for any single order is limited to the <strong>product price excluding service charge and shipping fees</strong>.</li>
+        <li>We are not responsible for lost profits, indirect damages, or consequential losses.</li>
+        <li>Product images and descriptions on Indian platforms are outside our control. Minor variations in colour, size, or packaging are possible.</li>
+      </ul>
+
+      <h2><i class="fa-solid fa-user-check" style="color:var(--primary); margin-right:0.5rem;"></i>7. Your Responsibilities</h2>
+      <ul>
+        <li>Provide accurate contact details, delivery address, and product specifications.</li>
+        <li>Ensure someone is available to receive the delivery at the scheduled time.</li>
+        <li>Inspect items at delivery and report visible damage immediately.</li>
+        <li>Pay the balance promptly if you selected partial payment.</li>
+        <li>Do not use our service for fraudulent, illegal, or commercially reselling purposes without written agreement.</li>
+      </ul>
+
+      <h2><i class="fa-solid fa-gavel" style="color:var(--primary); margin-right:0.5rem;"></i>8. Cancellations</h2>
+      <ul>
+        <li><strong>Before payment:</strong> You may cancel or modify your request at any time before payment confirmation.</li>
+        <li><strong>After payment, before we place the order:</strong> Cancellation is allowed with a full refund minus a ₹100 processing fee.</li>
+        <li><strong>After we place the order with the seller:</strong> No cancellation or refund is possible. The sale is final.</li>
+      </ul>
+
+      <h2><i class="fa-solid fa-scale-balanced" style="color:var(--primary); margin-right:0.5rem;"></i>9. Governing Law</h2>
+      <p>These Terms are governed by the laws of the <strong>Kingdom of Bhutan</strong>. Any disputes shall first be attempted to resolve amicably via WhatsApp or phone communication. If unresolved, disputes shall be subject to the jurisdiction of courts in Thimphu, Bhutan.</p>
+
+      <h2><i class="fa-solid fa-pen-to-square" style="color:var(--primary); margin-right:0.5rem;"></i>10. Changes to Terms</h2>
+      <p>We may update these Terms from time to time. The latest version will always be posted on this page with the updated date. Continued use of the service after changes constitutes acceptance of the revised Terms.</p>
+
+      <h2><i class="fa-solid fa-envelope" style="color:var(--primary); margin-right:0.5rem;"></i>11. Contact</h2>
+      <p>For questions about these Terms, contact us via WhatsApp at <strong>+975 77113302</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><i class="fa-solid fa-truck-fast" style="margin-right:0.5rem;"></i> Shop2Bhutan</div>
+        <p>Shop from Indian e-commerce platforms and get delivery directly to your doorstep in Bhutan.</p>
+      </div>
+      <div>
+        <h3 class="footer-title">Legal</h3>
+        <ul class="footer-list">
+          <li><a href="refund-policy.html" target="_self">Refund Policy</a></li>
+          <li><a href="terms-and-conditions.html" target="_self">Terms & Conditions</a></li>
+          <li><a href="privacy-policy.html" target="_self">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">Service</h3>
+        <ul class="footer-list">
+          <li><a href="index.html#order-form" target="_self">Submit Order</a></li>
+          <li><a href="index.html" target="_self">Home</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-title">Support</h3>
+        <ul class="footer-list">
+          <li><a href="https://wa.me/97577113302">WhatsApp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Shop2Bhutan · Trusted Cross-Border Shopping</span>
+      <span>Thimphu, Bhutan</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

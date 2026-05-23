@@ -297,14 +297,33 @@ async function loadOrders() {
   wrap?.classList.add('hidden');
 
   try {
-    const { data, error } = await supabase
+    // Fetch orders with user data
+    const { data: ordersData, error: ordersError } = await supabase
       .from('orders')
       .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, screenshot_url, order_status, total_amount, payment_method, created_at, users(full_name, whatsapp, email)')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (ordersError) throw ordersError;
 
-    allOrders = data || [];
+    // Fetch all payments separately and map by order_id
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from('payments')
+      .select('order_id, payment_method, status, total_amount');
+
+    if (paymentsError) console.warn('Payments fetch warning:', paymentsError);
+
+    // Build a lookup map: order_id -> payment row
+    const paymentMap = {};
+    (paymentsData || []).forEach(p => {
+      if (p.order_id) paymentMap[p.order_id] = p;
+    });
+
+    // Merge payment data into orders
+    allOrders = (ordersData || []).map(o => ({
+      ...o,
+      _payment: paymentMap[o.order_id] || null
+    }));
+
     ordersLoaded = true;
     loader?.classList.add('hidden');
 
@@ -340,9 +359,28 @@ function renderOrders(orders) {
     const name = user.full_name || '—';
     const phone = user.whatsapp || '—';
     const city = o.delivery_city || '—';
-    const productCount = (o.product_links || []).length;
+    const links = safeParseArray(o.product_links);
+    const productCount = links.length;
+    const qtys = safeParseArray(o.quantities);
+
     const status = o.order_status || 'pending';
+const statusDisplayMap = {
+  pending: 'Awaiting Payment Confirmation',
+  quoted: 'Quotation Sent',
+  confirmed: 'Payment Confirmed',
+  ordered: 'Ordered with Seller',
+  reached_jaigaon: 'Reached Jaigaon',
+  reached_phuntsholing: 'Reached Phuntsholing',
+  out_for_delivery: 'Out for Delivery',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled'
+};
+
     const hasQuote = allQuotations.some(q => q.order_id === o.id);
+    const paymentData = o._payment || {};
+const paymentMethod = paymentData.payment_method || o.payment_method || '—';
+    const screenshots = safeParseArray(o.screenshot_url);
 
     const statusColors = {
       pending: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -357,20 +395,66 @@ function renderOrders(orders) {
       cancelled: 'bg-red-50 text-red-700 border-red-100'
     };
 
+    const detailsHtml = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Delivery Address</h4>
+          <p class="text-sm text-gray-800 bg-white rounded-lg p-3 border border-gray-200">${esc(o.delivery_address || '—')}</p>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact</h4>
+          <p class="text-sm text-gray-800 bg-white rounded-lg p-3 border border-gray-200">
+            ${esc(name)}<br>
+            <span class="text-gray-500">+975 ${esc(phone)}</span>
+          </p>
+        </div>
+        <div class="md:col-span-2">
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Products (${productCount})</h4>
+          <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+            ${links.map((link, i) => `
+              <div class="px-3 py-2 flex items-center justify-between text-sm">
+                <a href="${esc(link)}" target="_blank" class="text-indigo-600 hover:underline truncate max-w-[70%]">${esc(link)}</a>
+                <span class="text-xs text-gray-500 font-medium">Qty: ${esc(String(qtys[i] || 1))}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${screenshots.length > 0 ? `
+        <div class="md:col-span-2">
+          <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Screenshots</h4>
+          <div class="flex gap-2 flex-wrap">
+            ${screenshots.map(url => `
+              <a href="${esc(url)}" target="_blank" class="block w-20 h-20 rounded-lg border border-gray-200 overflow-hidden bg-gray-100 hover:opacity-80 transition-opacity">
+                <img src="${esc(url)}" class="w-full h-full object-cover" onerror="this.parentElement.style.display='none'">
+              </a>
+            `).join('')}
+          </div>
+        </div>` : ''}
+      </div>
+    `;
+
     return `
-      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50" id="order-row-${o.id}">
         <td class="px-6 py-4"><code class="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded font-semibold">${esc(o.order_id || '—')}</code></td>
         <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div><div class="text-xs text-gray-400 mt-0.5">+975 ${esc(phone)}</div></td>
         <td class="px-6 py-4 text-sm text-gray-700">${esc(city)}</td>
         <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium"><i class="fas fa-box text-[10px]"></i> ${productCount} item${productCount !== 1 ? 's' : ''}</span></td>
-        <td class="px-6 py-4 text-sm text-gray-700"><span class="text-xs text-gray-500">${esc(o.payment_method || '—')}</span></td>
-        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')}</span></td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="text-xs text-gray-500">${esc(paymentMethod)}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${statusDisplayMap[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
             <button onclick="window.openQuoteModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasQuote ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100' : 'text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-600'}" title="${hasQuote ? 'Edit Quotation' : 'Create Quotation'}"><i class="fas ${hasQuote ? 'fa-pen' : 'fa-plus'}"></i> ${hasQuote ? 'Edit Quote' : 'Quote'}</button>
-            <button onclick="window.openTrackingModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Update Tracking"><i class="fas fa-truck-fast text-xs"></i></button>
+           ${canUpdateTracking(o) 
+  ? `<button onclick="window.openTrackingModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Update Tracking"><i class="fas fa-truck-fast text-xs"></i></button>`
+  : `<button disabled class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 cursor-not-allowed" title="Tracking available after payment confirmation"><i class="fas fa-truck-fast text-xs"></i></button>`
+}
             <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
           </div>
+        </td>
+      </tr>
+      <tr class="hidden bg-gray-50/50" id="order-details-${o.id}">
+        <td colspan="7" class="px-6 py-5 border-b border-gray-100">
+          ${detailsHtml}
         </td>
       </tr>`;
   }).join('');
@@ -655,9 +739,17 @@ function refreshQuotations() {
 }
 window.refreshQuotations = refreshQuotations;
 
+
+
 function renderQuotations(quotes) {
   const tbody = document.getElementById('quotations-tbody');
   if (!tbody) return;
+
+  const statusDisplayMap = {
+    pending: 'Pending',
+    accepted: 'Accepted',
+    rejected: 'Rejected'
+  };
 
   tbody.innerHTML = quotes.map(q => {
     const order = q.orders || {};
@@ -678,13 +770,12 @@ function renderQuotations(quotes) {
         <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div></td>
         <td class="px-6 py-4 text-sm text-gray-700">₹${Math.round(q.product_price || 0).toLocaleString('en-IN')}</td>
         <td class="px-6 py-4 text-sm font-semibold text-gray-900">₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}</td>
-        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${statusDisplayMap[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
         <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
         <td class="px-6 py-4 text-right"><button onclick="window.openQuoteModal('${q.order_id}', '${esc(order.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors ml-auto" title="Edit Quotation"><i class="fas fa-pen text-xs"></i></button></td>
       </tr>`;
   }).join('');
 }
-
 /* ==========================================================
    PAYMENTS  (50% ADVANCE LOGIC)
    ========================================================== */
@@ -738,6 +829,13 @@ function renderPayments(payments) {
   const tbody = document.getElementById('payments-tbody');
   if (!tbody) return;
 
+  const statusDisplayMap = {
+    pending: 'Pending',
+    partial: 'Partially Paid',
+    verified: 'Verified',
+    refunded: 'Refunded'
+  };
+
   tbody.innerHTML = payments.map(p => {
     const order = p.orders || {};
     const user = order.users || {};
@@ -769,7 +867,7 @@ function renderPayments(payments) {
           ${isPartial ? `<div class="text-xs text-blue-600 mt-0.5">Paid: ₹${Math.round(advance).toLocaleString('en-IN')} | Due: ₹${Math.round(due).toLocaleString('en-IN')}</div>` : ''}
           ${isPending ? `<div class="text-xs text-amber-600 mt-0.5">Advance (50%): ₹${Math.round(total * 0.5).toLocaleString('en-IN')}</div>` : ''}
         </td>
-        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${statusDisplayMap[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
         <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
@@ -849,6 +947,7 @@ async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
   const btn = document.querySelector(`button[onclick="window.verifyPayment('${paymentId}', '${orderUuid}', '${esc(orderTextId)}', '${esc(customerPhone)}')"]`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...'; }
 
+
   try {
     const { error: pErr } = await supabase
       .from('payments')
@@ -903,7 +1002,14 @@ async function verifyPayment(paymentId, orderUuid, orderTextId, customerPhone) {
 window.verifyPayment = verifyPayment;
 
 function viewOrderDetails(orderId) {
-  showToast('Order detail view coming soon. ID: ' + orderId.slice(0, 8), 'info');
+  const row = document.getElementById('order-details-' + orderId);
+  if (!row) return;
+  const isHidden = row.classList.contains('hidden');
+  // Close all other detail rows first
+  document.querySelectorAll('[id^="order-details-"]').forEach(r => r.classList.add('hidden'));
+  if (isHidden) {
+    row.classList.remove('hidden');
+  }
 }
 window.viewOrderDetails = viewOrderDetails;
 
@@ -915,6 +1021,26 @@ function esc(text) {
   const d = document.createElement('div');
   d.textContent = text;
   return d.innerHTML;
+}
+
+function safeParseArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [val];
+    } catch (e) {
+      return [val];
+    }
+  }
+  return [String(val)];
+}
+
+function canUpdateTracking(order) {
+  const payment = order._payment || {};
+  // Allow tracking only if payment is partial (50% advance) or verified (full)
+  return payment.status === 'partial' || payment.status === 'verified';
 }
 
 /* ==========================================================
