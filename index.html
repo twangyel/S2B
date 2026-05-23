@@ -1838,7 +1838,9 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-  /* ========== PWA + OFFLINE ========== */
+  /* ========== PWA + OFFLINE DETECTION ========== */
+
+// Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -1847,22 +1849,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const banner = document.getElementById('offline-banner');
-  if (!banner) return;
+// Offline banner logic
+const offlineBanner = document.getElementById('offline-banner');
 
-  function updateStatus() {
-    if (navigator.onLine) {
-      banner.classList.add('hidden');
-    } else {
-      banner.classList.remove('hidden');
-    }
+function updateOnlineStatus() {
+  if (navigator.onLine) {
+    offlineBanner.classList.add('hidden');
+  } else {
+    offlineBanner.classList.remove('hidden');
   }
+}
 
-  window.addEventListener('online', updateStatus);
-  window.addEventListener('offline', updateStatus);
-  updateStatus();
-});
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
 </script>
 
 
