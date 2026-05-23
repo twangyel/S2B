@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="manifest" href="/manifest.json">
   <base target="_blank">
 
   <style>
@@ -1103,6 +1104,10 @@
 </head>
 <body>
 
+  <div id="offline-banner" class="hidden fixed top-16 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
+  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
+</div>
+
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
@@ -1844,6 +1849,8 @@
     });
   }
 </script>
+
+
 
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>

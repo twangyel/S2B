@@ -1,7 +1,8 @@
 {
-  "name": "Shop2Bhutan Order Tracker",
-  "short_name": "S2B Track",
-  "start_url": "/track.html",
+  "name": "Shop2Bhutan",
+  "short_name": "Shop2Bhutan",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
