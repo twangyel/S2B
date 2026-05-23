@@ -8,8 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="manifest" href="/manifest.json" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -405,6 +407,10 @@
 <base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
+  <!-- Offline Banner -->
+<div id="offline-banner" class="hidden fixed top-16 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
+  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
+</div>
 
   <!-- Nav -->
   <nav class="nav-glass sticky top-0 z-40">
@@ -451,6 +457,9 @@
           <div class="text-xs text-red-600 mt-0.5">Please check your Order ID and try again.</div>
         </div>
       </div>
+
+      <!-- Recent Searches -->
+<div id="recent-searches" class="hidden mt-3 flex flex-wrap gap-2"></div>
     </div>
 
     <!-- Results -->
@@ -463,7 +472,9 @@
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Order ID</div>
             <div class="text-xl font-mono font-bold text-gray-900 tracking-tight" id="res-order-id">—</div>
           </div>
-          <span id="res-order-status" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold border">—</span>
+          <span id="res-order-status" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold border">—</span> <button onclick="shareOrder()" class="ml-3 w-8 h-8 rounded-lg bg-gray-100 hover:bg-brand-50 text-gray-500 hover:text-brand-600 flex items-center justify-center transition-colors" title="Share tracking link">
+  <i class="fas fa-share-alt text-xs"></i>
+</button>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -845,6 +856,7 @@
     let currentOrder = null;
     let currentQuote = null;
     let currentPaymentInfo = null;
+    let realtimeChannel = null;
 
     /* ==========================================================
        STATUS CONFIG
@@ -861,6 +873,30 @@
       delivered:  { label: 'Delivered',  color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
       cancelled:  { label: 'Cancelled',  color: 'bg-red-50 text-red-700 border-red-200' }
     };
+
+    /* ========== REALTIME ========== */
+function subscribeToOrder(orderId) {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+  
+  realtimeChannel = supabase
+    .channel(`public:order-${orderId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `order_id=eq.${orderId}` }, () => {
+      showToast('Order updated', 'info');
+      trackOrder();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'quotations', filter: `order_id=eq.${orderId}` }, () => {
+      showToast('Quotation updated', 'info');
+      trackOrder();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `order_id=eq.${orderId}` }, () => {
+      showToast('New tracking update!', 'success');
+      trackOrder();
+    })
+    .subscribe();
+}
 
     const trackingStatusLabels = {
       pending: 'Order Received',
@@ -1152,6 +1188,14 @@
         statusEl.textContent = cfg.label;
         statusEl.className = `status-badge px-4 py-1.5 rounded-full text-xs font-bold border ${cfg.color}`;
 
+        // Notify on key status changes
+if (order.order_status === 'out_for_delivery') {
+  sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} is out for delivery!`);
+}
+if (order.order_status === 'delivered') {
+  sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} has been delivered! 🎉`);
+}
+
         const quotePanel = document.getElementById('quote-panel');
         const noQuotePanel = document.getElementById('no-quote-panel');
         const trackingPanel = document.getElementById('tracking-panel');
@@ -1284,6 +1328,13 @@
         await handleInvoice(order, paymentInfo, quotes);
 
         results.classList.remove('hidden');
+        subscribeToOrder(orderTextId);
+        if (order.order_status === 'delivered') {
+  setTimeout(() => {
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#10b981', '#f59e0b'] });
+  }, 400);
+}
+         saveRecentSearch(orderTextId);
       } catch (err) {
         console.error('Track error:', err);
         showToast('Something went wrong. Please try again.', 'error');
@@ -1293,7 +1344,26 @@
         trackSpinner.classList.add('hidden');
       }
     }
+    
+   
     window.trackOrder = trackOrder;
+
+    /* ========== PUSH NOTIFICATIONS ========== */
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+
+function sendLocalNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: 'https://cdn-icons-png.flaticon.com/512/1170/1170678.png' });
+  }
+}
+
+// Request on first user interaction
+document.body.addEventListener('click', () => requestNotificationPermission(), { once: true });
 
     /* ==========================================================
        QUOTE RESPONSE
@@ -1521,6 +1591,97 @@
     document.getElementById('track-input')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') trackOrder();
     });
+
+    /* ========== RECENT SEARCHES ========== */
+function saveRecentSearch(orderId) {
+  let recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
+  recent = recent.filter(id => id !== orderId);
+  recent.unshift(orderId);
+  recent = recent.slice(0, 5);
+  localStorage.setItem('s2b_recent', JSON.stringify(recent));
+  renderRecentSearches();
+}
+
+function renderRecentSearches() {
+  const container = document.getElementById('recent-searches');
+  const recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
+  if (!recent.length) { container.classList.add('hidden'); return; }
+  
+  container.innerHTML = recent.map(id => `
+    <button onclick="quickTrack('${id}')" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-brand-300 hover:text-brand-600 transition-colors flex items-center gap-1.5">
+      <i class="fas fa-history text-[10px] text-gray-400"></i> ${id}
+    </button>
+  `).join('');
+  container.classList.remove('hidden');
+}
+
+window.quickTrack = function(id) {
+  document.getElementById('track-input').value = id;
+  trackOrder();
+};
+
+// Call this on page load
+renderRecentSearches();
+
+/* ========== URL PARAMS & KEYBOARD ========== */
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const order = params.get('order');
+  if (order) {
+    document.getElementById('track-input').value = order.toUpperCase();
+    trackOrder();
+  }
+  renderRecentSearches(); // keep from Feature 1
+});
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('track-input').focus();
+  }
+});
+
+/* ========== SHARE ORDER ========== */
+window.shareOrder = function() {
+  const orderId = document.getElementById('res-order-id').textContent;
+  if (orderId === '—') return;
+  const url = `${window.location.origin}${window.location.pathname}?order=${orderId}`;
+  
+  if (navigator.share) {
+    navigator.share({ title: `Track Shop2Bhutan Order ${orderId}`, url });
+  } else {
+    navigator.clipboard.writeText(url);
+    showToast('Tracking link copied!', 'success');
+  }
+};
+
+/* ========== PWA + OFFLINE DETECTION ========== */
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('SW registered:', reg.scope))
+      .catch((err) => console.log('SW registration failed:', err));
+  });
+}
+
+// Offline banner logic
+const offlineBanner = document.getElementById('offline-banner');
+
+function updateOnlineStatus() {
+  if (navigator.onLine) {
+    offlineBanner.classList.add('hidden');
+  } else {
+    offlineBanner.classList.remove('hidden');
+  }
+}
+
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Check on initial load
+updateOnlineStatus();
   </script>
 </body>
 </html>
