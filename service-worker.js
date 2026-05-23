@@ -1,34 +1,29 @@
-const CACHE_NAME = 's2b-app-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/track.html',
-  '/admin-reviews.html',
-  '/admin-login.html',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css',
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap'
-];
+/* ========== PWA + OFFLINE (Robust) ========== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('SW registered:', reg.scope))
+      .catch((err) => console.log('SW registration failed:', err));
+  });
+}
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
-    })
-  );
-  self.skipWaiting();
-});
+document.addEventListener('DOMContentLoaded', () => {
+  const offlineBanner = document.getElementById('offline-banner');
+  if (!offlineBanner) return;
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
-});
+  function updateOnlineStatus() {
+    if (navigator.onLine) {
+      offlineBanner.classList.add('hidden');
+      offlineBanner.style.display = 'none';
+    } else {
+      offlineBanner.classList.remove('hidden');
+      offlineBanner.style.display = '';
+    }
+  }
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => {
-        return new Response('Offline');
-      });
-    })
-  );
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  // Delay check slightly so the browser has time to settle
+  setTimeout(updateOnlineStatus, 100);
 });
