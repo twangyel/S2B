@@ -556,6 +556,30 @@
   <!-- Toast Container -->
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
+
+  <!-- Verify Payment Modal -->
+<div id="verify-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-0">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-200" id="verify-modal-content">
+    <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-bold text-gray-900" id="verify-modal-title">Verify Payment</h3>
+        <p class="text-sm text-gray-500 mt-1" id="verify-modal-subtitle">Order: —</p>
+      </div>
+      <button onclick="window.closeVerifyModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
+        <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed" id="verify-modal-message"></p>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button onclick="window.closeVerifyModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
+        <button id="confirm-verify-btn" onclick="window.confirmVerify()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
   <script type="module" src="/js/admin_reviews.js"></script>
      <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 </body>

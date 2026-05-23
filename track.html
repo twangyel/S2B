@@ -8,171 +8,597 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'shimmer': 'shimmer 2s infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '-1000px 0' },
+              '100%': { backgroundPosition: '1000px 0' },
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-    h1, h2, h3 { font-family: 'Sora', sans-serif; }
-    .track-card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-    .status-line { position: relative; padding-left: 28px; }
-    .status-line::before { content: ''; position: absolute; left: 8px; top: 28px; bottom: -8px; width: 2px; background: #e2e8f0; }
-    .status-line:last-child::before { display: none; }
-    .status-dot { position: absolute; left: 0; top: 4px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #e2e8f0; background: white; }
-    .status-line.completed .status-dot { border-color: #10b981; background: #10b981; }
-    .status-line.completed .status-dot::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; border: 2px solid white; }
-    .status-line.active .status-dot { border-color: #6366f1; background: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+      border-radius: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      box-shadow: 
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .search-input {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      background: white;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.08);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3), 0 0 0 1px rgba(79, 70, 229, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .status-badge {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-badge::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .timeline-container {
+      position: relative;
+    }
+
+    .timeline-line {
+      position: absolute;
+      left: 24px;
+      top: 32px;
+      bottom: 32px;
+      width: 3px;
+      background: linear-gradient(to bottom, #e2e8f0, #cbd5e1);
+      border-radius: 3px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-left: 56px;
+      padding-bottom: 32px;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 14px;
+      top: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 3px solid #e2e8f0;
+      background: white;
+      z-index: 10;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .timeline-item.completed .timeline-dot {
+      border-color: #10b981;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    }
+
+    .timeline-item.completed .timeline-dot::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .timeline-item.active .timeline-dot {
+      border-color: #6366f1;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.3);
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.15), 0 0 20px rgba(99, 102, 241, 0.3); }
+      50% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.08), 0 0 30px rgba(99, 102, 241, 0.2); }
+    }
+
+    .timeline-content {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+    }
+
+    .timeline-item.active .timeline-content {
+      border-color: #c7d2fe;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+      background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+    }
+
+    .price-row {
+      transition: background 0.2s ease;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 0 -12px;
+    }
+
+    .price-row:hover {
+      background: #f8fafc;
+    }
+
+    .total-row {
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 8px -12px 0;
+      border: 1px solid #c7d2fe;
+    }
+
+    .action-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .action-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .info-grid-item {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 12px;
+      padding: 12px 16px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+
+    .info-grid-item:hover {
+      border-color: #c7d2fe;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06);
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 1000px 100%;
+      animation: shimmer 2s infinite;
+      border-radius: 8px;
+    }
+
+    .toast-modern {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .whatsapp-btn {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+
+    .whatsapp-btn:hover {
+      box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .quote-panel-accent {
+      position: relative;
+    }
+
+    .quote-panel-accent::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(to bottom, #6366f1, #818cf8);
+      border-radius: 4px 0 0 4px;
+    }
+
+    .nav-glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .support-chip {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #a7f3d0;
+      transition: all 0.3s ease;
+    }
+
+    .support-chip:hover {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+
+    .empty-state-icon {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .error-shake {
+      animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
+
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
   </style>
+<base target="_blank">
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen antialiased">
 
   <!-- Nav -->
-  <nav class="bg-white border-b border-gray-200">
+  <nav class="nav-glass sticky top-0 z-40">
     <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
-        <img src="/image/logo.png" alt="Shop2Bhutan" class="h-8 w-auto" />
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/30 transition-shadow">
+          <i class="fas fa-shopping-bag text-white text-sm"></i>
+        </div>
+        <span class="font-display font-bold text-gray-900 text-lg tracking-tight">Shop2Bhutan</span>
       </a>
-      <a href="https://wa.me/97577113302" target="_blank" class="text-sm font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
-        <i class="fa-brands fa-whatsapp mr-1"></i> Support
+      <a href="https://wa.me/97577113302" target="_blank" class="support-chip text-sm font-semibold text-emerald-700 px-4 py-2 rounded-xl flex items-center gap-2">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span class="hidden sm:inline">Support</span>
       </a>
     </div>
   </nav>
 
-  <main class="max-w-3xl mx-auto px-4 py-8">
-    
+  <main class="max-w-3xl mx-auto px-4 py-10">
+
     <!-- Search -->
-    <div class="track-card p-6 mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 mb-1">Track Your Order</h1>
-      <p class="text-sm text-gray-500 mb-4">Enter your Order ID to view quotation, status, and updates.</p>
+    <div class="glass-card p-8 mb-8 animate-fade-in">
+      <div class="mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Track Your Order</h1>
+        <p class="text-gray-500 text-sm">Enter your Order ID to view quotation, status, and shipping updates.</p>
+      </div>
+
       <div class="flex gap-3">
         <div class="relative flex-1">
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
           <input type="text" id="track-input" placeholder="e.g. S2B-260521-A3F9K2" 
-            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono uppercase">
+            class="search-input w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-mono uppercase tracking-wider focus:outline-none"
+            autocomplete="off">
         </div>
-        <button onclick="trackOrder()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
-          Track
+        <button onclick="trackOrder()" id="track-btn" class="btn-primary px-8 py-3.5 text-white rounded-xl text-sm font-bold whitespace-nowrap flex items-center gap-2">
+          <span id="track-btn-text">Track</span>
+          <div id="track-spinner" class="loading-spinner hidden"></div>
         </button>
       </div>
-      <p id="track-error" class="hidden text-red-600 text-sm mt-3"><i class="fas fa-circle-exclamation mr-1"></i> Order not found. Please check your Order ID.</p>
+
+      <div id="track-error" class="hidden mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+        <i class="fas fa-circle-exclamation text-red-500 mt-0.5"></i>
+        <div>
+          <div class="text-sm font-semibold text-red-800">Order not found</div>
+          <div class="text-xs text-red-600 mt-0.5">Please check your Order ID and try again.</div>
+        </div>
+      </div>
     </div>
 
     <!-- Results -->
     <div id="track-results" class="hidden space-y-6">
-      
+
       <!-- Order Header -->
-      <div class="track-card p-6">
-        <div class="flex items-start justify-between mb-4">
+      <div class="glass-card p-6 animate-slide-up stagger-1">
+        <div class="flex items-start justify-between mb-5">
           <div>
-            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Order ID</div>
-            <div class="text-lg font-mono font-bold text-gray-900" id="res-order-id">—</div>
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Order ID</div>
+            <div class="text-xl font-mono font-bold text-gray-900 tracking-tight" id="res-order-id">—</div>
           </div>
-          <span id="res-order-status" class="px-3 py-1 rounded-full text-xs font-bold border">—</span>
+          <span id="res-order-status" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold border">—</span>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <div class="text-gray-400 text-xs mb-0.5">Customer</div>
-            <div class="font-semibold text-gray-900" id="res-name">—</div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="info-grid-item">
+            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+              <i class="fas fa-user text-[10px]"></i> Customer
+            </div>
+            <div class="font-semibold text-gray-900 text-sm truncate" id="res-name">—</div>
           </div>
-          <div>
-            <div class="text-gray-400 text-xs mb-0.5">WhatsApp</div>
-            <div class="font-medium text-gray-700" id="res-phone">—</div>
+          <div class="info-grid-item">
+            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+              <i class="fas fa-phone text-[10px]"></i> WhatsApp
+            </div>
+            <div class="font-medium text-gray-700 text-sm" id="res-phone">—</div>
           </div>
-          <div>
-            <div class="text-gray-400 text-xs mb-0.5">City</div>
-            <div class="font-medium text-gray-700" id="res-city">—</div>
+          <div class="info-grid-item">
+            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+              <i class="fas fa-location-dot text-[10px]"></i> City
+            </div>
+            <div class="font-medium text-gray-700 text-sm" id="res-city">—</div>
           </div>
-          <div>
-            <div class="text-gray-400 text-xs mb-0.5">Payment Method</div>
-            <div class="font-medium text-gray-700" id="res-payment">—</div>
+          <div class="info-grid-item">
+            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+              <i class="fas fa-credit-card text-[10px]"></i> Payment
+            </div>
+            <div class="font-medium text-gray-700 text-sm" id="res-payment">—</div>
           </div>
-          <div id="res-payment-status-wrap" class="hidden col-span-2">
-            <div class="text-gray-400 text-xs mb-0.5">Payment Status</div>
-            <div class="font-medium" id="res-payment-status">—</div>
+        </div>
+
+        <div id="res-payment-status-wrap" class="hidden mt-4">
+          <div class="info-grid-item col-span-full !bg-gradient-to-r !from-brand-50 !to-white !border-brand-200">
+            <div class="text-brand-600 text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fas fa-wallet text-[10px]"></i> Payment Status
+            </div>
+            <div class="text-sm" id="res-payment-status">—</div>
           </div>
         </div>
       </div>
 
       <!-- Quotation Panel -->
-      <div id="quote-panel" class="hidden track-card p-6 border-l-4 border-indigo-500">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-gray-900"><i class="fas fa-file-invoice-dollar text-indigo-600 mr-2"></i>Your Quotation</h2>
-          <span id="quote-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold border">—</span>
-        </div>
-        
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between py-2 border-b border-gray-100">
-            <span class="text-gray-600">Product Price</span>
-            <span class="font-semibold text-gray-900" id="q-product">₹ 0</span>
+      <div id="quote-panel" class="hidden glass-card p-0 overflow-hidden animate-slide-up stagger-2 quote-panel-accent">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                <i class="fas fa-file-invoice-dollar text-white text-sm"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Your Quotation</h2>
+                <div class="text-xs text-gray-500">Review the breakdown below</div>
+              </div>
+            </div>
+            <span id="quote-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border">—</span>
           </div>
-          <div class="flex justify-between py-2 border-b border-gray-100">
-            <span class="text-gray-600">Shipping Fee</span>
-            <span class="font-semibold text-gray-900" id="q-shipping">₹ 0</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-100">
-            <span class="text-gray-600">Service Fee</span>
-            <span class="font-semibold text-gray-900" id="q-service">₹ 0</span>
-          </div>
-          <div class="flex justify-between py-2 border-b border-gray-100">
-            <span class="text-gray-600">Delivery Fee</span>
-            <span class="font-semibold text-gray-900" id="q-delivery">₹ 0</span>
-          </div>
-          <div class="flex justify-between py-3 bg-indigo-50 rounded-lg px-3 mt-2">
-            <span class="font-bold text-indigo-900">Total Amount</span>
-            <span class="font-bold text-indigo-700 text-lg" id="q-total">₹ 0</span>
-          </div>
-        </div>
 
-        <div id="q-note-wrap" class="hidden mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-          <div class="text-xs font-semibold text-amber-800 uppercase mb-1">Note from Admin</div>
-          <p class="text-sm text-amber-700" id="q-note">—</p>
-        </div>
+          <div class="space-y-1 text-sm">
+            <div class="price-row flex justify-between items-center">
+              <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-tag text-gray-400 text-xs"></i> Product Price
+              </span>
+              <span class="font-semibold text-gray-900" id="q-product">₹ 0</span>
+            </div>
+            <div class="price-row flex justify-between items-center">
+              <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-plane text-gray-400 text-xs"></i> Shipping Fee
+              </span>
+              <span class="font-semibold text-gray-900" id="q-shipping">₹ 0</span>
+            </div>
+            <div class="price-row flex justify-between items-center">
+              <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-concierge-bell text-gray-400 text-xs"></i> Service Fee
+              </span>
+              <span class="font-semibold text-gray-900" id="q-service">₹ 0</span>
+            </div>
+            <div class="price-row flex justify-between items-center">
+              <span class="text-gray-600 flex items-center gap-2">
+                <i class="fas fa-truck text-gray-400 text-xs"></i> Delivery Fee
+              </span>
+              <span class="font-semibold text-gray-900" id="q-delivery">₹ 0</span>
+            </div>
+            <div class="total-row flex justify-between items-center mt-3">
+              <span class="font-bold text-brand-900 flex items-center gap-2">
+                <i class="fas fa-calculator text-brand-600 text-xs"></i> Total Amount
+              </span>
+              <span class="font-extrabold text-brand-700 text-xl" id="q-total">₹ 0</span>
+            </div>
+          </div>
 
-        <!-- Action Buttons -->
-        <div id="quote-actions" class="hidden flex gap-3 mt-6">
-          <button onclick="respondQuote('accepted')" class="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-sm">
-            <i class="fas fa-check mr-2"></i>Accept & Pay
-          </button>
-          <button onclick="respondQuote('rejected')" class="flex-1 py-3 bg-white text-red-600 border-2 border-red-200 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors">
-            <i class="fas fa-times mr-2"></i>Reject
-          </button>
-        </div>
+          <div id="q-note-wrap" class="hidden mt-5 p-4 bg-amber-50 rounded-xl border border-amber-200">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-lightbulb text-amber-500 mt-0.5"></i>
+              <div>
+                <div class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Note from Admin</div>
+                <p class="text-sm text-amber-700 leading-relaxed" id="q-note">—</p>
+              </div>
+            </div>
+          </div>
 
-        <div id="quote-accepted-msg" class="hidden mt-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-center">
-          <i class="fas fa-check-circle text-emerald-600 text-2xl mb-2"></i>
-          <div class="font-bold text-emerald-800">Quotation Accepted</div>
-          <p class="text-sm text-emerald-600 mt-1">Please complete payment via WhatsApp to proceed.</p>
-          <a id="wa-pay-btn" href="#" target="_blank" class="inline-block mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors">
-            <i class="fa-brands fa-whatsapp mr-1"></i> Pay on WhatsApp
-          </a>
-        </div>
+          <!-- Action Buttons -->
+          <div id="quote-actions" class="hidden flex gap-3 mt-6">
+            <button onclick="respondQuote('accepted')" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+              <i class="fas fa-check"></i> Accept & Pay
+            </button>
+            <button onclick="respondQuote('rejected')" class="action-btn flex-1 py-3.5 bg-white text-red-600 border-2 border-red-200 rounded-xl text-sm font-bold hover:bg-red-50 flex items-center justify-center gap-2">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
 
-        <div id="quote-rejected-msg" class="hidden mt-6 p-4 bg-red-50 rounded-xl border border-red-100 text-center">
-          <i class="fas fa-times-circle text-red-500 text-2xl mb-2"></i>
-          <div class="font-bold text-red-800">Quotation Rejected</div>
-          <p class="text-sm text-red-600 mt-1">Please contact us if you have any concerns.</p>
+          <div id="quote-accepted-msg" class="hidden mt-6 p-5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
+            </div>
+            <div class="font-bold text-emerald-800 text-lg mb-1">Quotation Accepted</div>
+            <p class="text-sm text-emerald-600 leading-relaxed" id="accepted-msg-text">Please complete payment via WhatsApp to proceed.</p>
+            <a id="wa-pay-btn" href="#" target="_blank" class="whatsapp-btn inline-flex items-center gap-2 mt-4 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-all">
+              <i class="fa-brands fa-whatsapp text-lg"></i> Pay on WhatsApp
+            </a>
+          </div>
+
+          <div id="quote-rejected-msg" class="hidden mt-6 p-5 bg-red-50 rounded-xl border border-red-200 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-times-circle text-red-500 text-xl"></i>
+            </div>
+            <div class="font-bold text-red-800 text-lg mb-1">Quotation Rejected</div>
+            <p class="text-sm text-red-600 leading-relaxed">Please contact us if you have any concerns.</p>
+          </div>
         </div>
       </div>
 
       <!-- Tracking Timeline -->
-      <div id="tracking-panel" class="hidden track-card p-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4"><i class="fas fa-truck-fast text-indigo-600 mr-2"></i>Tracking Status</h2>
-        <div id="tracking-timeline" class="space-y-0"></div>
+      <div id="tracking-panel" class="hidden glass-card p-6 animate-slide-up stagger-3">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <i class="fas fa-truck-fast text-white text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900">Tracking Status</h2>
+            <div class="text-xs text-gray-500">Real-time shipment updates</div>
+          </div>
+        </div>
+
+        <div class="timeline-container">
+          <div class="timeline-line"></div>
+          <div id="tracking-timeline" class="space-y-0"></div>
+        </div>
       </div>
 
       <!-- No Quotation Yet -->
-      <div id="no-quote-panel" class="hidden track-card p-6 text-center py-12">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-          <i class="fas fa-clock text-gray-300 text-2xl"></i>
+      <div id="no-quote-panel" class="hidden glass-card p-8 text-center py-14 animate-slide-up stagger-2">
+        <div class="empty-state-icon w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5">
+          <i class="fas fa-clock text-gray-300 text-3xl"></i>
         </div>
-        <h3 class="text-gray-900 font-semibold mb-1">Quotation Pending</h3>
-        <p class="text-gray-500 text-sm">Your order is being reviewed. Check back soon for your price quote.</p>
+        <h3 class="text-gray-900 font-bold text-xl mb-2">Quotation Pending</h3>
+        <p class="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">Your order is being reviewed by our team. Check back soon for your personalized price quote.</p>
+        <div class="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 rounded-full text-xs font-semibold text-brand-700">
+          <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
+          Under Review
+        </div>
       </div>
 
     </div>
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+  <div id="toast" class="toast-modern fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-medium opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3">
+    <i id="toast-icon" class="fas fa-info-circle"></i>
+    <span id="toast-text"></span>
+  </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -183,6 +609,7 @@
 
     let currentOrder = null;
     let currentQuote = null;
+    let currentPaymentInfo = null;
 
     /* ==========================================================
        STATUS CONFIG
@@ -225,15 +652,21 @@
       const orderTextId = input.value.trim().toUpperCase();
       const errorEl = document.getElementById('track-error');
       const results = document.getElementById('track-results');
+      const trackBtn = document.getElementById('track-btn');
+      const trackBtnText = document.getElementById('track-btn-text');
+      const trackSpinner = document.getElementById('track-spinner');
 
       if (!orderTextId) return;
 
+      // Loading state
+      trackBtn.disabled = true;
+      trackBtnText.classList.add('hidden');
+      trackSpinner.classList.remove('hidden');
       errorEl.classList.add('hidden');
       results.classList.add('hidden');
 
       try {
         // Fetch order by text order_id
-        // FIXED: removed payment_method from orders select (it's in payments table)
         const { data: orders, error: orderErr } = await supabase
           .from('orders')
           .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, users(full_name, whatsapp, email)')
@@ -243,6 +676,8 @@
         if (orderErr) throw orderErr;
         if (!orders || orders.length === 0) {
           errorEl.classList.remove('hidden');
+          errorEl.classList.add('error-shake');
+          setTimeout(() => errorEl.classList.remove('error-shake'), 500);
           return;
         }
 
@@ -265,66 +700,81 @@
           .eq('order_id', order.id)
           .order('created_at', { ascending: true });
 
-        // FIXED: Fetch payment info BEFORE rendering the header so we can show payment_method
+        // Fetch payment info
         let paymentInfo = null;
         try {
           const pmtRes = await supabase
             .from('payments')
-            .select('status, advance_paid, due_amount, total_amount, payment_method')
+            .select('status, advance_paid, due_amount, total_amount, payment_method, delivery_fee, product_price')
             .eq('order_id', order.order_id)
             .maybeSingle();
           if (pmtRes.data) paymentInfo = pmtRes.data;
         } catch (e) {
           console.log('Payment lookup skipped:', e.message);
         }
+        currentPaymentInfo = paymentInfo;
 
         // Populate header
         document.getElementById('res-order-id').textContent = order.order_id;
         document.getElementById('res-name').textContent = user.full_name || '—';
         document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
         document.getElementById('res-city').textContent = order.delivery_city || '—';
-        // FIXED: read payment_method from payments table, not orders
         document.getElementById('res-payment').textContent = paymentInfo?.payment_method || '—';
 
         // Payment status display
         const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
         const paymentStatusEl = document.getElementById('res-payment-status');
-        
-        // Reset: hide and clear old content
+
         paymentStatusWrap.classList.add('hidden');
         paymentStatusEl.innerHTML = '';
-        
+
         if (paymentInfo) {
           paymentStatusWrap.classList.remove('hidden');
           const isCod = paymentInfo.payment_method === 'Cash on Delivery';
+          const isFullPayment = paymentInfo.payment_method === 'Full Payment';
           const isPartial = paymentInfo.status === 'partial';
           const isPending = paymentInfo.status === 'pending';
           const isVerified = paymentInfo.status === 'verified';
-          
+
+          const hasQuotation = currentQuote !== null;
+          const isQuotePending = hasQuotation && currentQuote.status === 'pending';
+          const isQuoteAccepted = hasQuotation && currentQuote.status === 'accepted';
+
           let statusHtml = '';
-          if (isCod) {
-            statusHtml = `<span class="text-amber-600 font-semibold">Cash on Delivery</span>
-              <div class="text-xs text-gray-500 mt-1">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} when your order arrives</div>`;
-          } else if (isPending) {
-            statusHtml = `<span class="text-amber-600 font-semibold">Awaiting Advance Payment</span>
-              <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${Math.round((paymentInfo.total_amount || 0) * 0.5).toLocaleString('en-IN')}</div>`;
+
+          if (isVerified) {
+            statusHtml = `<span class="text-emerald-600 font-semibold flex items-center gap-1.5"><i class="fas fa-check-circle text-emerald-500"></i> Payment Verified</span>
+              <div class="text-xs text-gray-500 mt-1.5">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
           } else if (isPartial) {
-            statusHtml = `<span class="text-blue-600 font-semibold">Partial Payment</span>
-              <div class="text-xs text-gray-500 mt-1">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
-          } else if (isVerified) {
-            statusHtml = `<span class="text-emerald-600 font-semibold">Payment Verified</span>
-              <div class="text-xs text-gray-500 mt-1">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
+            statusHtml = `<span class="text-blue-600 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-blue-500"></i> Partial Payment</span>
+              <div class="text-xs text-gray-500 mt-1.5">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (!hasQuotation) {
+            statusHtml = `<span class="text-gray-500 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-gray-400"></i> Awaiting Quotation</span>
+              <div class="text-xs text-gray-500 mt-1.5">Your order is being reviewed. You'll receive a price quote soon.</div>`;
+          } else if (isQuotePending) {
+            statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-file-invoice-dollar text-brand-500"></i> Quotation Sent</span>
+              <div class="text-xs text-gray-500 mt-1.5">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Please review and accept your quotation</div>`;
+          } else if (isQuoteAccepted && isCod) {
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hand-holding-dollar text-amber-500"></i> Cash on Delivery</span>
+              <div class="text-xs text-gray-500 mt-1.5">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} when your order arrives</div>`;
+          } else if (isQuoteAccepted && isFullPayment) {
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Full Payment</span>
+              <div class="text-xs text-gray-500 mt-1.5">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Please pay full amount to confirm</div>`;
+          } else if (isQuoteAccepted) {
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Advance Payment</span>
+              <div class="text-xs text-gray-500 mt-1.5">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${Math.round((paymentInfo.total_amount || 0) * 0.5).toLocaleString('en-IN')}</div>`;
           } else {
-            statusHtml = `<span class="text-amber-600 font-semibold capitalize">${paymentInfo.status}</span>
-              <div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
+            statusHtml = `<span class="text-red-600 font-semibold flex items-center gap-1.5"><i class="fas fa-circle-xmark text-red-500"></i> Quotation Rejected</span>
+              <div class="text-xs text-gray-500 mt-1.5">Please contact support for assistance</div>`;
           }
+
           paymentStatusEl.innerHTML = statusHtml;
         }
 
         const cfg = statusConfig[order.order_status] || statusConfig.pending;
         const statusEl = document.getElementById('res-order-status');
         statusEl.textContent = cfg.label;
-        statusEl.className = `px-3 py-1 rounded-full text-xs font-bold border ${cfg.color}`;
+        statusEl.className = `status-badge px-4 py-1.5 rounded-full text-xs font-bold border ${cfg.color}`;
 
         // Quotation panel
         const quotePanel = document.getElementById('quote-panel');
@@ -356,7 +806,7 @@
             rejected: 'bg-red-50 text-red-700 border-red-200'
           };
           qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
-          qBadge.className = `px-2.5 py-1 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
+          qBadge.className = `status-badge px-3 py-1.5 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
 
           if (qStatus === 'pending') {
             document.getElementById('quote-actions').classList.remove('hidden');
@@ -366,23 +816,36 @@
             document.getElementById('quote-actions').classList.add('hidden');
             document.getElementById('quote-accepted-msg').classList.remove('hidden');
             document.getElementById('quote-rejected-msg').classList.add('hidden');
-            
+
             const total = Math.round(quotes.total_amount || 0);
-            const advance = Math.round(total * 0.5);
-            const due = total - advance;
-            
-            // Update accepted message with 50% advance info
-            const acceptedMsg = document.getElementById('quote-accepted-msg');
-            const msgText = acceptedMsg.querySelector('p');
+            const isFullPaymentMethod = paymentInfo?.payment_method === 'Full Payment';
+
+            const msgText = document.getElementById('accepted-msg-text');
             if (msgText) {
-              msgText.innerHTML = `Please pay <strong>₹${advance.toLocaleString('en-IN')}</strong> (50% advance) via WhatsApp to confirm your order.<br><span class="text-xs text-emerald-600 mt-1 block">Balance due before delivery: ₹${due.toLocaleString('en-IN')}</span>`;
+              if (isFullPaymentMethod) {
+                msgText.innerHTML = `Please pay <strong>₹${total.toLocaleString('en-IN')}</strong> (full amount) via WhatsApp to confirm your order.`;
+              } else {
+                const advance = Math.round(total * 0.5);
+                const due = total - advance;
+                msgText.innerHTML = `Please pay <strong>₹${advance.toLocaleString('en-IN')}</strong> (50% advance) via WhatsApp to confirm your order.<br><span class="text-xs text-emerald-600 mt-1.5 inline-block">Balance due before delivery: ₹${due.toLocaleString('en-IN')}</span>`;
+              }
             }
+
             const waBtn = document.getElementById('wa-pay-btn');
             if (waBtn) {
-              waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1"></i> Pay 50% Advance';
+              waBtn.innerHTML = isFullPaymentMethod 
+                ? '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay Full Amount'
+                : '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay 50% Advance';
             }
-            
-            const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance Payment (50%): ₹${advance}\nBalance Due: ₹${due}\n\nPlease share payment details for the advance amount.`;
+
+            let msg;
+            if (isFullPaymentMethod) {
+              msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nPayment Method: Full Payment\n\nPlease share payment details for the full amount.`;
+            } else {
+              const advance = Math.round(total * 0.5);
+              const due = total - advance;
+              msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance Payment (50%): ₹${advance}\nBalance Due: ₹${due}\n\nPlease share payment details for the advance amount.`;
+            }
             document.getElementById('wa-pay-btn').href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
           } else {
             document.getElementById('quote-actions').classList.add('hidden');
@@ -405,15 +868,17 @@
             const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ');
             const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
             return `
-              <div class="status-line ${statusClass} pb-6">
-                <div class="status-dot"></div>
-                <div class="flex items-center gap-2">
-                  <i class="fas ${iconClass} text-xs ${isLast ? 'text-indigo-600' : 'text-emerald-500'}"></i>
-                  <div class="font-semibold text-gray-900 text-sm">${label}</div>
+              <div class="timeline-item ${statusClass}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="flex items-center gap-2.5 mb-1">
+                    <i class="fas ${iconClass} text-xs ${isLast ? 'text-brand-600' : 'text-emerald-500'}"></i>
+                    <div class="font-bold text-gray-900 text-sm">${label}</div>
+                  </div>
+                  ${t.location ? `<div class="text-xs text-gray-500 mt-1 flex items-center gap-1.5"><i class="fas fa-location-dot text-[10px] text-gray-400"></i>${t.location}</div>` : ''}
+                  ${t.note ? `<div class="text-xs text-gray-600 mt-1.5 leading-relaxed">${t.note}</div>` : ''}
+                  <div class="text-xs text-gray-400 mt-2 font-medium">${time}</div>
                 </div>
-                ${t.location ? `<div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-location-dot mr-1"></i>${t.location}</div>` : ''}
-                ${t.note ? `<div class="text-xs text-gray-600 mt-1">${t.note}</div>` : ''}
-                <div class="text-xs text-gray-400 mt-1">${time}</div>
               </div>
             `;
           }).join('');
@@ -424,16 +889,24 @@
         results.classList.remove('hidden');
       } catch (err) {
         console.error('Track error:', err);
-        showToast('Something went wrong. Please try again.');
+        showToast('Something went wrong. Please try again.', 'error');
+      } finally {
+        trackBtn.disabled = false;
+        trackBtnText.classList.remove('hidden');
+        trackSpinner.classList.add('hidden');
       }
     }
     window.trackOrder = trackOrder;
 
     async function respondQuote(response) {
       if (!currentQuote || !currentOrder) return;
-      
+
       const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
-      if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+      const originalText = btn.innerHTML;
+      if (btn) { 
+        btn.disabled = true; 
+        btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; 
+      }
 
       try {
         // 1. Update quotation status
@@ -444,7 +917,7 @@
 
         if (qErr) throw qErr;
 
-        // 2. If accepted, initialize payment for 50% advance tracking
+        // 2. If accepted, update payment tracking
         if (response === 'accepted') {
           const total = currentQuote.total_amount || 0;
           const { data: currentPmt } = await supabase
@@ -454,22 +927,31 @@
             .maybeSingle();
 
           const isCod = currentPmt?.payment_method === 'Cash on Delivery';
+          const isFullPayment = currentPmt?.payment_method === 'Full Payment';
 
           if (!isCod) {
-            // Initialize 50% advance payment tracking
+            const paymentUpdate = {
+              product_price: currentQuote.product_price || 0,
+              shipping_fee: currentQuote.shipping_fee || 0,
+              service_fee: currentQuote.service_fee || 0,
+              delivery_fee: currentQuote.delivery_fee || 0,
+              total_amount: total,
+              updated_at: new Date().toISOString()
+            };
+
+            if (isFullPayment) {
+              paymentUpdate.advance_paid = 0;
+              paymentUpdate.due_amount = total;
+              paymentUpdate.status = 'pending';
+            } else {
+              paymentUpdate.advance_paid = 0;
+              paymentUpdate.due_amount = total;
+              paymentUpdate.status = 'pending';
+            }
+
             const { error: pErr } = await supabase
               .from('payments')
-              .update({
-                product_price: currentQuote.product_price || 0,
-                shipping_fee: currentQuote.shipping_fee || 0,
-                service_fee: currentQuote.service_fee || 0,
-                delivery_fee: currentQuote.delivery_fee || 0,
-                total_amount: total,
-                advance_paid: 0,
-                due_amount: total,
-                status: 'pending',
-                updated_at: new Date().toISOString()
-              })
+              .update(paymentUpdate)
               .eq('order_id', currentOrder.order_id);
             if (pErr) throw pErr;
           }
@@ -481,21 +963,38 @@
             .eq('id', currentOrder.id);
         }
 
-        showToast(response === 'accepted' ? 'Quotation accepted!' : 'Quotation rejected.', 'success');
+        showToast(response === 'accepted' ? 'Quotation accepted successfully!' : 'Quotation rejected.', 'success');
         trackOrder();
       } catch (err) {
         console.error('Respond error:', err);
         showToast('Failed to respond. Please try again.', 'error');
-        if (btn) { btn.disabled = false; btn.textContent = response === 'accepted' ? 'Accept & Pay' : 'Reject'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
       }
     }
     window.respondQuote = respondQuote;
 
-    function showToast(msg, type) {
+    function showToast(msg, type = 'info') {
       const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('opacity-100');
-      setTimeout(() => t.classList.remove('opacity-100'), 3000);
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-text');
+
+      text.textContent = msg;
+
+      if (type === 'success') {
+        icon.className = 'fas fa-check-circle text-emerald-400';
+      } else if (type === 'error') {
+        icon.className = 'fas fa-circle-exclamation text-red-400';
+      } else {
+        icon.className = 'fas fa-info-circle text-brand-400';
+      }
+
+      t.classList.add('opacity-100', 'translate-y-0');
+      t.classList.remove('translate-y-4');
+
+      setTimeout(() => {
+        t.classList.remove('opacity-100', 'translate-y-0');
+        t.classList.add('translate-y-4');
+      }, 3000);
     }
 
     // Enter key support
