@@ -1106,13 +1106,8 @@
 </head>
 <body>
 
-<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
+  <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
   <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
-</div>
-
-  <div id="offline-banner" class="hidden fixed top-16 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
-  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
-</div>
 
 <!-- ── NAV ── -->
 <nav id="mainNav">
@@ -1842,20 +1837,8 @@
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
-<!-- ── SERVICE WORKER ── -->
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", async () => {
-      try {
-        const reg = await navigator.serviceWorker.register("/sw.js");
-        console.log("SW registered:", reg.scope);
-      } catch (err) {
-        console.error("SW failed:", err);
-      }
-    });
-  }
 </script>
-<script>
+<script type="module">
   /* ========== PWA + OFFLINE ========== */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
