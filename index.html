@@ -1131,9 +1131,7 @@
     </a>
   </div>
 </nav>
-<button id="installBtn" hidden onclick="triggerInstall()" class="btn btn-primary">
-  <i class="fa-solid fa-download"></i> Install App
-</button>
+
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="container hero-content">
@@ -1847,52 +1845,22 @@ if ('serviceWorker' in navigator) {
 const offlineBanner = document.getElementById('offline-banner');
 
 function updateOnlineStatus() {
-  if (navigator.onLine) {
-    offlineBanner.classList.add('hidden');
-  } else {
-    offlineBanner.classList.remove('hidden');
-  }
+  offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
 }
 
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 
-let deferredPrompt = null;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); // stop auto mini-infobar on mobile
-  deferredPrompt = e;
-  showInstallButton(); // show your custom install UI
-});
-
-function showInstallButton() {
-  // e.g. make a banner/button visible
-  document.getElementById('installBtn')?.removeAttribute('hidden');
-}
-
-async function triggerInstall() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log('Install outcome:', outcome);
-  deferredPrompt = null;
-  document.getElementById('installBtn')?.setAttribute('hidden', '');
-}
-
-window.addEventListener('appinstalled', () => {
-  console.log('PWA installed!');
-  deferredPrompt = null;
-});
 </script>
 
 
 
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
-<div id="offline-banner" class="hidden" style="
-  display:none; position:fixed; top:0; left:0; right:0; z-index:999;
-  background:#ef4444; color:white; text-align:center; padding:0.75rem;
-  font-weight:600; font-size:0.875rem;">
+<div id="offline-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:999;
+  background:#f59e0b; color:#431407; text-align:center; padding:0.5rem;
+  font-size:0.8125rem; font-weight:600;">
   ⚠️ You're offline — some features may be unavailable.
 </div>
 </body>
