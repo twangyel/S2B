@@ -1131,7 +1131,9 @@
     </a>
   </div>
 </nav>
-
+<button id="installBtn" hidden onclick="triggerInstall()" class="btn btn-primary">
+  <i class="fa-solid fa-download"></i> Install App
+</button>
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="container hero-content">
@@ -1854,6 +1856,33 @@ function updateOnlineStatus() {
 
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
+
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); // stop auto mini-infobar on mobile
+  deferredPrompt = e;
+  showInstallButton(); // show your custom install UI
+});
+
+function showInstallButton() {
+  // e.g. make a banner/button visible
+  document.getElementById('installBtn')?.removeAttribute('hidden');
+}
+
+async function triggerInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('Install outcome:', outcome);
+  deferredPrompt = null;
+  document.getElementById('installBtn')?.setAttribute('hidden', '');
+}
+
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installed!');
+  deferredPrompt = null;
+});
 </script>
 
 
