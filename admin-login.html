@@ -134,32 +134,29 @@
   </footer>
 
    <script type="module">
-    /* ========== PWA + OFFLINE DETECTION ========== */
+  const offlineBanner = document.getElementById('offline-banner');
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => console.log('SW registered:', reg.scope))
-          .catch((err) => console.log('SW registration failed:', err));
-      });
+  function updateOnlineStatus() {
+    if (navigator.onLine) {
+      offlineBanner.classList.add('hidden');
+    } else {
+      offlineBanner.classList.remove('hidden');
     }
+  }
 
-    const offlineBanner = document.getElementById('offline-banner');
+  // Wait slightly before checking connection
+  window.addEventListener('load', () => {
+    setTimeout(updateOnlineStatus, 500);
+  });
 
-    function updateOnlineStatus() {
-      if (navigator.onLine) {
-        offlineBanner.classList.add('hidden');
-      } else {
-        offlineBanner.classList.remove('hidden');
-      }
-    }
+  window.addEventListener('online', () => {
+    offlineBanner.classList.add('hidden');
+  });
 
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    // Check immediately on load so banner shows if already offline
-    updateOnlineStatus();
-  </script>
+  window.addEventListener('offline', () => {
+    offlineBanner.classList.remove('hidden');
+  });
+</script>
 <script>
     // Install Prompt
     let deferredPrompt;
