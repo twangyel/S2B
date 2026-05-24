@@ -8,14 +8,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<meta name="theme-color" content="#4f46e5">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 </head>
 <body>
- <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
-  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
-</div>
+  <div id="offline-banner" class="hidden" aria-live="polite">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h.01"/>
+      <path d="M8.5 16.429a5 5 0 0 1 7 0"/>
+      <path d="M5 12.859a10 10 0 0 1 5.17-2.69"/>
+      <path d="M19 12.859a10 10 0 0 0-2.007-1.523"/>
+      <path d="M2 8.82a15 15 0 0 1 4.177-2.648"/>
+      <path d="M22 8.82a15 15 0 0 0-11.288-3.908"/>
+      <path d="M2 2l20 20"/>
+    </svg>
+    You're offline. Showing last updated data.
+  </div>
+
   <nav>
     <div class="container nav-content">
       <a href="https://shop2bt.vercel.app/" class="logo">
@@ -81,7 +91,6 @@
             </button>
           </div>
         </div>
-    
 
         <div class="form-options">
           <label class="checkbox-wrapper">
@@ -98,15 +107,15 @@
             <path d="M5 12h14"/>
             <path d="m12 5 7 7-7 7"/>
           </svg>
-          <span class="spinner" style="display: none;"></span>
+          <span class="spinner hidden"></span>
         </button>
       </form>
 
-        <button type="button" id="install-button" style="display:none;" onclick="installApp()">
-  📱 Install App
-</button>
+      <button type="button" id="install-button" class="install-btn hidden" onclick="installApp()">
+        📱 Install App
+      </button>
 
-      <div id="error-message" class="error-banner" role="alert" style="display: none;">
+      <div id="error-message" class="error-banner hidden" role="alert">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" x2="12" y1="8" y2="12"/>
@@ -115,63 +124,61 @@
         <span class="error-text"></span>
       </div>
     </div>
-
-    <footer class="login-footer">
-      <p>© 2026 Shop2Bhutan. All rights reserved.</p>
-    </footer>
   </main>
+
+  <footer class="login-footer">
+    <p>© 2026 Shop2Bhutan. All rights reserved.</p>
+  </footer>
 
   <script type="module" src="/js/admin_login.js"></script>
   <script type="module">
+    /* ========== PWA + OFFLINE DETECTION ========== */
 
-/* ========== PWA + OFFLINE DETECTION ========== */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => console.log('SW registered:', reg.scope))
+          .catch((err) => console.log('SW registration failed:', err));
+      });
+    }
 
-// Register service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((reg) => console.log('SW registered:', reg.scope))
-      .catch((err) => console.log('SW registration failed:', err));
-  });
-}
+    const offlineBanner = document.getElementById('offline-banner');
 
-// Offline banner logic
-const offlineBanner = document.getElementById('offline-banner');
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        offlineBanner.classList.add('hidden');
+      } else {
+        offlineBanner.classList.remove('hidden');
+      }
+    }
 
-function updateOnlineStatus() {
-  if (navigator.onLine) {
-    offlineBanner.classList.add('hidden');
-  } else {
-    offlineBanner.classList.remove('hidden');
-  }
-}
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
+    // Check immediately on load so banner shows if already offline
+    updateOnlineStatus();
   </script>
 
   <script>
-// Install Prompt
-let deferredPrompt;
+    // Install Prompt
+    let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('✅ Before Install Prompt fired!');
-  deferredPrompt = e;
-  
-  // Show your custom install button (recommended)
-  const installBtn = document.getElementById('install-button');
-  if (installBtn) installBtn.style.display = 'block';
-});
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('✅ Before Install Prompt fired!');
+      deferredPrompt = e;
 
-async function installApp() {
-  if (!deferredPrompt) return;
-  
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log('Install outcome:', outcome);
-  deferredPrompt = null;
-}
-</script>
-  
+      const installBtn = document.getElementById('install-button');
+      if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    async function installApp() {
+      if (!deferredPrompt) return;
+
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('Install outcome:', outcome);
+      deferredPrompt = null;
+    }
+  </script>
 </body>
 </html>

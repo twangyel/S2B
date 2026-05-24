@@ -563,6 +563,54 @@ input::placeholder {
   font-weight: 500;
 }
 
+/* ── UTILITY ── */
+.hidden {
+  display: none !important;
+}
+
+/* ── OFFLINE BANNER ── */
+#offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fffbeb;
+  color: #92400e;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 0.5rem 0;
+  z-index: 50;
+  border-bottom: 1px solid #fde68a;
+  font-weight: 500;
+}
+
+#offline-banner svg {
+  display: inline;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+/* ── INSTALL BUTTON ── */
+.install-btn {
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-base);
+}
+
+.install-btn:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 480px) {
   .login-card {
