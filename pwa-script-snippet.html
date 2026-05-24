@@ -1,0 +1,79 @@
+<!-- ===== PWA SCRIPT SNIPPET =====
+   Paste this right BEFORE the closing </body> tag.
+   ===== -->
+
+<!-- PWA Bootstrap -->
+<script>
+(function() {
+  'use strict';
+
+  // 1. Hide splash screen gracefully
+  function hideSplash() {
+    const splash = document.getElementById('pwa-splash');
+    if (!splash) return;
+    // Ensure minimum visible time for perceived performance
+    const elapsed = Date.now() - (window.__pwaStart || Date.now());
+    const delay = Math.max(0, 800 - elapsed);
+    setTimeout(() => {
+      splash.classList.add('vanish');
+      document.body.classList.add('loaded');
+      setTimeout(() => splash.remove(), 650);
+    }, delay);
+  }
+
+  // Record start time
+  window.__pwaStart = Date.now();
+
+  // Hide on load + fallback
+  if (document.readyState === 'complete') {
+    hideSplash();
+  } else {
+    window.addEventListener('load', hideSplash);
+  }
+
+  // 2. Offline / Online banner
+  const offlineBanner = document.getElementById('offline-banner');
+  function updateOnlineStatus() {
+    if (!offlineBanner) return;
+    if (navigator.onLine) {
+      offlineBanner.classList.add('hidden');
+    } else {
+      offlineBanner.classList.remove('hidden');
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // 3. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((reg) => {
+          console.log('[PWA] SW registered:', reg.scope);
+          // Optional: prompt update if new SW waiting
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker?.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] New version available. Refresh to update.');
+              }
+            });
+          });
+        })
+        .catch((err) => console.error('[PWA] SW registration failed:', err));
+    });
+  }
+
+  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const searchInput = document.getElementById('track-input');
+      if (searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    }
+  });
+})();
+</script>

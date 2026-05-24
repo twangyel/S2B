@@ -15,12 +15,52 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-  <meta name="theme-color" content="#4f46e5">
-  <meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
+ <!-- ===== PWA HEAD SNIPPET =====
+   Paste this ENTIRE block inside your <head> tag,
+   ideally right after <meta charset> and before other links.
+   ===== -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#4f46e5">
+<meta name="background-color" content="#ffffff">
+<meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
+
+<!-- iOS / Safari PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Shop2Bhutan">
+
+<!-- Icons & Manifest -->
 <link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" type="image/svg+xml" href="/image/logo.svg">
+
+<!-- Performance: preconnect to critical origins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
+
+<!-- PWA Splash Screen Styles -->
+<link rel="stylesheet" href="/pwa-loader.css">
 <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 </head>
 <body>
+  <div id="pwa-splash" class="pwa-splash">
+  <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
+  <div class="pwa-splash-ring"></div>
+  <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
+  <div class="pwa-splash-sub">Loading your experience…</div>
+</div>
+
+<!-- Offline Banner -->
+<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2.5 z-[9999] border-b border-amber-200 font-medium tracking-wide">
+  <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+  You're offline. Showing last updated data.
+</div>
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
@@ -745,43 +785,10 @@
     <button class="modal-submit" id="reviewSubmitBtn" onclick="submitReview()">Submit Review</button>
   </div>
 </div>
-
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
-
-<script>
- /* ========== PWA + OFFLINE DETECTION ========== */
-
-// Register service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((reg) => console.log('SW registered:', reg.scope))
-      .catch((err) => console.log('SW registration failed:', err));
-  });
-}
-
-// Offline banner logic
-const offlineBanner = document.getElementById('offline-banner');
-
-function updateOnlineStatus() {
-  offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
-}
-
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-
-</script>
-
-
-
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
-<div id="offline-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:999;
-  background:#f59e0b; color:#431407; text-align:center; padding:0.5rem;
-  font-size:0.8125rem; font-weight:600;">
-  ⚠️ You're offline — some features may be unavailable.
 </div>
 </body>
 </html>

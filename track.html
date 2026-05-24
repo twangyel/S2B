@@ -64,9 +64,6 @@
 <base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
-  <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
-  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
-</div>
 
   <!-- Nav -->
   <nav class="nav-glass sticky top-0 z-40">
@@ -331,11 +328,9 @@
             <p class="text-sm text-red-600 leading-relaxed">Please contact us if you have any concerns.</p>
           </div>
         </div>
-      </div>
+      
 
-      <!-- Tracking Timeline -->
-      <div id="tracking-panel" class="hidden glass-card p-6 animate-slide-up stagger-3">
-           <!-- Invoice Panel -->
+            <!-- Invoice Panel -->
       <div id="invoice-panel" class="hidden glass-card p-0 overflow-hidden animate-slide-up stagger-4">
         <div class="p-6">
           <div class="flex items-center justify-between mb-5">
@@ -1309,34 +1304,6 @@ window.shareOrder = function() {
     showToast('Tracking link copied!', 'success');
   }
 };
-
-/* ========== PWA + OFFLINE DETECTION ========== */
-
-// Register service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((reg) => console.log('SW registered:', reg.scope))
-      .catch((err) => console.log('SW registration failed:', err));
-  });
-}
-
-// Offline banner logic
-const offlineBanner = document.getElementById('offline-banner');
-
-function updateOnlineStatus() {
-  if (navigator.onLine) {
-    offlineBanner.classList.add('hidden');
-  } else {
-    offlineBanner.classList.remove('hidden');
-  }
-}
-
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-// Check on initial load
-updateOnlineStatus();
   </script>
 </body>
 </html>

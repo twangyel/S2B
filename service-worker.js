@@ -1,75 +1,114 @@
-const CACHE_NAME = 's2b-app-v4'; // BUMP THIS
+const STATIC_CACHE = 's2b-static-v1';
+const DYNAMIC_CACHE = 's2b-dynamic-v1';
+const IMAGE_CACHE = 's2b-images-v1';
 
-const STATIC_ASSETS = [
+const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/track.html',
   '/admin-login.html',
+  '/offline.html',
   '/manifest.json',
-  '/css/style.css',
-  '/css/login.css',
-  '/js/main.js',
-  '/js/admin_login.js',
-  '/image/logo.png'
+  '/pwa-loader.css',
+  '/image/logo.svg'
 ];
 
+// Install: Precache core shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(STATIC_CACHE)
+      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
+// Activate: Clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
+    caches.keys().then((keys) =>
       Promise.all(
-        names
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        keys
+          .filter((key) => ![STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE].includes(key))
+          .map((key) => caches.delete(key))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// Only cache HTTP/HTTPS requests
-function isCacheable(request) {
-  const url = new URL(request.url);
-  return url.protocol === 'http:' || url.protocol === 'https:';
+// Helper: check if request is for Supabase/API
+function isApiRequest(url) {
+  return (
+    url.hostname.includes('supabase.co') ||
+    url.pathname.startsWith('/rest/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/storage/')
+  );
 }
 
+// Fetch handler
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  
-  if (!isCacheable(request)) return;
+  const url = new URL(request.url);
 
-  // HTML: Network first
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+
+  // 1. API / Supabase: Network only (never cache live data)
+  if (isApiRequest(url)) {
+    return;
+  }
+
+  // 2. HTML Navigation: Stale-while-revalidate
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
+      caches.match(request).then((cached) => {
+        const networkFetch = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+              const clone = networkResponse.clone();
+              caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => cached);
+
+        return cached || networkFetch;
+      })
     );
     return;
   }
 
-  // Assets: Cache first
+  // 3. Images: Cache-first
+  if (request.destination === 'image') {
+    event.respondWith(
+      caches.match(request).then((cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(IMAGE_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+      )
+    );
+    return;
+  }
+
+  // 4. CSS, JS, Fonts, CDN assets: Cache-first with background update
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        if (response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      }).catch(() => new Response('Offline', { status: 503 }));
+      const networkFetch = fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => cached);
+
+      return cached || networkFetch;
     })
   );
 });
