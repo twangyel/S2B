@@ -10,6 +10,21 @@
   <style>
     body { font-family: 'Inter', sans-serif; background: #f8fafc; }
     h1, h2, h3 { font-family: 'Sora', sans-serif; }
+
+    .logo-icon {
+  width: 100px;
+  height: 100;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  /* background: linear-gradient(135deg, var(--primary), var(--primary-dark)); */
+  color: white;
+  /* box-shadow: 0 4px 12px var(--primary-glow); */
+  flex-shrink: 0;        /* Prevents logo from squishing on small screens */
+  padding: 3px;          /* Tiny padding so the logo doesn't touch edges */
+}
+    
     .portal-card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
     .loader { border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -19,7 +34,11 @@
 
   <nav class="bg-white border-b border-gray-200">
     <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2"><img src="/image/logo.png" alt="Shop2Bhutan" class="h-8 w-auto" /></a>
+     <a href="https://shop2bt.vercel.app/" class="logo" target="_self">
+  <div class="logo-icon">
+    <img src="/image/logo.svg" alt="Shop2Bhutan logo">
+  </div>
+</a>
       <div class="flex items-center gap-3">
         <a href="track.html" class="text-sm font-medium text-gray-600 hover:text-gray-900">Track Order</a>
         <button id="logout-btn" onclick="logout()" class="hidden text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">
@@ -106,6 +125,8 @@
       </div>
     </div>
   </main>
+
+  
 
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none"></div>
 
