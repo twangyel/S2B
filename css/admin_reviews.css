@@ -89,6 +89,21 @@ nav.bg-white {
   box-shadow: var(--shadow-sm);
 }
 
+.logo-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  /* background: linear-gradient(135deg, var(--primary), var(--primary-dark)); */
+  color: white;
+  /* box-shadow: 0 4px 12px var(--primary-glow); */
+  flex-shrink: 0;        /* Prevents logo from squishing on small screens */
+  padding: 3px;          /* Tiny padding so the logo doesn't touch edges */
+}
+
+
 #admin-email-nav {
   font-size: 0.875rem;
   font-weight: 500;
