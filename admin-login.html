@@ -81,6 +81,9 @@
             </button>
           </div>
         </div>
+        <button id="install-button" style="display:none;" onclick="installApp()">
+  📱 Install App
+</button>
 
         <div class="form-options">
           <label class="checkbox-wrapper">
@@ -144,6 +147,29 @@ function updateOnlineStatus() {
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
   </script>
+
+  <script>
+// Install Prompt
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('✅ Before Install Prompt fired!');
+  deferredPrompt = e;
+  
+  // Show your custom install button (recommended)
+  const installBtn = document.getElementById('install-button');
+  if (installBtn) installBtn.style.display = 'block';
+});
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('Install outcome:', outcome);
+  deferredPrompt = null;
+}
+</script>
   
 </body>
 </html>
