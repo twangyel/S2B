@@ -8,9 +8,6 @@
   <meta property="og:title" content="Shop2Bhutan" />
   <meta property="og:description" content="Shop from India E-Commerce platforms. We deliver to Bhutan." />
   <meta property="og:type" content="website" />
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#111827">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
@@ -19,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
   <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <base target="_blank">
@@ -1102,13 +1100,8 @@
       .city-fee { display: block; }
     }
   </style>
-<base target="_blank">
 </head>
 <body>
-
-  <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2 z-50 border-b border-amber-200 font-medium">
-  <i class="fas fa-wifi-slash mr-1"></i> You're offline. Showing last updated data.
-
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
@@ -1868,5 +1861,11 @@ window.addEventListener('offline', updateOnlineStatus);
 
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
+<div id="offline-banner" class="hidden" style="
+  display:none; position:fixed; top:0; left:0; right:0; z-index:999;
+  background:#ef4444; color:white; text-align:center; padding:0.75rem;
+  font-weight:600; font-size:0.875rem;">
+  ⚠️ You're offline — some features may be unavailable.
+</div>
 </body>
 </html>
