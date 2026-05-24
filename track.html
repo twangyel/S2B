@@ -503,21 +503,36 @@
 
       <!-- Tracking Timeline -->
       <div id="tracking-panel" class="hidden glass-card p-6 animate-slide-up stagger-3">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
-            <i class="fas fa-truck-fast text-white text-sm"></i>
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+              <i class="fas fa-truck-fast text-white text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Tracking Status</h2>
+              <div class="text-xs text-gray-500">Real-time shipment updates</div>
+            </div>
           </div>
-          <div>
-            <h2 class="text-lg font-bold text-gray-900">Tracking Status</h2>
-            <div class="text-xs text-gray-500">Real-time shipment updates</div>
-          </div>
+          <button
+            id="refresh-tracking-btn"
+            onclick="refreshTracking()"
+            class="refresh-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50 border border-brand-200 hover:bg-brand-100"
+            title="Refresh tracking status"
+          >
+            <i id="refresh-icon" class="fas fa-rotate-right text-xs"></i>
+            Refresh
+          </button>
         </div>
 
         <div class="timeline-container">
           <div class="timeline-line"></div>
           <div id="tracking-timeline" class="space-y-0"></div>
         </div>
+        <div id="last-updated" class="last-updated hidden"></div>
       </div>
+    
+
+        
 
       <!-- No Quotation Yet -->
       <div id="no-quote-panel" class="hidden glass-card p-8 text-center py-14 animate-slide-up stagger-2">
@@ -547,6 +562,31 @@
       "https://deecrnfbvgbzyybqhywy.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
     );
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatBtnDate(isoString) {
+  if (!isoString) return '';
+  // Normalize Supabase timestamp: replace space separator with T,
+  // and append Z if no timezone indicator present, so it's always parsed as UTC.
+  let s = isoString.trim().replace(' ', 'T');
+  if (!/[Zz]|[+-]\d{2}:\d{2}|[+-]\d{4}/.test(s)) s += 'Z';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  // Shift UTC → BTT (UTC+6)
+  const bttMs = d.getTime() + (6 * 60 * 60 * 1000);
+  const b = new Date(bttMs);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const day    = pad2(b.getUTCDate());
+  const month  = months[b.getUTCMonth()];
+  const year   = b.getUTCFullYear();
+  let hour     = b.getUTCHours();
+  const minute = pad2(b.getUTCMinutes());
+  const ampm   = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  hour = hour ? hour : 12;
+  return `${day} ${month} ${year}, ${pad2(hour)}:${minute} ${ampm}`;
+}
 
     let currentOrder = null;
     let currentQuote = null;
@@ -996,7 +1036,7 @@ if (order.order_status === 'delivered') {
           timeline.innerHTML = tracking.map((t, i) => {
             const isLast = i === tracking.length - 1;
             const statusClass = isLast ? 'active' : 'completed';
-            const time = t.created_at ? new Date(t.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+     const time = formatBtnDate(t.created_at);
             const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
             return `
@@ -1021,6 +1061,20 @@ if (order.order_status === 'delivered') {
 
         // Handle invoice (only for delivered orders)
         await handleInvoice(order, paymentInfo, quotes);
+
+        // Update "last refreshed" timestamp in BTT (UTC+6, same logic as formatBtnDate)
+        const lastUpdatedEl = document.getElementById('last-updated');
+        if (lastUpdatedEl) {
+          const bttMs = Date.now() + (6 * 60 * 60 * 1000);
+          const btt   = new Date(bttMs);
+          let   h     = btt.getUTCHours();
+          const m     = pad2(btt.getUTCMinutes());
+          const s     = pad2(btt.getUTCSeconds());
+          const ampm  = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          lastUpdatedEl.textContent = `Last updated: ${pad2(h)}:${m}:${s} ${ampm} (BTT)`;
+          lastUpdatedEl.classList.remove('hidden');
+        }
 
         results.classList.remove('hidden');
         subscribeToOrder(orderTextId);
@@ -1335,6 +1389,39 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('track-input').focus();
   }
 });
+
+/* ========== REFRESH TRACKING ========== */
+async function refreshTracking() {
+  const btn = document.getElementById('refresh-tracking-btn');
+  const icon = document.getElementById('refresh-icon');
+
+  if (!btn || btn.disabled) return;
+  if (!currentOrder) {
+    showToast('No order loaded', 'error');
+    return;
+  }
+
+  icon.classList.add('fa-spin');
+  btn.disabled = true;
+  btn.classList.add('opacity-75');
+
+  try {
+    // Re-use the full trackOrder() flow so everything stays in sync
+    const input = document.getElementById('track-input');
+    if (input && currentOrder.order_id) {
+      input.value = currentOrder.order_id;
+    }
+    await trackOrder();
+  } catch (err) {
+    console.error('Refresh tracking error:', err);
+    showToast('Failed to refresh. Please try again.', 'error');
+  } finally {
+    icon.classList.remove('fa-spin');
+    btn.disabled = false;
+    btn.classList.remove('opacity-75');
+  }
+}
+window.refreshTracking = refreshTracking;
 
 /* ========== SHARE ORDER ========== */
 window.shareOrder = function() {

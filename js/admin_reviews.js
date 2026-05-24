@@ -5,6 +5,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
+
 let allReviews = [];
 let reviewsLoaded = false;
 let deleteTargetId = null;
@@ -23,6 +25,8 @@ let portalUsersLoaded = false;
 let currentPortalSubTab = 'otp';
 let currentOrderSubTab = 'orders';
 let authChecked = false;
+
+
 
 /* ==========================================================
    VERIFY MODAL STATE
@@ -170,7 +174,8 @@ function renderReviews(reviews) {
     const rating = Math.max(0, Math.min(5, parseInt(r.rating) || 0));
     const isApproved = r.is_approved === true;
     const isVerified = r.is_verified_buyer === true;
-    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+    const _rDate = r.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(r.created_at) ? r.created_at : r.created_at + 'Z') : null;
+    const date = _rDate && !isNaN(_rDate) ? _rDate.toLocaleDateString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
     const stars = Array(5).fill(0).map((_, i) =>
       `<i class="fas fa-star ${i < rating ? 'text-yellow-400' : 'text-gray-200'} text-[10px]"></i>`
@@ -349,7 +354,7 @@ async function loadOrders() {
   } catch (err) {
     console.error('Load orders failed:', err);
     loader?.classList.add('hidden');
-    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load orders'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load orders'}</td></tr>`; //cols add extra column
     wrap?.classList.remove('hidden');
     showToast('Failed to load orders', 'error');
   }
@@ -453,6 +458,7 @@ function renderOrders(orders) {
         <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium"><i class="fas fa-box text-[10px]"></i> ${productCount} item${productCount !== 1 ? 's' : ''}</span></td>
         <td class="px-6 py-4 text-sm text-gray-700"><span class="text-xs text-gray-500">${esc(paymentMethod)}</span></td>
         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${statusDisplayMap[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${formatBtnDate(o.created_at)}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
             <button onclick="window.openQuoteModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasQuote ? 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100' : 'text-white bg-indigo-600 hover:bg-indigo-700 border border-indigo-600'}" title="${hasQuote ? 'Edit Quotation' : 'Create Quotation'}"><i class="fas ${hasQuote ? 'fa-pen' : 'fa-plus'}"></i> ${hasQuote ? 'Edit Quote' : 'Quote'}</button>
@@ -465,7 +471,7 @@ function renderOrders(orders) {
         </td>
       </tr>
       <tr class="hidden bg-gray-50/50" id="order-details-${o.id}">
-        <td colspan="7" class="px-6 py-5 border-b border-gray-100">
+        <td colspan="8" class="px-6 py-5 border-b border-gray-100">
           ${detailsHtml}
         </td>
       </tr>`;
@@ -796,7 +802,7 @@ function renderQuotations(quotes) {
     const user = order.users || {};
     const name = user.full_name || '—';
     const status = q.status || 'pending';
-    const date = q.created_at ? new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+    const date = formatBtnDate(q.created_at);
 
     const statusColors = {
       pending: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -883,7 +889,8 @@ function renderPayments(payments) {
     const name = user.full_name || '—';
     const phone = user.whatsapp || '';
     const status = p.status || 'pending';
-    const date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const _pDate = p.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(p.created_at) ? p.created_at : p.created_at + 'Z') : null;
+    const date = _pDate && !isNaN(_pDate) ? _pDate.toLocaleString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
     const method = p.payment_method || '—';
 
     const statusColors = {
@@ -1183,6 +1190,27 @@ function esc(text) {
   return d.innerHTML;
 }
 
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function formatBtnDate(isoString) {
+  if (!isoString) return '—';
+  // Ensure the string is treated as UTC by appending 'Z' if no timezone info present
+  const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(isoString) ? isoString : isoString + 'Z';
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) return '—';
+
+  // Use Intl.DateTimeFormat with explicit Bhutan timezone (UTC+6, no DST)
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Thimphu',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).format(d).replace(',', '');
+}
+
 function safeParseArray(val) {
   if (!val) return [];
   if (Array.isArray(val)) return val;
@@ -1298,8 +1326,10 @@ function renderOtpCodes(codes) {
       statusBadge = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-emerald-50 text-emerald-700 border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>`;
     }
 
-    const expires = c.expires_at ? new Date(c.expires_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
-    const created = c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const _expDate = c.expires_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(c.expires_at) ? c.expires_at : c.expires_at + 'Z') : null;
+    const expires = _expDate && !isNaN(_expDate) ? _expDate.toLocaleString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
+    const _crDate = c.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(c.created_at) ? c.created_at : c.created_at + 'Z') : null;
+    const created = _crDate && !isNaN(_crDate) ? _crDate.toLocaleString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
@@ -1433,7 +1463,8 @@ function renderPortalUsers(users, orderCounts) {
     const name = u.full_name || '—';
     const phone = u.whatsapp || '—';
     const email = u.email || '—';
-    const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+    const _uDate = u.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(u.created_at) ? u.created_at : u.created_at + 'Z') : null;
+    const joined = _uDate && !isNaN(_uDate) ? _uDate.toLocaleDateString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', year: 'numeric' }) : '—';
     const count = orderCounts.filter(o => o.user_id === u.id).length;
 
     return `
