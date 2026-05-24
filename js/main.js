@@ -31,6 +31,16 @@ function escHtml(s) {
 }
 window.escHtml = escHtml;
 
+function normalizeUrl(url) {
+  if (!url) return url;
+  url = url.trim();
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url.replace(/^\/+/,'');
+  }
+  return url;
+}
+window.normalizeUrl = normalizeUrl;
+
 function sanitize(str) {
   return (str || '')
     .replace(/[*_~`]/g, '')
@@ -299,7 +309,7 @@ window.adjustQty = adjustQty;
 const SUPPORTED = ['amazon.in', 'flipkart.com', 'myntra.com', 'meesho.com'];
 function isSupported(url) {
   try {
-    const host = new URL(url).hostname.replace('www.', '');
+    const host = new URL(normalizeUrl(url)).hostname.replace('www.', '');
     return SUPPORTED.some(s => host === s || host.endsWith('.' + s));
   } catch (e) { return false; }
 }
@@ -307,7 +317,7 @@ function isSupported(url) {
 // Extract readable title from URL pathname
 function extractTitleFromUrl(url) {
   try {
-    const pathname = decodeURIComponent(new URL(url).pathname);
+    const pathname = decodeURIComponent(new URL(normalizeUrl(url)).pathname);
     // Find the longest path segment that looks like a product slug
     const segments = pathname.split('/').filter(Boolean);
     const slug = segments.find(s => 
@@ -332,7 +342,7 @@ function extractTitleFromUrl(url) {
 // Get store brand from URL
 function getStoreBrand(url) {
   try {
-    const host = new URL(url).hostname.replace('www.', '');
+    const host = new URL(normalizeUrl(url)).hostname.replace('www.', '');
     const brand = host.split('.')[0];
     return brand.charAt(0).toUpperCase() + brand.slice(1);
   } catch (e) {
@@ -359,7 +369,8 @@ function onLinkInput(input) {
   const id = input._previewId || (input._previewId = Math.random().toString(36).slice(2));
   clearTimeout(debounceMap[id]);
 
-  if (!val.startsWith('http')) {
+  const normalized = normalizeUrl(val);
+  if (!normalized || !normalized.startsWith('http')) {
     preview.style.display = 'none';
     previewPlaceholder.style.display = 'grid';
     previewContent.style.display = 'none';
@@ -367,10 +378,15 @@ function onLinkInput(input) {
     return;
   }
 
+  // Update input with normalized URL so user sees the fix
+  if (normalized !== val) {
+    input.value = normalized;
+  }
+
   preview.style.display = 'block';
   preview.innerHTML = '<div class="preview-status"><div class="preview-spinner"></div> Fetching preview…</div>';
 
-  debounceMap[id] = setTimeout(() => fetchPreview(input, val), 600);
+  debounceMap[id] = setTimeout(() => fetchPreview(input, normalized), 600);
   updateOrderSummary();
 }
 window.onLinkInput = onLinkInput;
@@ -383,7 +399,8 @@ function fetchPreview(input, url) {
   const previewImg = previewContent.querySelector('img');
   const previewPlaceholder = row.querySelector('.preview-placeholder');
 
-  if (input.value.trim() !== url) return;
+  url = normalizeUrl(url);
+  if (normalizeUrl(input.value.trim()) !== url) return;
 
   const brandFallback = getStoreBrand(url);
   const urlTitle = extractTitleFromUrl(url);
@@ -590,7 +607,7 @@ function saveFormState() {
   };
   const rows = document.querySelectorAll('.product-row');
   rows.forEach(row => {
-    const link = row.querySelector('input[name="product_links"]')?.value || '';
+    const link = normalizeUrl(row.querySelector('input[name="product_links"]')?.value || '');
     const qty = row.querySelector('input[name="quantities"]')?.value || '1';
     const notes = row.querySelector('input[name="product_notes"]')?.value || '';
     if (link) data.products.push({ link, qty, notes });
@@ -819,7 +836,7 @@ function buildReview() {
         <div style="display:flex;align-items:center;margin-bottom:8px;padding:8px 0;border-bottom:1px solid #eee;">
           ${thumb}
           <div style="min-width:0;">
-            <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(link)}</div>
+            <div style="font-weight:600;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(normalizeUrl(link))}</div>
             <div style="font-size:0.8rem;color:var(--text-secondary);">
               Qty: ${escHtml(qty)}${notes ? ' · ' + escHtml(notes) : ''}
             </div>
@@ -839,7 +856,7 @@ function buildReview() {
         '<div class="review-block-val">' + escHtml(name || '—') + '</div>',
         '<div class="review-block-sub">+975 ' + escHtml(phone || '—') + '</div>',
       '</div>',
-      '<button type="button" class="review-edit-btn" onclick="goStep(1)">Edit</button>',
+      '<button class="review-edit-btn" onclick="goStep(1)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -849,7 +866,7 @@ function buildReview() {
         '<div class="review-block-val">' + escHtml(selectedCity || '—') + '</div>',
         '<div class="review-block-sub">' + escHtml(address || '—') + '</div>',
       '</div>',
-      '<button type="button" class="review-edit-btn" onclick="goStep(2)">Edit</button>',
+      '<button class="review-edit-btn" onclick="goStep(2)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -858,7 +875,7 @@ function buildReview() {
         '<div class="review-block-title">Products</div>',
         '<div class="review-block-val" style="font-weight:400;">' + (productHtml || '<em>No products added yet</em>') + '</div>',
       '</div>',
-      '<button type="button" class="review-edit-btn" onclick="goStep(3)">Edit</button>',
+      '<button class="review-edit-btn" onclick="goStep(3)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -867,7 +884,7 @@ function buildReview() {
         '<div class="review-block-title">Payment</div>',
         '<div class="review-block-val">' + escHtml(selectedPaymentMethod || '—') + '</div>',
       '</div>',
-      '<button type="button" class="review-edit-btn" onclick="goStep(4)">Edit</button>',
+      '<button class="review-edit-btn" onclick="goStep(4)">Edit</button>',
     '</div>',
 
     fileCount > 0 ? [
@@ -993,7 +1010,7 @@ form.addEventListener('submit', async function(e) {
   const qtys = [];
 
   linkInputs.forEach((inp, i) => {
-    const link = inp.value.trim();
+    const link = normalizeUrl(inp.value.trim());
     if (link) {
       links.push(link);
       qtys.push(parseInt(qtyInputs[i] ? (qtyInputs[i].value || '1') : '1', 10) || 1);
@@ -1427,17 +1444,21 @@ function handleQuickPaste(e) {
 window.handleQuickPaste = handleQuickPaste;
 
 function previewQuickAdd(input) {
-  const url = input.value.trim();
+  let url = input.value.trim();
+  url = normalizeUrl(url);
   const btn = document.getElementById('quickAddBtn');
   const preview = document.getElementById('quickPreview');
-
-  console.log('previewQuickAdd called, url:', url ? url.substring(0, 60) + '...' : 'empty');
 
   if (!url || !url.startsWith('http')) {
     preview.style.display = 'none';
     btn.disabled = true;
     _pendingQuickFile = null;
     return;
+  }
+
+  // Update input with normalized URL
+  if (input.value.trim() !== url) {
+    input.value = url;
   }
 
   btn.disabled = false;
@@ -1539,7 +1560,7 @@ window.triggerQuickSnap = triggerQuickSnap;
 
 function addToQuickCart() {
   const input = document.getElementById('quickAddUrl');
-  const url = input.value.trim();
+  const url = normalizeUrl(input.value.trim());
   if (!url || !url.startsWith('http')) return;
 
   if (quickCart.find(p => p.link === url)) {
