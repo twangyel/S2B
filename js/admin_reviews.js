@@ -1657,7 +1657,7 @@ document.getElementById('verify-modal')?.addEventListener('click', (e) => {
 });
 
 /* ==========================================================
-   NOTIFICATION SYSTEM
+   NOTIFICATION SYSTEM — FIXED VERSION
    ========================================================== */
 let notifications = [];
 let notifRealtimeChannels = [];
@@ -1665,6 +1665,12 @@ let notifSoundEnabled = false;
 const NOTIF_MAX_AGE_HOURS = 48;
 
 function initNotifications() {
+  // FIX #2: Unsubscribe old channels before creating new ones
+  notifRealtimeChannels.forEach(ch => {
+    try { supabase.removeChannel(ch); } catch (e) {}
+  });
+  notifRealtimeChannels = [];
+
   loadNotifications();
   setupNotificationRealtime();
   setupNotificationUI();
@@ -1688,6 +1694,11 @@ function saveNotifications() {
 }
 
 function setupNotificationRealtime() {
+  // FIX #5: Add error handling to all subscriptions
+  const handleSubError = (err, channelName) => {
+    if (err) console.error(`Notification channel "${channelName}" failed:`, err);
+  };
+
   const ordersChannel = supabase
     .channel('notif-orders')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
@@ -1697,10 +1708,11 @@ function setupNotificationRealtime() {
         title: 'New Order Received',
         message: `Order ${(order.order_id || '').slice(0, 12)} from ${order.delivery_city || 'Unknown'}`,
         data: { order_id: order.id, tab: 1 },
-        icon: 'fa-shopping-bag'
+        icon: 'fa-shopping-bag',
+        dedupKey: order.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'orders'));
 
   const reviewsChannel = supabase
     .channel('notif-reviews')
@@ -1711,10 +1723,11 @@ function setupNotificationRealtime() {
         title: 'New Review Submitted',
         message: `${review.full_name || 'Someone'} rated ${review.rating || 0}★ — "${(review.message || '').slice(0, 40)}${(review.message || '').length > 40 ? '...' : ''}"`,
         data: { review_id: review.id, tab: 0 },
-        icon: 'fa-star'
+        icon: 'fa-star',
+        dedupKey: review.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'reviews'));
 
   const paymentsChannel = supabase
     .channel('notif-payments')
@@ -1725,10 +1738,11 @@ function setupNotificationRealtime() {
         title: 'Payment Received',
         message: `₹${Math.round(pay.total_amount || 0).toLocaleString('en-IN')} via ${pay.payment_method || '—'}`,
         data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
-        icon: 'fa-money-bill-wave'
+        icon: 'fa-money-bill-wave',
+        dedupKey: pay.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'payments'));
 
   const payUpdateChannel = supabase
     .channel('notif-payments-updates')
@@ -1741,7 +1755,8 @@ function setupNotificationRealtime() {
           title: '50% Advance Verified',
           message: `Order payment partially confirmed. ₹${Math.round(pay.due_amount || 0).toLocaleString('en-IN')} still due.`,
           data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
-          icon: 'fa-check-circle'
+          icon: 'fa-check-circle',
+          dedupKey: pay.id + '-partial'  // FIX #1: Unique dedup key for status change
         });
       }
       if (old.status === 'partial' && pay.status === 'verified') {
@@ -1750,11 +1765,12 @@ function setupNotificationRealtime() {
           title: 'Full Payment Verified',
           message: `Order fully paid. Ready to process.`,
           data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
-          icon: 'fa-check-double'
+          icon: 'fa-check-double',
+          dedupKey: pay.id + '-verified'  // FIX #1: Unique dedup key for status change
         });
       }
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'payments-updates'));
 
   const usersChannel = supabase
     .channel('notif-users')
@@ -1765,10 +1781,11 @@ function setupNotificationRealtime() {
         title: 'New Customer Registered',
         message: `${user.full_name || 'New user'} (+975 ${user.whatsapp || '—'})`,
         data: { user_id: user.id, tab: 3, subtab: 'users' },
-        icon: 'fa-user-plus'
+        icon: 'fa-user-plus',
+        dedupKey: user.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'users'));
 
   const quotesChannel = supabase
     .channel('notif-quotes')
@@ -1781,7 +1798,8 @@ function setupNotificationRealtime() {
           title: 'Quotation Accepted',
           message: `Customer accepted quote. Total: ₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}`,
           data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
-          icon: 'fa-file-signature'
+          icon: 'fa-file-signature',
+          dedupKey: q.id + '-accepted'  // FIX #1: Unique dedup key
         });
       }
       if (old.status === 'pending' && q.status === 'rejected') {
@@ -1790,18 +1808,44 @@ function setupNotificationRealtime() {
           title: 'Quotation Rejected',
           message: `Customer rejected the quotation.`,
           data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
-          icon: 'fa-times-circle'
+          icon: 'fa-times-circle',
+          dedupKey: q.id + '-rejected'  // FIX #1: Unique dedup key
         });
       }
     })
-    .subscribe();
+    .subscribe((status, err) => handleSubError(err, 'quotations'));
 
-  notifRealtimeChannels = [ordersChannel, reviewsChannel, paymentsChannel, payUpdateChannel, usersChannel, quotesChannel];
+  // FIX #3: Add tracking events channel (was missing)
+  const trackingChannel = supabase
+    .channel('notif-tracking')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events' }, (payload) => {
+      const event = payload.new;
+      addNotification({
+        type: 'tracking',
+        title: 'Tracking Update',
+        message: `Order status updated to: ${(event.status || '').replace(/_/g, ' ')}`,
+        data: { tracking_id: event.id, tab: 1, subtab: 'orders' },
+        icon: 'fa-truck-fast',
+        dedupKey: event.id  // FIX #1: Unique dedup key
+      });
+    })
+    .subscribe((status, err) => handleSubError(err, 'tracking'));
+
+  notifRealtimeChannels = [ordersChannel, reviewsChannel, paymentsChannel, payUpdateChannel, usersChannel, quotesChannel, trackingChannel];
 }
 
-function addNotification({ type, title, message, data = {}, icon = 'fa-bell' }) {
+function addNotification({ type, title, message, data = {}, icon = 'fa-bell', dedupKey = null }) {
+  // FIX #1: Use dedupKey for proper deduplication (includes unique ID + status suffix)
+  const effectiveKey = dedupKey || (type + '-' + message);
+  const recent = notifications.find(n => 
+    (n.dedupKey || (n.type + '-' + n.message)) === effectiveKey && 
+    (Date.now() - new Date(n.created_at).getTime()) < 5000
+  );
+  if (recent) return;
+
   const notif = {
     id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+    dedupKey: effectiveKey,  // Store for future deduplication
     type,
     title,
     message,
@@ -1810,9 +1854,6 @@ function addNotification({ type, title, message, data = {}, icon = 'fa-bell' }) 
     is_read: false,
     created_at: new Date().toISOString()
   };
-
-  const recent = notifications.find(n => n.type === type && n.message === message && (Date.now() - new Date(n.created_at).getTime()) < 5000);
-  if (recent) return;
 
   notifications.unshift(notif);
   if (notifications.length > 50) notifications.pop();
@@ -1887,8 +1928,13 @@ function renderNotificationList() {
   }).join('');
 }
 
+// FIX #7: Consistent timezone handling for time ago
 function getTimeAgo(iso) {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(iso) ? iso : iso + 'Z';
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) return '—';
+
+  const diff = (Date.now() - d.getTime()) / 1000;
   if (diff < 60) return 'Just now';
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -1937,6 +1983,7 @@ function setupNotificationUI() {
   });
 }
 
+// FIX #6: Validate tab index before switching
 function handleNotifClick(id) {
   const notif = notifications.find(n => n.id === id);
   if (!notif) return;
@@ -1947,10 +1994,13 @@ function handleNotifClick(id) {
   renderNotificationList();
 
   if (notif.data?.tab !== undefined) {
-    switchTab(notif.data.tab);
-    if (notif.data.subtab) {
-      if (notif.data.tab === 1) switchOrderSubTab(notif.data.subtab);
-      if (notif.data.tab === 3) switchPortalSubTab(notif.data.subtab);
+    const tabIndex = parseInt(notif.data.tab);
+    if (tabIndex >= 0 && tabIndex <= 3) {
+      switchTab(tabIndex);
+      if (notif.data.subtab) {
+        if (tabIndex === 1) switchOrderSubTab(notif.data.subtab);
+        if (tabIndex === 3) switchPortalSubTab(notif.data.subtab);
+      }
     }
   }
 
@@ -1973,7 +2023,8 @@ function notifyNewOrder(order) {
     title: 'New Order',
     message: `Order #${(order.order_id || '').slice(0, 12)} — ${order.delivery_city || 'Unknown'}`,
     data: { tab: 1 },
-    icon: 'fa-shopping-bag'
+    icon: 'fa-shopping-bag',
+    dedupKey: order.id
   });
 }
 window.notifyNewOrder = notifyNewOrder;
@@ -1984,7 +2035,8 @@ function notifyPaymentVerified(amount, method) {
     title: 'Payment Verified',
     message: `₹${Math.round(amount).toLocaleString('en-IN')} via ${method || '—'}`,
     data: { tab: 1, subtab: 'payments' },
-    icon: 'fa-check-circle'
+    icon: 'fa-check-circle',
+    dedupKey: 'payment-' + amount + '-' + method + '-' + Date.now()  // Time-based to allow multiple
   });
 }
 window.notifyPaymentVerified = notifyPaymentVerified;

@@ -399,3 +399,121 @@
   font-weight: 500;
   letter-spacing: 0.3px;
 }
+
+/* ===== TABS ===== */
+.tab-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.tab-btn.active i {
+  color: rgba(255,255,255,0.9);
+}
+
+/* Hide scrollbar for tab nav on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ===== PROGRESS STEPPER ===== */
+.stepper-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 5;
+}
+
+.stepper-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e2e8f0;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: #94a3b8;
+  transition: all 0.4s ease;
+  font-weight: 700;
+}
+
+.stepper-item.completed .stepper-dot {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+  color: white;
+}
+
+.stepper-item.active .stepper-dot {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border-color: #6366f1;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.stepper-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 70px;
+}
+
+.stepper-item.completed .stepper-label,
+.stepper-item.active .stepper-label {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+/* ===== PANEL TRANSITIONS ===== */
+.tab-panel {
+  animation-duration: 0.4s;
+}
+
+/* ===== CLEANER TABLE ===== */
+.price-row {
+  transition: background 0.2s ease;
+}
+.price-row:hover {
+  background: #f8fafc;
+}
+
+/* ===== NEXT ACTION CARD ===== */
+#next-action-card {
+  position: relative;
+  overflow: hidden;
+}
+#next-action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, #6366f1, #818cf8);
+}
+
+/* ===== MOBILE REFINEMENTS ===== */
+@media (max-width: 640px) {
+  .stepper-label {
+    font-size: 9px;
+    max-width: 60px;
+  }
+  .stepper-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
+}
