@@ -1,56 +1,55 @@
-<!-- ===== PWA SCRIPT SNIPPET (FIXED) =====
-   Paste this right BEFORE the closing </body> tag.
-   This version fixes the mobile white space bug.
-   ===== -->
-
-<!-- PWA Bootstrap -->
+<!-- ===== PWA SCRIPT SNIPPET (OPTIMIZED) ===== -->
 <script>
-(function() {
+(function () {
   'use strict';
 
-  // Record start time for minimum display duration
   window.__pwaStart = Date.now();
 
+  // Prevent duplicate execution
+  let splashHidden = false;
+
   // ==========================================
-  // 1. HIDE SPLASH SCREEN — ROBUST VERSION
+  // 1. HIDE SPLASH SCREEN
   // ==========================================
   function hideSplash() {
+    if (splashHidden) return;
+    splashHidden = true;
+
     const splash = document.getElementById('pwa-splash');
+
     if (!splash) {
       document.body.classList.add('loaded');
       return;
     }
 
-    // Calculate delay to ensure minimum visible time (prevents flash)
     const elapsed = Date.now() - window.__pwaStart;
-    const minDisplay = 600; // ms
+    const minDisplay = 600;
     const delay = Math.max(0, minDisplay - elapsed);
 
-    setTimeout(function() {
-      // Add vanish class for CSS transition
+    setTimeout(() => {
       splash.classList.add('vanish');
       document.body.classList.add('loaded');
 
-      // After transition completes, fully remove from DOM
-      // This is the KEY fix — removing it prevents any layout interference
-      setTimeout(function() {
+      // Prevent scroll/white-space issues
+      document.body.style.overflow = 'auto';
+
+      setTimeout(() => {
         splash.classList.add('force-gone');
-        // Actually remove from DOM after a bit more
-        setTimeout(function() {
-          if (splash.parentNode) {
-            splash.parentNode.removeChild(splash);
-          }
-        }, 100);
-      }, 550); // Match CSS transition duration
+
+        // Fully remove from DOM
+        requestAnimationFrame(() => {
+          splash.remove();
+        });
+      }, 550);
     }, delay);
   }
 
-  // Multiple triggers to ensure splash always hides
   if (document.readyState === 'complete') {
     hideSplash();
   } else {
-    window.addEventListener('load', hideSplash);
-    // Fallback: if load event never fires (rare), hide after 4s
+    window.addEventListener('load', hideSplash, { once: true });
+
+    // Emergency fallback
     setTimeout(hideSplash, 4000);
   }
 
@@ -58,52 +57,80 @@
   // 2. OFFLINE / ONLINE BANNER
   // ==========================================
   const offlineBanner = document.getElementById('offline-banner');
+
   function updateOnlineStatus() {
     if (!offlineBanner) return;
+
     if (navigator.onLine) {
       offlineBanner.classList.add('hidden');
     } else {
       offlineBanner.classList.remove('hidden');
     }
   }
+
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
+
   updateOnlineStatus();
 
   // ==========================================
-  // 3. SERVICE WORKER REGISTRATION
+  // 3. SERVICE WORKER
   // ==========================================
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(function(reg) {
-          console.log('[PWA] SW registered:', reg.scope);
-          reg.addEventListener('updatefound', function() {
-            var newWorker = reg.installing;
-            newWorker?.addEventListener('statechange', function() {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[PWA] New version available. Refresh to update.');
-              }
-            });
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/service-worker.js');
+
+        console.log('[PWA] SW registered:', reg.scope);
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', () => {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
+              console.log('[PWA] New version available');
+            }
           });
-        })
-        .catch(function(err) {
-          console.error('[PWA] SW registration failed:', err);
         });
+      } catch (err) {
+        console.error('[PWA] SW registration failed:', err);
+      }
     });
   }
 
   // ==========================================
-  // 4. KEYBOARD SHORTCUT: Ctrl/Cmd + K
+  // 4. CTRL/CMD + K SEARCH
   // ==========================================
-  document.addEventListener('keydown', function(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      var searchInput = document.getElementById('track-input');
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      const searchInput = document.getElementById('track-input');
+
       if (searchInput) {
         e.preventDefault();
         searchInput.focus();
       }
     }
   });
+
+  // ==========================================
+  // 5. MOBILE VIEWPORT FIX
+  // ==========================================
+  function setAppHeight() {
+    document.documentElement.style.setProperty(
+      '--app-height',
+      `${window.innerHeight}px`
+    );
+  }
+
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', setAppHeight);
+
+  setAppHeight();
+
 })();
 </script>
