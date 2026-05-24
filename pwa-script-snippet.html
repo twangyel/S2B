@@ -1,5 +1,6 @@
-<!-- ===== PWA SCRIPT SNIPPET =====
+<!-- ===== PWA SCRIPT SNIPPET (FIXED) =====
    Paste this right BEFORE the closing </body> tag.
+   This version fixes the mobile white space bug.
    ===== -->
 
 <!-- PWA Bootstrap -->
@@ -7,31 +8,55 @@
 (function() {
   'use strict';
 
-  // 1. Hide splash screen gracefully
+  // Record start time for minimum display duration
+  window.__pwaStart = Date.now();
+
+  // ==========================================
+  // 1. HIDE SPLASH SCREEN — ROBUST VERSION
+  // ==========================================
   function hideSplash() {
     const splash = document.getElementById('pwa-splash');
-    if (!splash) return;
-    // Ensure minimum visible time for perceived performance
-    const elapsed = Date.now() - (window.__pwaStart || Date.now());
-    const delay = Math.max(0, 800 - elapsed);
-    setTimeout(() => {
+    if (!splash) {
+      document.body.classList.add('loaded');
+      return;
+    }
+
+    // Calculate delay to ensure minimum visible time (prevents flash)
+    const elapsed = Date.now() - window.__pwaStart;
+    const minDisplay = 600; // ms
+    const delay = Math.max(0, minDisplay - elapsed);
+
+    setTimeout(function() {
+      // Add vanish class for CSS transition
       splash.classList.add('vanish');
       document.body.classList.add('loaded');
-      setTimeout(() => splash.remove(), 650);
+
+      // After transition completes, fully remove from DOM
+      // This is the KEY fix — removing it prevents any layout interference
+      setTimeout(function() {
+        splash.classList.add('force-gone');
+        // Actually remove from DOM after a bit more
+        setTimeout(function() {
+          if (splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 100);
+      }, 550); // Match CSS transition duration
     }, delay);
   }
 
-  // Record start time
-  window.__pwaStart = Date.now();
-
-  // Hide on load + fallback
+  // Multiple triggers to ensure splash always hides
   if (document.readyState === 'complete') {
     hideSplash();
   } else {
     window.addEventListener('load', hideSplash);
+    // Fallback: if load event never fires (rare), hide after 4s
+    setTimeout(hideSplash, 4000);
   }
 
-  // 2. Offline / Online banner
+  // ==========================================
+  // 2. OFFLINE / ONLINE BANNER
+  // ==========================================
   const offlineBanner = document.getElementById('offline-banner');
   function updateOnlineStatus() {
     if (!offlineBanner) return;
@@ -45,30 +70,35 @@
   window.addEventListener('offline', updateOnlineStatus);
   updateOnlineStatus();
 
-  // 3. Register Service Worker
+  // ==========================================
+  // 3. SERVICE WORKER REGISTRATION
+  // ==========================================
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+    window.addEventListener('load', function() {
       navigator.serviceWorker.register('/service-worker.js')
-        .then((reg) => {
+        .then(function(reg) {
           console.log('[PWA] SW registered:', reg.scope);
-          // Optional: prompt update if new SW waiting
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker?.addEventListener('statechange', () => {
+          reg.addEventListener('updatefound', function() {
+            var newWorker = reg.installing;
+            newWorker?.addEventListener('statechange', function() {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.log('[PWA] New version available. Refresh to update.');
               }
             });
           });
         })
-        .catch((err) => console.error('[PWA] SW registration failed:', err));
+        .catch(function(err) {
+          console.error('[PWA] SW registration failed:', err);
+        });
     });
   }
 
-  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
-  document.addEventListener('keydown', (e) => {
+  // ==========================================
+  // 4. KEYBOARD SHORTCUT: Ctrl/Cmd + K
+  // ==========================================
+  document.addEventListener('keydown', function(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      const searchInput = document.getElementById('track-input');
+      var searchInput = document.getElementById('track-input');
       if (searchInput) {
         e.preventDefault();
         searchInput.focus();
