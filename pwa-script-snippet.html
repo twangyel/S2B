@@ -22,6 +22,44 @@
       return;
     }
 
+      // ==========================================
+  // 6. PWA INSTALL PROMPT HANDLER
+  // ==========================================
+  let deferredPrompt = null;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault(); // stop auto prompt
+
+    deferredPrompt = e;
+
+    console.log("[PWA] Install available");
+
+    // OPTIONAL: show install button if you have one
+    const btn = document.getElementById("installBtn");
+    if (btn) btn.style.display = "block";
+  });
+
+  function installPWA() {
+    if (!deferredPrompt) {
+      console.log("[PWA] Install not ready yet");
+      return;
+    }
+
+    deferredPrompt.prompt();
+
+    deferredPrompt.userChoice.then((choice) => {
+      console.log("[PWA] User choice:", choice.outcome);
+
+      deferredPrompt = null;
+
+      const btn = document.getElementById("installBtn");
+      if (btn) btn.style.display = "none";
+    });
+  }
+
+  // expose globally (important)
+  window.installPWA = installPWA;
+
     const elapsed = Date.now() - window.__pwaStart;
     const minDisplay = 600;
     const delay = Math.max(0, minDisplay - elapsed);

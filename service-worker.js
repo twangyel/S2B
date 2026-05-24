@@ -19,19 +19,25 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(PRECACHE_ASSETS))
       .then(() => self.skipWaiting())
+      
   );
 });
+
+
 
 // Activate: Clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => ![STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE].includes(key))
-          .map((key) => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    Promise.all([
+      caches.keys().then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => ![STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE].includes(key))
+            .map((key) => caches.delete(key))
+        )
+      ),
+      self.clients.claim()
+    ])
   );
 });
 
@@ -59,24 +65,27 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 2. HTML Navigation: Stale-while-revalidate
-  if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const networkFetch = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.ok) {
-              const clone = networkResponse.clone();
-              caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, clone));
-            }
-            return networkResponse;
-          })
-          .catch(() => cached);
+  // HTML Navigation: Stale-while-revalidate + OFFLINE fallback
+if (request.mode === 'navigate' || request.destination === 'document') {
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      const networkFetch = fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return cached || caches.match('/offline.html');
+        });
 
-        return cached || networkFetch;
-      })
-    );
-    return;
-  }
+      return cached || networkFetch;
+    })
+  );
+  return;
+}
 
   // 3. Images: Cache-first
   if (request.destination === 'image') {
