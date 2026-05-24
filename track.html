@@ -5,37 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Track Order | Shop2Bhutan</title>
   <meta name="description" content="Track your Shop2Bhutan order and review your quotation." />
-  <!-- ===== PWA HEAD SNIPPET =====
-   Paste this ENTIRE block inside your <head> tag,
-   ideally right after <meta charset> and before other links.
-   ===== -->
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="background-color" content="#ffffff">
+  <meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#4f46e5">
-<meta name="background-color" content="#ffffff">
-<meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Shop2Bhutan">
 
-<!-- iOS / Safari PWA -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Shop2Bhutan">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/svg+xml" href="/image/logo.svg">
 
-<!-- Icons & Manifest -->
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-<link rel="icon" type="image/svg+xml" href="/image/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
 
-<!-- Performance: preconnect to critical origins -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
-
-<!-- PWA Splash Screen Styles -->
-<link rel="stylesheet" href="/pwa-loader.css">
+  <link rel="stylesheet" href="/pwa-loader.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -89,35 +81,32 @@
       }
     }
   </script>
-<base target="_blank">
+  <base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
-  <!-- ===== PWA BODY SNIPPET =====
-   Paste this as the VERY FIRST child inside <body> (before nav/main).
-   ===== -->
 
-<!-- PWA Splash Screen -->
-<div id="pwa-splash" class="pwa-splash">
-  <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
-  <div class="pwa-splash-ring"></div>
-  <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
-  <div class="pwa-splash-sub">Loading your experience…</div>
-</div>
+  <!-- PWA Splash Screen -->
+  <div id="pwa-splash" class="pwa-splash">
+    <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
+    <div class="pwa-splash-ring"></div>
+    <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
+    <div class="pwa-splash-sub">Loading your experience…</div>
+  </div>
 
-<!-- Offline Banner -->
-<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2.5 z-[9999] border-b border-amber-200 font-medium tracking-wide">
-  <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-  You're offline. Showing last updated data.
-</div>
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2.5 z-[9999] border-b border-amber-200 font-medium tracking-wide">
+    <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    You're offline. Showing last updated data.
+  </div>
 
   <!-- Nav -->
   <nav class="nav-glass sticky top-0 z-40">
     <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-       <a href="https://shop2bt.vercel.app/" class="logo" target="_self">
-  <div class="logo-icon">
-    <img src="/image/logo.svg" alt="Shop2Bhutan logo">
-  </div>
-</a>
+      <a href="https://shop2bt.vercel.app/" class="logo" target="_self">
+        <div class="logo-icon">
+          <img src="/image/logo.svg" alt="Shop2Bhutan logo">
+        </div>
+      </a>
       <a href="https://wa.me/97577113302" target="_blank" class="support-chip text-sm font-semibold text-emerald-700 px-4 py-2 rounded-xl flex items-center gap-2">
         <i class="fa-brands fa-whatsapp"></i>
         <span class="hidden sm:inline">Support</span>
@@ -125,388 +114,388 @@
     </div>
   </nav>
 
-  <<main class="max-w-3xl mx-auto px-4 py-6">
+  <main class="max-w-3xl mx-auto px-4 py-6">
 
-  <!-- ========== SEARCH ========== -->
-  <div class="glass-card p-6 mb-6 animate-fade-in">
-    <div class="mb-4">
-      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Track Your Order</h1>
-      <p class="text-gray-500 text-sm mt-1">Enter your Order ID to view status, quotation, and shipping updates.</p>
-    </div>
-
-    <div class="flex gap-3">
-      <div class="relative flex-1">
-        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="track-input" placeholder="e.g. S2B-260521-A3F9K2"
-          class="search-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-mono uppercase tracking-wider focus:outline-none"
-          autocomplete="off">
+    <!-- ========== SEARCH ========== -->
+    <div class="glass-card p-6 mb-6 animate-fade-in">
+      <div class="mb-4">
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Track Your Order</h1>
+        <p class="text-gray-500 text-sm mt-1">Enter your Order ID to view status, quotation, and shipping updates.</p>
       </div>
-      <button onclick="trackOrder()" id="track-btn" class="btn-primary px-6 py-3 text-white rounded-xl text-sm font-bold whitespace-nowrap flex items-center gap-2">
-        <span id="track-btn-text">Track</span>
-        <div id="track-spinner" class="loading-spinner hidden"></div>
-      </button>
-    </div>
 
-    <div id="track-error" class="hidden mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
-      <i class="fas fa-circle-exclamation text-red-500 mt-0.5"></i>
-      <div>
-        <div class="text-sm font-semibold text-red-800">Order not found</div>
-        <div class="text-xs text-red-600 mt-0.5">Please check your Order ID and try again.</div>
-      </div>
-    </div>
-
-    <div id="recent-searches" class="hidden mt-3 flex flex-wrap gap-2"></div>
-  </div>
-
-  <!-- ========== RESULTS ========== -->
-  <div id="track-results" class="hidden space-y-4">
-
-    <!-- Sticky Status Header -->
-    <div class="glass-card p-5 animate-slide-up stagger-1">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-bold text-lg font-mono">
-            S2B
-          </div>
-          <div>
-            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</div>
-            <div class="text-lg font-mono font-bold text-gray-900 tracking-tight" id="res-order-id">—</div>
-          </div>
+      <div class="flex gap-3">
+        <div class="relative flex-1">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input type="text" id="track-input" placeholder="e.g. S2B-260521-A3F9K2"
+            class="search-input w-full pl-11 pr-4 py-3 rounded-xl text-sm font-mono uppercase tracking-wider focus:outline-none"
+            autocomplete="off">
         </div>
-        <div class="flex items-center gap-3">
-          <span id="res-order-status" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold border">—</span>
-          <button onclick="shareOrder()" class="w-9 h-9 rounded-lg bg-gray-100 hover:bg-brand-50 text-gray-500 hover:text-brand-600 flex items-center justify-center transition-colors" title="Share tracking link">
-            <i class="fas fa-share-alt text-xs"></i>
-          </button>
+        <button onclick="trackOrder()" id="track-btn" class="btn-primary px-6 py-3 text-white rounded-xl text-sm font-bold whitespace-nowrap flex items-center gap-2">
+          <span id="track-btn-text">Track</span>
+          <div id="track-spinner" class="loading-spinner hidden"></div>
+        </button>
+      </div>
+
+      <div id="track-error" class="hidden mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+        <i class="fas fa-circle-exclamation text-red-500 mt-0.5"></i>
+        <div>
+          <div class="text-sm font-semibold text-red-800">Order not found</div>
+          <div class="text-xs text-red-600 mt-0.5">Please check your Order ID and try again.</div>
         </div>
       </div>
 
-      <!-- Progress Stepper -->
-      <div class="mt-6 relative">
-        <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 rounded-full"></div>
-        <div class="absolute top-1/2 left-0 h-1 bg-brand-500 -translate-y-1/2 rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
-        <div class="relative grid grid-cols-5 gap-1" id="stepper-container">
-          <!-- Generated by JS -->
-        </div>
-      </div>
+      <div id="recent-searches" class="hidden mt-3 flex flex-wrap gap-2"></div>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="flex items-center gap-1 p-1 bg-white/60 backdrop-blur rounded-xl border border-gray-200/80 overflow-x-auto no-scrollbar animate-slide-up stagger-2" id="tab-nav">
-      <button onclick="switchTab('overview')" class="tab-btn active flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap" data-tab="overview">
-        <i class="fas fa-house mr-1.5"></i> Overview
-      </button>
-      <button onclick="switchTab('quotation')" class="tab-btn flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="quotation">
-        <i class="fas fa-file-invoice-dollar mr-1.5"></i> Quotation
-      </button>
-      <button onclick="switchTab('tracking')" class="tab-btn flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="tracking">
-        <i class="fas fa-truck-fast mr-1.5"></i> Tracking
-      </button>
-      <button onclick="switchTab('invoice')" class="tab-btn hidden flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="invoice">
-        <i class="fas fa-file-invoice mr-1.5"></i> Invoice
-      </button>
-    </div>
+    <!-- ========== RESULTS ========== -->
+    <div id="track-results" class="hidden space-y-4">
 
-    <!-- TAB: Overview -->
-    <div id="tab-overview" class="tab-panel animate-slide-up stagger-3">
-      <div class="glass-card p-6">
-        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Order Details</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="info-grid-item">
-            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
-              <i class="fas fa-user text-[10px]"></i> Customer
-            </div>
-            <div class="font-semibold text-gray-900 text-sm truncate" id="res-name">—</div>
-          </div>
-          <div class="info-grid-item">
-            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
-              <i class="fas fa-phone text-[10px]"></i> WhatsApp
-            </div>
-            <div class="font-medium text-gray-700 text-sm" id="res-phone">—</div>
-          </div>
-          <div class="info-grid-item">
-            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
-              <i class="fas fa-location-dot text-[10px]"></i> City
-            </div>
-            <div class="font-medium text-gray-700 text-sm" id="res-city">—</div>
-          </div>
-          <div class="info-grid-item">
-            <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
-              <i class="fas fa-credit-card text-[10px]"></i> Payment Method
-            </div>
-            <div class="font-medium text-gray-700 text-sm" id="res-payment">—</div>
-          </div>
-        </div>
-
-        <!-- Payment Status Card -->
-        <div id="res-payment-status-wrap" class="hidden mt-4">
-          <div class="p-4 bg-gradient-to-r from-brand-50 to-white rounded-xl border border-brand-200">
-            <div class="text-brand-600 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <i class="fas fa-wallet text-[10px]"></i> Payment Status
-            </div>
-            <div class="text-sm" id="res-payment-status">—</div>
-          </div>
-        </div>
-
-        <!-- Next Action Card -->
-        <div id="next-action-card" class="hidden mt-5 p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-              <i class="fas fa-lightbulb text-brand-600"></i>
-            </div>
-            <div class="flex-1">
-              <div class="text-sm font-bold text-gray-900 mb-1">What's Next?</div>
-              <p class="text-sm text-gray-600 leading-relaxed" id="next-action-text">—</p>
-              <div id="next-action-btn-wrap" class="mt-3"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: Quotation -->
-    <div id="tab-quotation" class="tab-panel hidden animate-slide-up stagger-3">
-      <!-- No Quote State -->
-      <div id="no-quote-panel" class="hidden glass-card p-8 text-center py-14">
-        <div class="empty-state-icon w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5">
-          <i class="fas fa-clock text-gray-300 text-3xl"></i>
-        </div>
-        <h3 class="text-gray-900 font-bold text-xl mb-2">Quotation Pending</h3>
-        <p class="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">Your order is being reviewed. Check back soon for your personalized price quote.</p>
-        <div class="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 rounded-full text-xs font-semibold text-brand-700">
-          <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
-          Under Review
-        </div>
-      </div>
-
-      <!-- Quote Content -->
-      <div id="quote-content" class="hidden glass-card p-0 overflow-hidden quote-panel-accent">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-5">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                <i class="fas fa-file-invoice-dollar text-white text-sm"></i>
-              </div>
-              <div>
-                <h2 class="text-lg font-bold text-gray-900">Your Quotation</h2>
-                <div class="text-xs text-gray-500">Review the breakdown below</div>
-              </div>
-            </div>
-            <span id="quote-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border">—</span>
-          </div>
-
-          <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <table class="w-full text-sm">
-              <tbody class="divide-y divide-gray-50">
-                <tr class="price-row">
-                  <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-tag text-gray-400 text-xs"></i> Product Price</td>
-                  <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-product">₹ 0</td>
-                </tr>
-                <tr class="price-row">
-                  <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-plane text-gray-400 text-xs"></i> Shipping Fee</td>
-                  <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-shipping">₹ 0</td>
-                </tr>
-                <tr class="price-row">
-                  <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-concierge-bell text-gray-400 text-xs"></i> Service Fee</td>
-                  <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-service">₹ 0</td>
-                </tr>
-                <tr class="price-row">
-                  <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-truck text-gray-400 text-xs"></i> Delivery Fee</td>
-                  <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-delivery">₹ 0</td>
-                </tr>
-                <tr class="bg-gradient-to-r from-brand-50 to-white">
-                  <td class="py-4 px-4 font-bold text-brand-900 flex items-center gap-2"><i class="fas fa-calculator text-brand-600 text-xs"></i> Total Amount</td>
-                  <td class="py-4 px-4 text-right font-extrabold text-brand-700 text-lg" id="q-total">₹ 0</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div id="q-note-wrap" class="hidden mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
-            <div class="flex items-start gap-3">
-              <i class="fas fa-lightbulb text-amber-500 mt-0.5"></i>
-              <div>
-                <div class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Note from Admin</div>
-                <p class="text-sm text-amber-700 leading-relaxed" id="q-note">—</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div id="quote-actions" class="hidden flex gap-3 mt-6">
-            <button onclick="respondQuote('accepted')" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-              <i class="fas fa-check"></i> Accept & Pay
-            </button>
-            <button onclick="respondQuote('rejected')" class="action-btn flex-1 py-3.5 bg-white text-red-600 border-2 border-red-200 rounded-xl text-sm font-bold hover:bg-red-50 flex items-center justify-center gap-2">
-              <i class="fas fa-times"></i> Reject
-            </button>
-          </div>
-
-          <!-- Payment Form -->
-          <div id="payment-form" class="hidden mt-6 space-y-5 animate-fade-in">
-            <div class="p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center"><i class="fas fa-building-columns text-brand-600 text-sm"></i></div>
-                <div class="text-sm font-bold text-gray-900">Bank Transfer Details</div>
-              </div>
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Bank</span><span class="font-semibold text-gray-900">Bank of Bhutan</span></div>
-                <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Account</span><span class="font-semibold text-gray-900 font-mono">203149951</span></div>
-                <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Name</span><span class="font-semibold text-gray-900">SHOP2BHUTAN</span></div>
-                <div class="flex justify-between py-2"><span class="text-gray-500">IFSC</span><span class="font-semibold text-gray-900 font-mono">[YOUR_CODE]</span></div>
-              </div>
-              <div class="mt-4 flex flex-col items-center">
-                <div class="p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <img src="/image/qr_code.jpeg" alt="Scan to Pay" class="w-40 h-40 rounded-lg object-contain">
-                </div>
-                <div class="text-xs text-gray-500 mt-2 font-medium">Scan QR code with any UPI / banking app</div>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <label class="text-sm font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-receipt text-brand-500 text-xs"></i> Upload Payment Screenshot</label>
-              <input type="file" id="payment-screenshot" accept="image/png,image/jpeg,image/jpg" class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 transition-all cursor-pointer">
-              <p class="text-xs text-gray-500">Upload a clear screenshot of your successful payment</p>
-            </div>
-
-            <div id="upload-preview" class="hidden">
-              <div class="relative rounded-xl overflow-hidden border border-gray-200">
-                <img id="preview-img" src="" class="w-full h-48 object-cover">
-                <button onclick="clearUpload()" class="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-lg flex items-center justify-center transition-colors"><i class="fas fa-times text-xs"></i></button>
-              </div>
-            </div>
-
-            <div class="flex gap-3 pt-2">
-              <button onclick="submitPaymentProof()" id="confirm-payment-btn" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-                <i class="fas fa-check-double"></i> Confirm Payment
-              </button>
-              <button onclick="cancelPayment()" class="action-btn px-5 py-3.5 bg-white text-gray-600 border-2 border-gray-200 rounded-xl text-sm font-bold hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center gap-2 transition-all">Cancel</button>
-            </div>
-          </div>
-
-          <!-- Accepted / Rejected Messages -->
-          <div id="quote-accepted-msg" class="hidden mt-6 p-5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
-            <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><i class="fas fa-check-circle text-emerald-600 text-xl"></i></div>
-            <div class="font-bold text-emerald-800 text-lg mb-1">Quotation Accepted</div>
-            <p class="text-sm text-emerald-600 leading-relaxed" id="accepted-msg-text">—</p>
-            <a id="wa-pay-btn" href="#" target="_blank" class="whatsapp-btn inline-flex items-center gap-2 mt-4 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-all"><i class="fa-brands fa-whatsapp text-lg"></i> Pay on WhatsApp</a>
-          </div>
-
-          <div id="quote-rejected-msg" class="hidden mt-6 p-5 bg-red-50 rounded-xl border border-red-200 text-center">
-            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3"><i class="fas fa-times-circle text-red-500 text-xl"></i></div>
-            <div class="font-bold text-red-800 text-lg mb-1">Quotation Rejected</div>
-            <p class="text-sm text-red-600 leading-relaxed">Please contact us if you have any concerns.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: Tracking -->
-    <div id="tab-tracking" class="tab-panel hidden animate-slide-up stagger-3">
-      <div class="glass-card p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
-              <i class="fas fa-truck-fast text-white text-sm"></i>
+      <!-- Sticky Status Header -->
+      <div class="glass-card p-5 animate-slide-up stagger-1">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-bold text-lg font-mono">
+              S2B
             </div>
             <div>
-              <h2 class="text-lg font-bold text-gray-900">Tracking Status</h2>
-              <div class="text-xs text-gray-500">Real-time shipment updates</div>
+              <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</div>
+              <div class="text-lg font-mono font-bold text-gray-900 tracking-tight" id="res-order-id">—</div>
             </div>
           </div>
-          <button id="refresh-tracking-btn" onclick="refreshTracking()" class="refresh-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50 border border-brand-200 hover:bg-brand-100" title="Refresh tracking status">
-            <i id="refresh-icon" class="fas fa-rotate-right text-xs"></i> Refresh
-          </button>
+          <div class="flex items-center gap-3">
+            <span id="res-order-status" class="status-badge px-4 py-1.5 rounded-full text-xs font-bold border">—</span>
+            <button onclick="shareOrder()" class="w-9 h-9 rounded-lg bg-gray-100 hover:bg-brand-50 text-gray-500 hover:text-brand-600 flex items-center justify-center transition-colors" title="Share tracking link">
+              <i class="fas fa-share-alt text-xs"></i>
+            </button>
+          </div>
         </div>
 
-        <div class="timeline-container">
-          <div class="timeline-line"></div>
-          <div id="tracking-timeline" class="space-y-0"></div>
+        <!-- Progress Stepper -->
+        <div class="mt-6 relative">
+          <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 rounded-full"></div>
+          <div class="absolute top-1/2 left-0 h-1 bg-brand-500 -translate-y-1/2 rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
+          <div class="relative grid grid-cols-6 gap-1" id="stepper-container">
+            <!-- Generated by JS -->
+          </div>
         </div>
-        <div id="last-updated" class="last-updated hidden"></div>
       </div>
-    </div>
 
-    <!-- TAB: Invoice -->
-    <div id="tab-invoice" class="tab-panel hidden animate-slide-up stagger-3">
-      <div id="invoice-panel" class="glass-card p-0 overflow-hidden">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-5">
+      <!-- Tab Navigation -->
+      <div class="flex items-center gap-1 p-1 bg-white/60 backdrop-blur rounded-xl border border-gray-200/80 overflow-x-auto no-scrollbar animate-slide-up stagger-2" id="tab-nav">
+        <button onclick="switchTab('overview')" class="tab-btn active flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap" data-tab="overview">
+          <i class="fas fa-house mr-1.5"></i> Overview
+        </button>
+        <button onclick="switchTab('quotation')" class="tab-btn flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="quotation">
+          <i class="fas fa-file-invoice-dollar mr-1.5"></i> Quotation
+        </button>
+        <button onclick="switchTab('tracking')" class="tab-btn flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="tracking">
+          <i class="fas fa-truck-fast mr-1.5"></i> Tracking
+        </button>
+        <button onclick="switchTab('invoice')" class="tab-btn hidden flex-1 min-w-[80px] py-2.5 px-4 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-tab="invoice">
+          <i class="fas fa-file-invoice mr-1.5"></i> Invoice
+        </button>
+      </div>
+
+      <!-- TAB: Overview -->
+      <div id="tab-overview" class="tab-panel animate-slide-up stagger-3">
+        <div class="glass-card p-6">
+          <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Order Details</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="info-grid-item">
+              <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+                <i class="fas fa-user text-[10px]"></i> Customer
+              </div>
+              <div class="font-semibold text-gray-900 text-sm truncate" id="res-name">—</div>
+            </div>
+            <div class="info-grid-item">
+              <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+                <i class="fas fa-phone text-[10px]"></i> WhatsApp
+              </div>
+              <div class="font-medium text-gray-700 text-sm" id="res-phone">—</div>
+            </div>
+            <div class="info-grid-item">
+              <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+                <i class="fas fa-location-dot text-[10px]"></i> City
+              </div>
+              <div class="font-medium text-gray-700 text-sm" id="res-city">—</div>
+            </div>
+            <div class="info-grid-item">
+              <div class="text-gray-400 text-xs font-medium mb-1 flex items-center gap-1.5">
+                <i class="fas fa-credit-card text-[10px]"></i> Payment Method
+              </div>
+              <div class="font-medium text-gray-700 text-sm" id="res-payment">—</div>
+            </div>
+          </div>
+
+          <!-- Payment Status Card -->
+          <div id="res-payment-status-wrap" class="hidden mt-4">
+            <div class="p-4 bg-gradient-to-r from-brand-50 to-white rounded-xl border border-brand-200">
+              <div class="text-brand-600 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i class="fas fa-wallet text-[10px]"></i> Payment Status
+              </div>
+              <div class="text-sm" id="res-payment-status">—</div>
+            </div>
+          </div>
+
+          <!-- Next Action Card -->
+          <div id="next-action-card" class="hidden mt-5 p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-lightbulb text-brand-600"></i>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-bold text-gray-900 mb-1">What's Next?</div>
+                <p class="text-sm text-gray-600 leading-relaxed" id="next-action-text">—</p>
+                <div id="next-action-btn-wrap" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Quotation -->
+      <div id="tab-quotation" class="tab-panel hidden animate-slide-up stagger-3">
+        <!-- No Quote State -->
+        <div id="no-quote-panel" class="hidden glass-card p-8 text-center py-14">
+          <div class="empty-state-icon w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5">
+            <i class="fas fa-clock text-gray-300 text-3xl"></i>
+          </div>
+          <h3 class="text-gray-900 font-bold text-xl mb-2">Quotation Pending</h3>
+          <p class="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">Your order is being reviewed. Check back soon for your personalized price quote.</p>
+          <div class="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-brand-50 rounded-full text-xs font-semibold text-brand-700">
+            <div class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></div>
+            Under Review
+          </div>
+        </div>
+
+        <!-- Quote Content -->
+        <div id="quote-content" class="hidden glass-card p-0 overflow-hidden quote-panel-accent">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                  <i class="fas fa-file-invoice-dollar text-white text-sm"></i>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-gray-900">Your Quotation</h2>
+                  <div class="text-xs text-gray-500">Review the breakdown below</div>
+                </div>
+              </div>
+              <span id="quote-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border">—</span>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <table class="w-full text-sm">
+                <tbody class="divide-y divide-gray-50">
+                  <tr class="price-row">
+                    <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-tag text-gray-400 text-xs"></i> Product Price</td>
+                    <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-product">₹ 0</td>
+                  </tr>
+                  <tr class="price-row">
+                    <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-plane text-gray-400 text-xs"></i> Shipping Fee</td>
+                    <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-shipping">₹ 0</td>
+                  </tr>
+                  <tr class="price-row">
+                    <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-concierge-bell text-gray-400 text-xs"></i> Service Fee</td>
+                    <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-service">₹ 0</td>
+                  </tr>
+                  <tr class="price-row">
+                    <td class="py-3 px-4 text-gray-600 flex items-center gap-2"><i class="fas fa-truck text-gray-400 text-xs"></i> Delivery Fee</td>
+                    <td class="py-3 px-4 text-right font-semibold text-gray-900" id="q-delivery">₹ 0</td>
+                  </tr>
+                  <tr class="bg-gradient-to-r from-brand-50 to-white">
+                    <td class="py-4 px-4 font-bold text-brand-900 flex items-center gap-2"><i class="fas fa-calculator text-brand-600 text-xs"></i> Total Amount</td>
+                    <td class="py-4 px-4 text-right font-extrabold text-brand-700 text-lg" id="q-total">₹ 0</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="q-note-wrap" class="hidden mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-lightbulb text-amber-500 mt-0.5"></i>
+                <div>
+                  <div class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Note from Admin</div>
+                  <p class="text-sm text-amber-700 leading-relaxed" id="q-note">—</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div id="quote-actions" class="hidden flex gap-3 mt-6">
+              <button onclick="respondQuote('accepted')" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                <i class="fas fa-check"></i> Accept & Pay
+              </button>
+              <button onclick="respondQuote('rejected')" class="action-btn flex-1 py-3.5 bg-white text-red-600 border-2 border-red-200 rounded-xl text-sm font-bold hover:bg-red-50 flex items-center justify-center gap-2">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+
+            <!-- Payment Form -->
+            <div id="payment-form" class="hidden mt-6 space-y-5 animate-fade-in">
+              <div class="p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center"><i class="fas fa-building-columns text-brand-600 text-sm"></i></div>
+                  <div class="text-sm font-bold text-gray-900">Bank Transfer Details</div>
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Bank</span><span class="font-semibold text-gray-900">Bank of Bhutan</span></div>
+                  <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Account</span><span class="font-semibold text-gray-900 font-mono">203149951</span></div>
+                  <div class="flex justify-between py-2 border-b border-gray-100"><span class="text-gray-500">Name</span><span class="font-semibold text-gray-900">SHOP2BHUTAN</span></div>
+                  <div class="flex justify-between py-2"><span class="text-gray-500">IFSC</span><span class="font-semibold text-gray-900 font-mono">[YOUR_CODE]</span></div>
+                </div>
+                <div class="mt-4 flex flex-col items-center">
+                  <div class="p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <img src="/image/qr_code.jpeg" alt="Scan to Pay" class="w-40 h-40 rounded-lg object-contain">
+                  </div>
+                  <div class="text-xs text-gray-500 mt-2 font-medium">Scan QR code with any UPI / banking app</div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <label class="text-sm font-semibold text-gray-800 flex items-center gap-2"><i class="fas fa-receipt text-brand-500 text-xs"></i> Upload Payment Screenshot</label>
+                <input type="file" id="payment-screenshot" accept="image/png,image/jpeg,image/jpg" class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 transition-all cursor-pointer">
+                <p class="text-xs text-gray-500">Upload a clear screenshot of your successful payment</p>
+              </div>
+
+              <div id="upload-preview" class="hidden">
+                <div class="relative rounded-xl overflow-hidden border border-gray-200">
+                  <img id="preview-img" src="" class="w-full h-48 object-cover">
+                  <button onclick="clearUpload()" class="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-lg flex items-center justify-center transition-colors"><i class="fas fa-times text-xs"></i></button>
+                </div>
+              </div>
+
+              <div class="flex gap-3 pt-2">
+                <button onclick="submitPaymentProof()" id="confirm-payment-btn" class="action-btn flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                  <i class="fas fa-check-double"></i> Confirm Payment
+                </button>
+                <button onclick="cancelPayment()" class="action-btn px-5 py-3.5 bg-white text-gray-600 border-2 border-gray-200 rounded-xl text-sm font-bold hover:bg-gray-50 hover:border-gray-300 flex items-center justify-center gap-2 transition-all">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Accepted / Rejected Messages -->
+            <div id="quote-accepted-msg" class="hidden mt-6 p-5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
+              <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><i class="fas fa-check-circle text-emerald-600 text-xl"></i></div>
+              <div class="font-bold text-emerald-800 text-lg mb-1">Quotation Accepted</div>
+              <p class="text-sm text-emerald-600 leading-relaxed" id="accepted-msg-text">—</p>
+              <a id="wa-pay-btn" href="#" target="_blank" class="whatsapp-btn inline-flex items-center gap-2 mt-4 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-all"><i class="fa-brands fa-whatsapp text-lg"></i> Pay on WhatsApp</a>
+            </div>
+
+            <div id="quote-rejected-msg" class="hidden mt-6 p-5 bg-red-50 rounded-xl border border-red-200 text-center">
+              <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3"><i class="fas fa-times-circle text-red-500 text-xl"></i></div>
+              <div class="font-bold text-red-800 text-lg mb-1">Quotation Rejected</div>
+              <p class="text-sm text-red-600 leading-relaxed">Please contact us if you have any concerns.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Tracking -->
+      <div id="tab-tracking" class="tab-panel hidden animate-slide-up stagger-3">
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <i class="fas fa-file-invoice text-white text-sm"></i>
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                <i class="fas fa-truck-fast text-white text-sm"></i>
               </div>
               <div>
-                <h2 class="text-lg font-bold text-gray-900">Tax Invoice</h2>
-                <div class="text-xs text-gray-500">Official receipt for your order</div>
+                <h2 class="text-lg font-bold text-gray-900">Tracking Status</h2>
+                <div class="text-xs text-gray-500">Real-time shipment updates</div>
               </div>
             </div>
-            <span id="invoice-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-700 border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Delivered</span>
+            <button id="refresh-tracking-btn" onclick="refreshTracking()" class="refresh-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50 border border-brand-200 hover:bg-brand-100" title="Refresh tracking status">
+              <i id="refresh-icon" class="fas fa-rotate-right text-xs"></i> Refresh
+            </button>
           </div>
 
-          <div id="invoice-loading" class="hidden text-center py-8">
-            <div class="loading-spinner mx-auto mb-3"></div>
-            <div class="text-sm text-gray-500">Generating invoice...</div>
+          <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div id="tracking-timeline" class="space-y-0"></div>
           </div>
+          <div id="last-updated" class="last-updated hidden"></div>
+        </div>
+      </div>
 
-          <div id="invoice-not-ready" class="hidden text-center py-8">
-            <div class="empty-state-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-invoice text-gray-300 text-2xl"></i></div>
-            <h3 class="text-gray-700 font-bold mb-1">Invoice Not Available</h3>
-            <p class="text-gray-500 text-sm">Your invoice will be generated once your order is delivered.</p>
-          </div>
-
-          <div id="invoice-content" class="hidden">
-            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" id="invoice-print-area">
-              <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6">
-                <div class="flex justify-between items-start">
-                  <div><div class="text-2xl font-extrabold tracking-tight">Shop2Bhutan</div><div class="text-gray-400 text-xs mt-1">TAX INVOICE</div></div>
-                  <div class="text-right"><div class="text-xs text-gray-400 uppercase tracking-wider">Invoice No</div><div class="font-mono font-bold text-lg" id="inv-number">—</div></div>
+      <!-- TAB: Invoice -->
+      <div id="tab-invoice" class="tab-panel hidden animate-slide-up stagger-3">
+        <div id="invoice-panel" class="glass-card p-0 overflow-hidden">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <i class="fas fa-file-invoice text-white text-sm"></i>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-gray-900">Tax Invoice</h2>
+                  <div class="text-xs text-gray-500">Official receipt for your order</div>
                 </div>
               </div>
-              <div class="p-6 space-y-6">
-                <div class="grid grid-cols-2 gap-6">
-                  <div>
-                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</div>
-                    <div class="text-sm font-semibold text-gray-900" id="inv-customer-name">—</div>
-                    <div class="text-sm text-gray-600 mt-0.5" id="inv-customer-phone">—</div>
-                    <div class="text-sm text-gray-600" id="inv-customer-city">—</div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Details</div>
-                    <div class="text-sm text-gray-900"><span class="text-gray-500">Order ID:</span> <span class="font-mono font-semibold" id="inv-order-id">—</span></div>
-                    <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Date:</span> <span id="inv-date">—</span></div>
-                    <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Payment:</span> <span id="inv-payment-method">—</span></div>
-                  </div>
-                </div>
-                <div class="border-t border-gray-100 pt-4">
-                  <table class="w-full text-sm">
-                    <thead><tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100"><th class="text-left py-2">Description</th><th class="text-right py-2">Amount</th></tr></thead>
-                    <tbody class="text-gray-700">
-                      <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-tag text-gray-300 text-xs"></i> Product Price</td><td class="py-3 text-right font-medium" id="inv-product">₹ 0</td></tr>
-                      <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-plane text-gray-300 text-xs"></i> Shipping Fee</td><td class="py-3 text-right font-medium" id="inv-shipping">₹ 0</td></tr>
-                      <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-concierge-bell text-gray-300 text-xs"></i> Service Fee</td><td class="py-3 text-right font-medium" id="inv-service">₹ 0</td></tr>
-                      <tr><td class="py-3 flex items-center gap-2"><i class="fas fa-truck text-gray-300 text-xs"></i> Delivery Fee</td><td class="py-3 text-right font-medium" id="inv-delivery">₹ 0</td></tr>
-                    </tbody>
-                    <tfoot><tr class="border-t-2 border-gray-200"><td class="py-4 text-sm font-bold text-gray-900">Total Amount</td><td class="py-4 text-right font-extrabold text-lg text-gray-900" id="inv-total">₹ 0</td></tr></tfoot>
-                  </table>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4 text-center">
-                  <div class="text-xs text-gray-500 mb-1">Thank you for shopping with us!</div>
-                  <div class="text-xs text-gray-400">For support: +975 77113302 | shop2bt.vercel.app</div>
-                </div>
-              </div>
+              <span id="invoice-status-badge" class="status-badge px-3 py-1.5 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-700 border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Delivered</span>
             </div>
-            <div class="flex gap-3 mt-5">
-              <button onclick="printInvoice()" class="action-btn flex-1 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"><i class="fas fa-print"></i> Print / Save as PDF</button>
-              <a id="inv-download-link" href="#" target="_blank" class="action-btn flex-1 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 text-center no-underline"><i class="fas fa-download"></i> Download PDF</a>
+
+            <div id="invoice-loading" class="hidden text-center py-8">
+              <div class="loading-spinner mx-auto mb-3"></div>
+              <div class="text-sm text-gray-500">Generating invoice...</div>
+            </div>
+
+            <div id="invoice-not-ready" class="hidden text-center py-8">
+              <div class="empty-state-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-invoice text-gray-300 text-2xl"></i></div>
+              <h3 class="text-gray-700 font-bold mb-1">Invoice Not Available</h3>
+              <p class="text-gray-500 text-sm">Your invoice will be generated once your order is delivered.</p>
+            </div>
+
+            <div id="invoice-content" class="hidden">
+              <div class="bg-white rounded-xl border border-gray-200 overflow-hidden" id="invoice-print-area">
+                <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6">
+                  <div class="flex justify-between items-start">
+                    <div><div class="text-2xl font-extrabold tracking-tight">Shop2Bhutan</div><div class="text-gray-400 text-xs mt-1">TAX INVOICE</div></div>
+                    <div class="text-right"><div class="text-xs text-gray-400 uppercase tracking-wider">Invoice No</div><div class="font-mono font-bold text-lg" id="inv-number">—</div></div>
+                  </div>
+                </div>
+                <div class="p-6 space-y-6">
+                  <div class="grid grid-cols-2 gap-6">
+                    <div>
+                      <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</div>
+                      <div class="text-sm font-semibold text-gray-900" id="inv-customer-name">—</div>
+                      <div class="text-sm text-gray-600 mt-0.5" id="inv-customer-phone">—</div>
+                      <div class="text-sm text-gray-600" id="inv-customer-city">—</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Details</div>
+                      <div class="text-sm text-gray-900"><span class="text-gray-500">Order ID:</span> <span class="font-mono font-semibold" id="inv-order-id">—</span></div>
+                      <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Date:</span> <span id="inv-date">—</span></div>
+                      <div class="text-sm text-gray-900 mt-0.5"><span class="text-gray-500">Payment:</span> <span id="inv-payment-method">—</span></div>
+                    </div>
+                  </div>
+                  <div class="border-t border-gray-100 pt-4">
+                    <table class="w-full text-sm">
+                      <thead><tr class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100"><th class="text-left py-2">Description</th><th class="text-right py-2">Amount</th></tr></thead>
+                      <tbody class="text-gray-700">
+                        <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-tag text-gray-300 text-xs"></i> Product Price</td><td class="py-3 text-right font-medium" id="inv-product">₹ 0</td></tr>
+                        <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-plane text-gray-300 text-xs"></i> Shipping Fee</td><td class="py-3 text-right font-medium" id="inv-shipping">₹ 0</td></tr>
+                        <tr class="border-b border-gray-50"><td class="py-3 flex items-center gap-2"><i class="fas fa-concierge-bell text-gray-300 text-xs"></i> Service Fee</td><td class="py-3 text-right font-medium" id="inv-service">₹ 0</td></tr>
+                        <tr><td class="py-3 flex items-center gap-2"><i class="fas fa-truck text-gray-300 text-xs"></i> Delivery Fee</td><td class="py-3 text-right font-medium" id="inv-delivery">₹ 0</td></tr>
+                      </tbody>
+                      <tfoot><tr class="border-t-2 border-gray-200"><td class="py-4 text-sm font-bold text-gray-900">Total Amount</td><td class="py-4 text-right font-extrabold text-lg text-gray-900" id="inv-total">₹ 0</td></tr></tfoot>
+                    </table>
+                  </div>
+                  <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <div class="text-xs text-gray-500 mb-1">Thank you for shopping with us!</div>
+                    <div class="text-xs text-gray-400">For support: +975 77113302 | shop2bt.vercel.app</div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-3 mt-5">
+                <button onclick="printInvoice()" class="action-btn flex-1 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2"><i class="fas fa-print"></i> Print / Save as PDF</button>
+                <a id="inv-download-link" href="#" target="_blank" class="action-btn flex-1 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 text-center no-underline"><i class="fas fa-download"></i> Download PDF</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </div>
-</main>
+    </div>
+  </main>
 
   <!-- Toast -->
   <div id="toast" class="toast-modern fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-medium opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3">
@@ -514,46 +503,40 @@
     <span id="toast-text"></span>
   </div>
 
-    <script type="module">
+  <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(
       "https://deecrnfbvgbzyybqhywy.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
     );
 
-function pad2(n) { return String(n).padStart(2, '0'); }
+    function pad2(n) { return String(n).padStart(2, '0'); }
 
-function formatBtnDate(isoString) {
-  if (!isoString) return '';
-  // Normalize Supabase timestamp: replace space separator with T,
-  // and append Z if no timezone indicator present, so it's always parsed as UTC.
-  let s = isoString.trim().replace(' ', 'T');
-  if (!/[Zz]|[+-]\d{2}:\d{2}|[+-]\d{4}/.test(s)) s += 'Z';
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return '';
-  // Shift UTC → BTT (UTC+6)
-  const bttMs = d.getTime() + (6 * 60 * 60 * 1000);
-  const b = new Date(bttMs);
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const day    = pad2(b.getUTCDate());
-  const month  = months[b.getUTCMonth()];
-  const year   = b.getUTCFullYear();
-  let hour     = b.getUTCHours();
-  const minute = pad2(b.getUTCMinutes());
-  const ampm   = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12;
-  hour = hour ? hour : 12;
-  return `${day} ${month} ${year}, ${pad2(hour)}:${minute} ${ampm}`;
-}
+    function formatBtnDate(isoString) {
+      if (!isoString) return '';
+      let s = isoString.trim().replace(' ', 'T');
+      if (!/[Zz]|[+-]\d{2}:\d{2}|[+-]\d{4}/.test(s)) s += 'Z';
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return '';
+      const bttMs = d.getTime() + (6 * 60 * 60 * 1000);
+      const b = new Date(bttMs);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const day = pad2(b.getUTCDate());
+      const month = months[b.getUTCMonth()];
+      const year = b.getUTCFullYear();
+      let hour = b.getUTCHours();
+      const minute = pad2(b.getUTCMinutes());
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12;
+      hour = hour ? hour : 12;
+      return `${day} ${month} ${year}, ${pad2(hour)}:${minute} ${ampm}`;
+    }
 
     let currentOrder = null;
     let currentQuote = null;
     let currentPaymentInfo = null;
     let realtimeChannel = null;
 
-    /* ==========================================================
-       STATUS CONFIG
-       ========================================================== */
     const statusConfig = {
       pending:    { label: 'Pending',    color: 'bg-amber-50 text-amber-700 border-amber-200' },
       quoted:     { label: 'Quoted',     color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
@@ -567,29 +550,27 @@ function formatBtnDate(isoString) {
       cancelled:  { label: 'Cancelled',  color: 'bg-red-50 text-red-700 border-red-200' }
     };
 
-    /* ========== REALTIME ========== */
-function subscribeToOrder(orderId) {
-  if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
-    realtimeChannel = null;
-  }
-  
-  realtimeChannel = supabase
-    .channel(`public:order-${orderId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `order_id=eq.${orderId}` }, () => {
-      showToast('Order updated', 'info');
-      trackOrder();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'quotations', filter: `order_id=eq.${orderId}` }, () => {
-      showToast('Quotation updated', 'info');
-      trackOrder();
-    })
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `order_id=eq.${orderId}` }, () => {
-      showToast('New tracking update!', 'success');
-      trackOrder();
-    })
-    .subscribe();
-}
+    function subscribeToOrder(orderId) {
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+      realtimeChannel = supabase
+        .channel(`public:order-${orderId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `order_id=eq.${orderId}` }, () => {
+          showToast('Order updated', 'info');
+          trackOrder();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'quotations', filter: `order_id=eq.${orderId}` }, () => {
+          showToast('Quotation updated', 'info');
+          trackOrder();
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `order_id=eq.${orderId}` }, () => {
+          showToast('New tracking update!', 'success');
+          trackOrder();
+        })
+        .subscribe();
+    }
 
     const trackingStatusLabels = {
       pending: 'Order Received',
@@ -618,438 +599,542 @@ function subscribeToOrder(orderId) {
     };
 
     /* ==========================================================
-   STEP CONFIG
-   ========================================================== */
-const stepperStatuses = [
-  { key: 'pending', label: 'Placed' },
-  { key: 'quoted', label: 'Quoted' },
-  { key: 'confirmed', label: 'Confirmed' },
-  { key: 'ordered', label: 'Ordered' },
-  { key: 'reached_jaigaon', label: 'Jaigaon' },
-  { key: 'reached_phuntsholing', label: 'Phuntsholing' },
-  { key: 'out_for_delivery', label: 'Out for Delivery' },
-  { key: 'shipped', label: 'Shipped' },
-  { key: 'delivered', label: 'Delivered' }
-];
+       STEP CONFIG
+       ========================================================== */
+    function renderStepper(status) {
+      const container = document.getElementById('stepper-container');
+      const progressBar = document.getElementById('progress-bar');
+      if (!container) return;
 
-function renderStepper(status) {
-  const container = document.getElementById('stepper-container');
-  const progressBar = document.getElementById('progress-bar');
-  if (!container) return;
+      const milestones = [
+        { key: 'pending', label: 'Order Placed' },
+        { key: 'quoted', label: 'Quoted' },
+        { key: 'confirmed', label: 'Confirmed' },
+        { key: 'ordered', label: 'Processing' },
+        { key: 'shipped', label: 'Shipped' },
+        { key: 'delivered', label: 'Delivered' }
+      ];
 
-  const statusKeys = stepperStatuses.map(s => s.key);
-  const currentIndex = statusKeys.indexOf(status);
+      let milestoneIndex = -1;
+      if (['pending'].includes(status)) milestoneIndex = 0;
+      else if (['quoted'].includes(status)) milestoneIndex = 1;
+      else if (['confirmed'].includes(status)) milestoneIndex = 2;
+      else if (['ordered', 'reached_jaigaon', 'reached_phuntsholing'].includes(status)) milestoneIndex = 3;
+      else if (['out_for_delivery', 'shipped'].includes(status)) milestoneIndex = 4;
+      else if (['delivered'].includes(status)) milestoneIndex = 5;
+      else if (['cancelled'].includes(status)) milestoneIndex = -1;
 
-  // Simplify: show max 5 steps on desktop, but for this flow we map key milestones
-  const milestones = [
-    { key: 'pending', label: 'Order Placed' },
-    { key: 'quoted', label: 'Quoted' },
-    { key: 'confirmed', label: 'Confirmed' },
-    { key: 'ordered', label: 'Processing' },
-    { key: 'shipped', label: 'Shipped' },
-    { key: 'delivered', label: 'Delivered' }
-  ];
+      const percent = milestoneIndex >= 0 ? (milestoneIndex / (milestones.length - 1)) * 100 : 0;
+      progressBar.style.width = `${percent}%`;
+      progressBar.className = `absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full transition-all duration-500 ${status === 'cancelled' ? 'bg-red-400' : 'bg-brand-500'}`;
 
-  // Map actual status to milestone index
-  let milestoneIndex = -1;
-  if (['pending'].includes(status)) milestoneIndex = 0;
-  else if (['quoted'].includes(status)) milestoneIndex = 1;
-  else if (['confirmed'].includes(status)) milestoneIndex = 2;
-  else if (['ordered', 'reached_jaigaon', 'reached_phuntsholing'].includes(status)) milestoneIndex = 3;
-  else if (['out_for_delivery', 'shipped'].includes(status)) milestoneIndex = 4;
-  else if (['delivered'].includes(status)) milestoneIndex = 5;
-  else if (['cancelled'].includes(status)) milestoneIndex = -1;
+      container.innerHTML = milestones.map((m, i) => {
+        let state = 'upcoming';
+        if (milestoneIndex >= i) state = 'completed';
+        if (milestoneIndex === i) state = 'active';
+        if (status === 'cancelled') state = 'upcoming';
 
-  const percent = milestoneIndex >= 0 ? (milestoneIndex / (milestones.length - 1)) * 100 : 0;
-  progressBar.style.width = `${percent}%`;
-  progressBar.className = `absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full transition-all duration-500 ${status === 'cancelled' ? 'bg-red-400' : 'bg-brand-500'}`;
+        const dotContent = state === 'completed' ? '<i class="fas fa-check text-[10px]"></i>' : (i + 1);
+        const activeClass = state === 'active' ? 'active' : (state === 'completed' ? 'completed' : '');
 
-  container.innerHTML = milestones.map((m, i) => {
-    let state = 'upcoming';
-    if (milestoneIndex >= i) state = 'completed';
-    if (milestoneIndex === i) state = 'active';
-    if (status === 'cancelled') state = 'upcoming';
-
-    const dotContent = state === 'completed' ? '<i class="fas fa-check text-[10px]"></i>' : (i + 1);
-    const activeClass = state === 'active' ? 'active' : (state === 'completed' ? 'completed' : '');
-
-    return `
-      <div class="stepper-item ${activeClass}">
-        <div class="stepper-dot">${dotContent}</div>
-        <div class="stepper-label">${m.label}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-/* ==========================================================
-   TAB SWITCHING
-   ========================================================== */
-window.switchTab = function(tabName) {
-  // Update buttons
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    if (btn.dataset.tab === tabName) {
-      btn.classList.add('active');
-      btn.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
-    } else {
-      btn.classList.remove('active');
-      btn.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
-    }
-  });
-
-  // Update panels
-  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
-  const target = document.getElementById(`tab-${tabName}`);
-  if (target) {
-    target.classList.remove('hidden');
-    // Re-trigger animation
-    target.classList.remove('animate-slide-up');
-    void target.offsetWidth;
-    target.classList.add('animate-slide-up');
-  }
-};
-
-/* ==========================================================
-   "WHAT'S NEXT" LOGIC
-   ========================================================== */
-function updateNextAction(order, quote, paymentInfo) {
-  const card = document.getElementById('next-action-card');
-  const text = document.getElementById('next-action-text');
-  const btnWrap = document.getElementById('next-action-btn-wrap');
-  if (!card || !text) return;
-
-  const status = order.order_status;
-  const qStatus = quote?.status;
-  const isCod = paymentInfo?.payment_method === 'Cash on Delivery';
-
-  let message = '';
-  let btnHtml = '';
-
-  if (status === 'pending') {
-    message = 'Your order has been received. Our team is reviewing your request and preparing a personalized quotation.';
-  } else if (status === 'quoted' && qStatus === 'pending') {
-    message = 'Your quotation is ready! Please review the pricing breakdown and accept to proceed with payment.';
-    btnHtml = `<button onclick="switchTab('quotation')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">View Quotation →</button>`;
-  } else if (status === 'quoted' && qStatus === 'accepted' && !paymentInfo?.payment_proof_url) {
-    if (isCod) {
-      message = 'Your Cash on Delivery order is confirmed. Sit back while we process your shipment.';
-    } else {
-      message = 'Please upload your payment proof or pay via WhatsApp to confirm your order.';
-      btnHtml = `<button onclick="switchTab('quotation')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">Upload Proof →</button>`;
-    }
-  } else if (status === 'quoted' && qStatus === 'accepted' && paymentInfo?.payment_proof_url && paymentInfo?.status === 'pending') {
-    message = 'Payment proof uploaded successfully. We are verifying your payment — you will be notified shortly.';
-  } else if (status === 'confirmed') {
-    message = 'Payment verified! We have placed your order with the seller and will update tracking once shipped.';
-  } else if (['ordered', 'reached_jaigaon', 'reached_phuntsholing'].includes(status)) {
-    message = 'Your package is on its way to Bhutan. Tracking updates will appear in the Tracking tab.';
-    btnHtml = `<button onclick="switchTab('tracking')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">View Tracking →</button>`;
-  } else if (status === 'out_for_delivery') {
-    message = 'Exciting! Your order is out for delivery today. Please keep your phone available.';
-  } else if (status === 'delivered') {
-    message = 'Your order has been delivered. You can now view and download your invoice.';
-    btnHtml = `<button onclick="switchTab('invoice')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors">View Invoice →</button>`;
-  } else if (status === 'cancelled') {
-    message = 'This order has been cancelled. Contact support if you believe this is an error.';
-  }
-
-  text.innerHTML = message;
-  btnWrap.innerHTML = btnHtml;
-  card.classList.remove('hidden');
-}
-
-/* ==========================================================
-   TRACK ORDER (REFACTORED)
-   ========================================================== */
-async function trackOrder() {
-  const input = document.getElementById('track-input');
-  const orderTextId = input.value.trim().toUpperCase();
-  const errorEl = document.getElementById('track-error');
-  const results = document.getElementById('track-results');
-  const trackBtn = document.getElementById('track-btn');
-  const trackBtnText = document.getElementById('track-btn-text');
-  const trackSpinner = document.getElementById('track-spinner');
-
-  if (!orderTextId) {
-    errorEl.classList.remove('hidden');
-    errorEl.querySelector('.text-sm.font-semibold').textContent = 'Order ID required';
-    errorEl.querySelector('.text-xs').textContent = 'Please enter your Order ID to track your shipment.';
-    errorEl.classList.add('error-shake');
-    setTimeout(() => errorEl.classList.remove('error-shake'), 500);
-    input.focus();
-    return;
-  }
-
-  trackBtn.disabled = true;
-  trackBtnText.classList.add('hidden');
-  trackSpinner.classList.remove('hidden');
-  errorEl.classList.add('hidden');
-  results.classList.add('hidden');
-
-  try {
-    // --- Fetch Order ---
-    const { data: orders, error: orderErr } = await supabase
-      .from('orders')
-      .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, invoice_url, invoice_number, users(full_name, whatsapp, email)')
-      .eq('order_id', orderTextId)
-      .limit(1);
-
-    if (orderErr) throw orderErr;
-    if (!orders || orders.length === 0) {
-      errorEl.classList.remove('hidden');
-      errorEl.classList.add('error-shake');
-      setTimeout(() => errorEl.classList.remove('error-shake'), 500);
-      return;
-    }
-
-    const order = orders[0];
-    currentOrder = order;
-    const user = order.users || {};
-
-    // --- Fetch Related Data ---
-    const [{ data: quotes }, { data: tracking }] = await Promise.all([
-      supabase.from('quotations').select('*').eq('order_id', order.id).maybeSingle(),
-      supabase.from('tracking_events').select('*').eq('order_id', order.id).order('created_at', { ascending: true })
-    ]);
-    currentQuote = quotes;
-
-    let paymentInfo = null;
-    try {
-      const pmtRes = await supabase
-        .from('payments')
-        .select('status, advance_paid, due_amount, total_amount, payment_method, delivery_fee, product_price, payment_proof_url')
-        .eq('order_id', order.order_id)
-        .maybeSingle();
-      if (pmtRes.data) paymentInfo = pmtRes.data;
-    } catch (e) { console.log('Payment lookup skipped:', e.message); }
-    currentPaymentInfo = paymentInfo;
-
-    // --- Populate Header ---
-    document.getElementById('res-order-id').textContent = order.order_id;
-    document.getElementById('res-name').textContent = user.full_name || '—';
-    document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
-    document.getElementById('res-city').textContent = order.delivery_city || '—';
-    document.getElementById('res-payment').textContent = paymentInfo?.payment_method || '—';
-
-    // --- Status Badge ---
-    const cfg = statusConfig[order.order_status] || statusConfig.pending;
-    const statusEl = document.getElementById('res-order-status');
-    statusEl.textContent = cfg.label;
-    statusEl.className = `status-badge px-4 py-1.5 rounded-full text-xs font-bold border ${cfg.color}`;
-
-    // --- Stepper ---
-    renderStepper(order.order_status);
-
-    // --- Payment Status (Overview Tab) ---
-    const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
-    const paymentStatusEl = document.getElementById('res-payment-status');
-    paymentStatusWrap.classList.add('hidden');
-    paymentStatusEl.innerHTML = '';
-
-    if (paymentInfo) {
-      paymentStatusWrap.classList.remove('hidden');
-      const isCod = paymentInfo.payment_method === 'Cash on Delivery';
-      const isFullPayment = paymentInfo.payment_method === 'Full Payment';
-      const isPartial = paymentInfo.status === 'partial';
-      const isPending = paymentInfo.status === 'pending';
-      const isVerified = paymentInfo.status === 'verified';
-      const hasQuotation = currentQuote !== null;
-      const isQuotePending = hasQuotation && currentQuote.status === 'pending';
-      const isQuoteAccepted = hasQuotation && currentQuote.status === 'accepted';
-
-      let statusHtml = '';
-      if (isVerified) {
-        statusHtml = `<span class="text-emerald-600 font-semibold flex items-center gap-1.5"><i class="fas fa-check-circle text-emerald-500"></i> Payment Verified</span><div class="text-xs text-gray-500 mt-1">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
-      } else if (isPartial) {
-        statusHtml = `<span class="text-blue-600 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-blue-500"></i> Partial Payment</span><div class="text-xs text-gray-500 mt-1">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
-      } else if (isPending && paymentInfo.payment_proof_url) {
-        statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hourglass-half text-brand-500"></i> Proof Uploaded</span><div class="text-xs text-gray-500 mt-1">Awaiting admin verification.</div>`;
-      } else if (!hasQuotation) {
-        statusHtml = `<span class="text-gray-500 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-gray-400"></i> Awaiting Quotation</span><div class="text-xs text-gray-500 mt-1">Your order is being reviewed.</div>`;
-      } else if (isQuotePending) {
-        statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-file-invoice-dollar text-brand-500"></i> Quotation Sent</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
-      } else if (isQuoteAccepted && isCod) {
-        statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hand-holding-dollar text-amber-500"></i> Cash on Delivery</span><div class="text-xs text-gray-500 mt-1">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} on delivery</div>`;
-      } else if (isQuoteAccepted && isFullPayment) {
-        statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Full Payment</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
-      } else if (isQuoteAccepted) {
-        const advance = Math.round((paymentInfo.total_amount || 0) * 0.5);
-        statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Advance</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${advance.toLocaleString('en-IN')}</div>`;
-      } else {
-        statusHtml = `<span class="text-red-600 font-semibold flex items-center gap-1.5"><i class="fas fa-circle-xmark text-red-500"></i> Quotation Rejected</span><div class="text-xs text-gray-500 mt-1">Contact support for assistance</div>`;
-      }
-      paymentStatusEl.innerHTML = statusHtml;
-    }
-
-    // --- What's Next Card ---
-    updateNextAction(order, quotes, paymentInfo);
-
-    // --- Quotation Tab ---
-    const quoteContent = document.getElementById('quote-content');
-    const noQuotePanel = document.getElementById('no-quote-panel');
-    if (quotes) {
-      quoteContent.classList.remove('hidden');
-      noQuotePanel.classList.add('hidden');
-      document.getElementById('q-product').textContent = '₹ ' + Math.round(quotes.product_price || 0).toLocaleString('en-IN');
-      document.getElementById('q-shipping').textContent = '₹ ' + Math.round(quotes.shipping_fee || 0).toLocaleString('en-IN');
-      document.getElementById('q-service').textContent = '₹ ' + Math.round(quotes.service_fee || 0).toLocaleString('en-IN');
-      document.getElementById('q-delivery').textContent = '₹ ' + Math.round(quotes.delivery_fee || 0).toLocaleString('en-IN');
-      document.getElementById('q-total').textContent = '₹ ' + Math.round(quotes.total_amount || 0).toLocaleString('en-IN');
-
-      if (quotes.note) {
-        document.getElementById('q-note-wrap').classList.remove('hidden');
-        document.getElementById('q-note').textContent = quotes.note;
-      } else {
-        document.getElementById('q-note-wrap').classList.add('hidden');
-      }
-
-      const qStatus = quotes.status || 'pending';
-      const qBadge = document.getElementById('quote-status-badge');
-      const qColors = { pending: 'bg-amber-50 text-amber-700 border-amber-200', accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200', rejected: 'bg-red-50 text-red-700 border-red-200' };
-      qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
-      qBadge.className = `status-badge px-3 py-1.5 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
-
-      // Toggle action states
-      document.getElementById('quote-actions').classList.toggle('hidden', qStatus !== 'pending');
-      document.getElementById('payment-form').classList.add('hidden');
-      document.getElementById('quote-accepted-msg').classList.toggle('hidden', qStatus !== 'accepted');
-      document.getElementById('quote-rejected-msg').classList.toggle('hidden', qStatus !== 'rejected');
-
-      if (qStatus === 'accepted') {
-        const total = Math.round(quotes.total_amount || 0);
-        const isFullPaymentMethod = paymentInfo?.payment_method === 'Full Payment';
-        const hasProof = paymentInfo?.payment_proof_url;
-        const msgText = document.getElementById('accepted-msg-text');
-        const waBtn = document.getElementById('wa-pay-btn');
-
-        if (hasProof) {
-          msgText.innerHTML = `Your payment proof has been uploaded and is <strong>awaiting admin verification</strong>.`;
-          waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Follow up';
-          waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(`Hello, I uploaded payment proof for Order ${order.order_id}. Please verify.`);
-        } else {
-          if (isFullPaymentMethod) {
-            msgText.innerHTML = `Please pay <strong>₹${total.toLocaleString('en-IN')}</strong> (full amount) via WhatsApp.`;
-            waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay Full Amount';
-          } else if (paymentInfo?.payment_method === 'Cash on Delivery') {
-            msgText.innerHTML = `Your Cash on Delivery order is confirmed. Total: <strong>₹${total.toLocaleString('en-IN')}</strong>`;
-            waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Confirm on WhatsApp';
-          } else {
-            const advance = Math.round(total * 0.5);
-            const due = total - advance;
-            msgText.innerHTML = `Please pay <strong>₹${advance.toLocaleString('en-IN')}</strong> (50% advance) via WhatsApp.<br><span class="text-xs text-emerald-600 mt-1 inline-block">Balance due: ₹${due.toLocaleString('en-IN')}</span>`;
-            waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay 50% Advance';
-          }
-
-          let msg;
-          if (isFullPaymentMethod) msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id}.\nTotal: ₹${total}\nPayment: Full Payment\n\nShare payment details.`;
-          else if (paymentInfo?.payment_method === 'Cash on Delivery') msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id} (COD).\nTotal: ₹${total}\n\nPlease confirm.`;
-          else {
-            const advance = Math.round(total * 0.5);
-            const due = total - advance;
-            msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance (50%): ₹${advance}\nBalance: ₹${due}\n\nShare payment details.`;
-          }
-          waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
-        }
-      }
-    } else {
-      quoteContent.classList.add('hidden');
-      noQuotePanel.classList.remove('hidden');
-    }
-
-    // --- Tracking Tab ---
-    const hasTrackingEvents = tracking && tracking.length > 0;
-    const shouldShowTracking = hasTrackingEvents && !['pending', 'quoted', 'cancelled'].includes(order.order_status);
-    const timeline = document.getElementById('tracking-timeline');
-    if (shouldShowTracking) {
-      timeline.innerHTML = tracking.map((t, i) => {
-        const isLast = i === tracking.length - 1;
-        const statusClass = isLast ? 'active' : 'completed';
-        const time = formatBtnDate(t.created_at);
-        const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
         return `
-          <div class="timeline-item ${statusClass}">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-              <div class="flex items-center gap-2.5 mb-1">
-                <i class="fas ${iconClass} text-xs ${isLast ? 'text-brand-600' : 'text-emerald-500'}"></i>
-                <div class="font-bold text-gray-900 text-sm">${label}</div>
-              </div>
-              ${t.location ? `<div class="text-xs text-gray-500 mt-1 flex items-center gap-1.5"><i class="fas fa-location-dot text-[10px] text-gray-400"></i>${t.location}</div>` : ''}
-              ${t.note ? `<div class="text-xs text-gray-600 mt-1.5 leading-relaxed">${t.note}</div>` : ''}
-              <div class="text-xs text-gray-400 mt-2 font-medium">${time}</div>
-            </div>
-          </div>`;
+          <div class="stepper-item ${activeClass}">
+            <div class="stepper-dot">${dotContent}</div>
+            <div class="stepper-label">${m.label}</div>
+          </div>
+        `;
       }).join('');
     }
 
-    // --- Invoice Tab Visibility ---
-    const invoiceTabBtn = document.querySelector('[data-tab="invoice"]');
-    if (order.order_status === 'delivered') {
-      invoiceTabBtn.classList.remove('hidden');
-      await handleInvoice(order, paymentInfo, quotes);
-    } else {
-      invoiceTabBtn.classList.add('hidden');
-      // If currently on invoice tab, switch to overview
-      if (document.querySelector('[data-tab="invoice"]').classList.contains('active')) {
-        switchTab('overview');
+    /* ==========================================================
+       TAB SWITCHING
+       ========================================================== */
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+          btn.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
+        } else {
+          btn.classList.remove('active');
+          btn.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:bg-gray-50');
+        }
+      });
+
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) {
+        target.classList.remove('hidden');
+        target.classList.remove('animate-slide-up');
+        void target.offsetWidth;
+        target.classList.add('animate-slide-up');
+      }
+    };
+
+    /* ==========================================================
+       "WHAT'S NEXT" LOGIC
+       ========================================================== */
+    function updateNextAction(order, quote, paymentInfo) {
+      const card = document.getElementById('next-action-card');
+      const text = document.getElementById('next-action-text');
+      const btnWrap = document.getElementById('next-action-btn-wrap');
+      if (!card || !text) return;
+
+      const status = order.order_status;
+      const qStatus = quote?.status;
+      const isCod = paymentInfo?.payment_method === 'Cash on Delivery';
+
+      let message = '';
+      let btnHtml = '';
+
+      if (status === 'pending') {
+        message = 'Your order has been received. Our team is reviewing your request and preparing a personalized quotation.';
+      } else if (status === 'quoted' && qStatus === 'pending') {
+        message = 'Your quotation is ready! Please review the pricing breakdown and accept to proceed with payment.';
+        btnHtml = `<button onclick="switchTab('quotation')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">View Quotation →</button>`;
+      } else if (status === 'quoted' && qStatus === 'accepted' && !paymentInfo?.payment_proof_url) {
+        if (isCod) {
+          message = 'Your Cash on Delivery order is confirmed. Sit back while we process your shipment.';
+        } else {
+          message = 'Please upload your payment proof or pay via WhatsApp to confirm your order.';
+          btnHtml = `<button onclick="switchTab('quotation')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">Upload Proof →</button>`;
+        }
+      } else if (status === 'quoted' && qStatus === 'accepted' && paymentInfo?.payment_proof_url && paymentInfo?.status === 'pending') {
+        message = 'Payment proof uploaded successfully. We are verifying your payment — you will be notified shortly.';
+      } else if (status === 'confirmed') {
+        message = 'Payment verified! We have placed your order with the seller and will update tracking once shipped.';
+      } else if (['ordered', 'reached_jaigaon', 'reached_phuntsholing'].includes(status)) {
+        message = 'Your package is on its way to Bhutan. Tracking updates will appear in the Tracking tab.';
+        btnHtml = `<button onclick="switchTab('tracking')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition-colors">View Tracking →</button>`;
+      } else if (status === 'out_for_delivery') {
+        message = 'Exciting! Your order is out for delivery today. Please keep your phone available.';
+      } else if (status === 'delivered') {
+        message = 'Your order has been delivered. You can now view and download your invoice.';
+        btnHtml = `<button onclick="switchTab('invoice')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors">View Invoice →</button>`;
+      } else if (status === 'cancelled') {
+        message = 'This order has been cancelled. Contact support if you believe this is an error.';
+      }
+
+      text.innerHTML = message;
+      btnWrap.innerHTML = btnHtml;
+      card.classList.remove('hidden');
+    }
+
+    /* ==========================================================
+       INVOICE FUNCTIONS
+       ========================================================== */
+    async function handleInvoice(order, paymentInfo, quotes) {
+      const panel = document.getElementById('invoice-panel');
+      const loading = document.getElementById('invoice-loading');
+      const notReady = document.getElementById('invoice-not-ready');
+      const content = document.getElementById('invoice-content');
+
+      if (!panel || !loading || !notReady || !content) return;
+
+      if (order.order_status !== 'delivered') {
+        panel.classList.add('hidden');
+        return;
+      }
+
+      panel.classList.remove('hidden');
+
+      if (order.invoice_url && order.invoice_number) {
+        notReady.classList.add('hidden');
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        fillInvoice(order, paymentInfo, quotes);
+        const dlLink = document.getElementById('inv-download-link');
+        if (dlLink) dlLink.href = order.invoice_url;
+        return;
+      }
+
+      notReady.classList.add('hidden');
+      loading.classList.remove('hidden');
+      content.classList.add('hidden');
+
+      try {
+        await loadHtml2Pdf();
+
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+        const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const invoiceNumber = `INV-${dateStr}-${randomStr}`;
+
+        fillInvoice(order, paymentInfo, quotes, invoiceNumber);
+
+        const element = document.getElementById('invoice-print-area');
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: `Shop2Bhutan-Invoice-${invoiceNumber}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+        const fileName = `invoices/invoice-${order.order_id}-${Date.now()}.pdf`;
+        const { error: upErr } = await supabase.storage
+          .from('payment-proofs')
+          .upload(fileName, pdfBlob, { contentType: 'application/pdf' });
+
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('payment-proofs')
+          .getPublicUrl(fileName);
+
+        await supabase.from('orders').update({
+          invoice_url: publicUrl,
+          invoice_number: invoiceNumber,
+          updated_at: now.toISOString()
+        }).eq('id', order.id);
+
+        order.invoice_url = publicUrl;
+        order.invoice_number = invoiceNumber;
+
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        const dlLink = document.getElementById('inv-download-link');
+        if (dlLink) dlLink.href = publicUrl;
+
+        showToast('Invoice generated!', 'success');
+
+      } catch (err) {
+        console.error('Invoice error:', err);
+        loading.classList.add('hidden');
+        notReady.classList.remove('hidden');
+        notReady.innerHTML = `
+          <div class="empty-state-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-exclamation-triangle text-amber-300 text-2xl"></i>
+          </div>
+          <h3 class="text-gray-700 font-bold mb-1">Could Not Generate Invoice</h3>
+          <p class="text-gray-500 text-sm">Please refresh the page or contact support.</p>
+        `;
       }
     }
 
-    // --- Notifications & Finalize ---
-    if (order.order_status === 'out_for_delivery') sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} is out for delivery!`);
-    if (order.order_status === 'delivered') {
-      sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} has been delivered! 🎉`);
-      setTimeout(() => confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#10b981', '#f59e0b'] }), 400);
+    function fillInvoice(order, paymentInfo, quotes, invNumber) {
+      const user = order.users || {};
+      const q = quotes || {};
+      const p = paymentInfo || {};
+      const now = new Date();
+
+      document.getElementById('inv-number').textContent = invNumber || order.invoice_number || '—';
+      document.getElementById('inv-customer-name').textContent = user.full_name || '—';
+      document.getElementById('inv-customer-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+      document.getElementById('inv-customer-city').textContent = order.delivery_city || '—';
+      document.getElementById('inv-order-id').textContent = order.order_id;
+      document.getElementById('inv-date').textContent = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      document.getElementById('inv-payment-method').textContent = p.payment_method || '—';
+      document.getElementById('inv-product').textContent = '₹ ' + Math.round(q.product_price || 0).toLocaleString('en-IN');
+      document.getElementById('inv-shipping').textContent = '₹ ' + Math.round(q.shipping_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-service').textContent = '₹ ' + Math.round(q.service_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-delivery').textContent = '₹ ' + Math.round(q.delivery_fee || 0).toLocaleString('en-IN');
+      document.getElementById('inv-total').textContent = '₹ ' + Math.round(q.total_amount || 0).toLocaleString('en-IN');
     }
 
-    const lastUpdatedEl = document.getElementById('last-updated');
-    if (lastUpdatedEl) {
-      const bttMs = Date.now() + (6 * 60 * 60 * 1000);
-      const btt = new Date(bttMs);
-      let h = btt.getUTCHours();
-      const m = pad2(btt.getUTCMinutes());
-      const s = pad2(btt.getUTCSeconds());
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12 || 12;
-      lastUpdatedEl.textContent = `Last updated: ${pad2(h)}:${m}:${s} ${ampm} (BTT)`;
-      lastUpdatedEl.classList.remove('hidden');
+    function loadHtml2Pdf() {
+      return new Promise((resolve, reject) => {
+        if (window.html2pdf) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('html2pdf load failed'));
+        document.head.appendChild(s);
+      });
     }
 
-    // Default to overview tab on fresh load
-    switchTab('overview');
+    function printInvoice() { window.print(); }
+    window.printInvoice = printInvoice;
 
-    results.classList.remove('hidden');
-    subscribeToOrder(orderTextId);
-    saveRecentSearch(orderTextId);
+    /* ==========================================================
+       TRACK ORDER (REFACTORED)
+       ========================================================== */
+    async function trackOrder() {
+      const input = document.getElementById('track-input');
+      const orderTextId = input.value.trim().toUpperCase();
+      const errorEl = document.getElementById('track-error');
+      const results = document.getElementById('track-results');
+      const trackBtn = document.getElementById('track-btn');
+      const trackBtnText = document.getElementById('track-btn-text');
+      const trackSpinner = document.getElementById('track-spinner');
 
-  } catch (err) {
-    console.error('Track error:', err);
-    showToast('Something went wrong. Please try again.', 'error');
-  } finally {
-    trackBtn.disabled = false;
-    trackBtnText.classList.remove('hidden');
-    trackSpinner.classList.add('hidden');
-  }
-}
-window.trackOrder = trackOrder;
+      if (!orderTextId) {
+        errorEl.classList.remove('hidden');
+        errorEl.querySelector('.text-sm.font-semibold').textContent = 'Order ID required';
+        errorEl.querySelector('.text-xs').textContent = 'Please enter your Order ID to track your shipment.';
+        errorEl.classList.add('error-shake');
+        setTimeout(() => errorEl.classList.remove('error-shake'), 500);
+        input.focus();
+        return;
+      }
+
+      trackBtn.disabled = true;
+      trackBtnText.classList.add('hidden');
+      trackSpinner.classList.remove('hidden');
+      errorEl.classList.add('hidden');
+      results.classList.add('hidden');
+
+      try {
+        const { data: orders, error: orderErr } = await supabase
+          .from('orders')
+          .select('id, order_id, user_id, delivery_city, delivery_address, product_links, quantities, order_status, created_at, invoice_url, invoice_number, users(full_name, whatsapp, email)')
+          .eq('order_id', orderTextId)
+          .limit(1);
+
+        if (orderErr) throw orderErr;
+        if (!orders || orders.length === 0) {
+          errorEl.classList.remove('hidden');
+          errorEl.classList.add('error-shake');
+          setTimeout(() => errorEl.classList.remove('error-shake'), 500);
+          return;
+        }
+
+        const order = orders[0];
+        currentOrder = order;
+        const user = order.users || {};
+
+        const [{ data: quotes }, { data: tracking }] = await Promise.all([
+          supabase.from('quotations').select('*').eq('order_id', order.id).maybeSingle(),
+          supabase.from('tracking_events').select('*').eq('order_id', order.id).order('created_at', { ascending: true })
+        ]);
+        currentQuote = quotes;
+
+        let paymentInfo = null;
+        try {
+          const pmtRes = await supabase
+            .from('payments')
+            .select('status, advance_paid, due_amount, total_amount, payment_method, delivery_fee, product_price, payment_proof_url')
+            .eq('order_id', order.order_id)
+            .maybeSingle();
+          if (pmtRes.data) paymentInfo = pmtRes.data;
+        } catch (e) {
+          console.log('Payment lookup skipped:', e.message);
+        }
+        currentPaymentInfo = paymentInfo;
+
+        document.getElementById('res-order-id').textContent = order.order_id;
+        document.getElementById('res-name').textContent = user.full_name || '—';
+        document.getElementById('res-phone').textContent = user.whatsapp ? '+975 ' + user.whatsapp : '—';
+        document.getElementById('res-city').textContent = order.delivery_city || '—';
+        document.getElementById('res-payment').textContent = paymentInfo?.payment_method || '—';
+
+        const paymentStatusWrap = document.getElementById('res-payment-status-wrap');
+        const paymentStatusEl = document.getElementById('res-payment-status');
+
+        paymentStatusWrap.classList.add('hidden');
+        paymentStatusEl.innerHTML = '';
+
+        if (paymentInfo) {
+          paymentStatusWrap.classList.remove('hidden');
+          const isCod = paymentInfo.payment_method === 'Cash on Delivery';
+          const isFullPayment = paymentInfo.payment_method === 'Full Payment';
+          const isPartial = paymentInfo.status === 'partial';
+          const isPending = paymentInfo.status === 'pending';
+          const isVerified = paymentInfo.status === 'verified';
+          const hasQuotation = currentQuote !== null;
+          const isQuotePending = hasQuotation && currentQuote.status === 'pending';
+          const isQuoteAccepted = hasQuotation && currentQuote.status === 'accepted';
+
+          let statusHtml = '';
+          if (isVerified) {
+            statusHtml = `<span class="text-emerald-600 font-semibold flex items-center gap-1.5"><i class="fas fa-check-circle text-emerald-500"></i> Payment Verified</span><div class="text-xs text-gray-500 mt-1">₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} paid in full</div>`;
+          } else if (isPartial) {
+            statusHtml = `<span class="text-blue-600 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-blue-500"></i> Partial Payment</span><div class="text-xs text-gray-500 mt-1">Paid: ₹${Math.round(paymentInfo.advance_paid || 0).toLocaleString('en-IN')} | Due: ₹${Math.round(paymentInfo.due_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (isPending && paymentInfo.payment_proof_url) {
+            statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hourglass-half text-brand-500"></i> Proof Uploaded</span><div class="text-xs text-gray-500 mt-1">Awaiting admin verification.</div>`;
+          } else if (!hasQuotation) {
+            statusHtml = `<span class="text-gray-500 font-semibold flex items-center gap-1.5"><i class="fas fa-clock text-gray-400"></i> Awaiting Quotation</span><div class="text-xs text-gray-500 mt-1">Your order is being reviewed.</div>`;
+          } else if (isQuotePending) {
+            statusHtml = `<span class="text-brand-600 font-semibold flex items-center gap-1.5"><i class="fas fa-file-invoice-dollar text-brand-500"></i> Quotation Sent</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (isQuoteAccepted && isCod) {
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-hand-holding-dollar text-amber-500"></i> Cash on Delivery</span><div class="text-xs text-gray-500 mt-1">Pay ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} on delivery</div>`;
+          } else if (isQuoteAccepted && isFullPayment) {
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Full Payment</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')}</div>`;
+          } else if (isQuoteAccepted) {
+            const advance = Math.round((paymentInfo.total_amount || 0) * 0.5);
+            statusHtml = `<span class="text-amber-600 font-semibold flex items-center gap-1.5"><i class="fas fa-wallet text-amber-500"></i> Awaiting Advance</span><div class="text-xs text-gray-500 mt-1">Total: ₹${Math.round(paymentInfo.total_amount || 0).toLocaleString('en-IN')} | Advance (50%): ₹${advance.toLocaleString('en-IN')}</div>`;
+          } else {
+            statusHtml = `<span class="text-red-600 font-semibold flex items-center gap-1.5"><i class="fas fa-circle-xmark text-red-500"></i> Quotation Rejected</span><div class="text-xs text-gray-500 mt-1">Contact support for assistance</div>`;
+          }
+          paymentStatusEl.innerHTML = statusHtml;
+        }
+
+        const cfg = statusConfig[order.order_status] || statusConfig.pending;
+        const statusEl = document.getElementById('res-order-status');
+        statusEl.textContent = cfg.label;
+        statusEl.className = `status-badge px-4 py-1.5 rounded-full text-xs font-bold border ${cfg.color}`;
+
+        renderStepper(order.order_status);
+
+        if (order.order_status === 'out_for_delivery') {
+          sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} is out for delivery!`);
+        }
+        if (order.order_status === 'delivered') {
+          sendLocalNotification('Shop2Bhutan', `Order ${order.order_id} has been delivered! 🎉`);
+        }
+
+        updateNextAction(order, quotes, paymentInfo);
+
+        const quoteContent = document.getElementById('quote-content');
+        const noQuotePanel = document.getElementById('no-quote-panel');
+        if (quotes) {
+          quoteContent.classList.remove('hidden');
+          noQuotePanel.classList.add('hidden');
+          document.getElementById('q-product').textContent = '₹ ' + Math.round(quotes.product_price || 0).toLocaleString('en-IN');
+          document.getElementById('q-shipping').textContent = '₹ ' + Math.round(quotes.shipping_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-service').textContent = '₹ ' + Math.round(quotes.service_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-delivery').textContent = '₹ ' + Math.round(quotes.delivery_fee || 0).toLocaleString('en-IN');
+          document.getElementById('q-total').textContent = '₹ ' + Math.round(quotes.total_amount || 0).toLocaleString('en-IN');
+
+          if (quotes.note) {
+            document.getElementById('q-note-wrap').classList.remove('hidden');
+            document.getElementById('q-note').textContent = quotes.note;
+          } else {
+            document.getElementById('q-note-wrap').classList.add('hidden');
+          }
+
+          const qStatus = quotes.status || 'pending';
+          const qBadge = document.getElementById('quote-status-badge');
+          const qColors = { pending: 'bg-amber-50 text-amber-700 border-amber-200', accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200', rejected: 'bg-red-50 text-red-700 border-red-200' };
+          qBadge.textContent = qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
+          qBadge.className = `status-badge px-3 py-1.5 rounded-full text-xs font-bold border ${qColors[qStatus] || qColors.pending}`;
+
+          document.getElementById('quote-actions').classList.toggle('hidden', qStatus !== 'pending');
+          document.getElementById('payment-form').classList.add('hidden');
+          document.getElementById('quote-accepted-msg').classList.toggle('hidden', qStatus !== 'accepted');
+          document.getElementById('quote-rejected-msg').classList.toggle('hidden', qStatus !== 'rejected');
+
+          if (qStatus === 'accepted') {
+            const total = Math.round(quotes.total_amount || 0);
+            const isFullPaymentMethod = paymentInfo?.payment_method === 'Full Payment';
+            const hasProof = paymentInfo?.payment_proof_url;
+            const msgText = document.getElementById('accepted-msg-text');
+            const waBtn = document.getElementById('wa-pay-btn');
+
+            if (hasProof) {
+              msgText.innerHTML = `Your payment proof has been uploaded and is <strong>awaiting admin verification</strong>.`;
+              waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Follow up';
+              waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(`Hello, I uploaded payment proof for Order ${order.order_id}. Please verify.`);
+            } else {
+              if (isFullPaymentMethod) {
+                msgText.innerHTML = `Please pay <strong>₹${total.toLocaleString('en-IN')}</strong> (full amount) via WhatsApp.`;
+                waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay Full Amount';
+              } else if (paymentInfo?.payment_method === 'Cash on Delivery') {
+                msgText.innerHTML = `Your Cash on Delivery order is confirmed. Total: <strong>₹${total.toLocaleString('en-IN')}</strong>`;
+                waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Confirm on WhatsApp';
+              } else {
+                const advance = Math.round(total * 0.5);
+                const due = total - advance;
+                msgText.innerHTML = `Please pay <strong>₹${advance.toLocaleString('en-IN')}</strong> (50% advance) via WhatsApp.<br><span class="text-xs text-emerald-600 mt-1 inline-block">Balance due: ₹${due.toLocaleString('en-IN')}</span>`;
+                waBtn.innerHTML = '<i class="fa-brands fa-whatsapp mr-1.5 text-lg"></i> Pay 50% Advance';
+              }
+
+              let msg;
+              if (isFullPaymentMethod) msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id}.\nTotal: ₹${total}\nPayment: Full Payment\n\nShare payment details.`;
+              else if (paymentInfo?.payment_method === 'Cash on Delivery') msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id} (COD).\nTotal: ₹${total}\n\nPlease confirm.`;
+              else {
+                const advance = Math.round(total * 0.5);
+                const due = total - advance;
+                msg = `Hello Shop2Bhutan,\n\nI accepted quotation for Order ${order.order_id}.\nTotal: ₹${total}\nAdvance (50%): ₹${advance}\nBalance: ₹${due}\n\nShare payment details.`;
+              }
+              waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
+            }
+          }
+        } else {
+          quoteContent.classList.add('hidden');
+          noQuotePanel.classList.remove('hidden');
+        }
+
+        const hasTrackingEvents = tracking && Array.isArray(tracking) && tracking.length > 0;
+        const shouldShowTracking = hasTrackingEvents && !['pending', 'quoted', 'cancelled'].includes(order.order_status);
+
+        if (shouldShowTracking) {
+          const timeline = document.getElementById('tracking-timeline');
+          timeline.innerHTML = tracking.map((t, i) => {
+            const isLast = i === tracking.length - 1;
+            const statusClass = isLast ? 'active' : 'completed';
+            const time = formatBtnDate(t.created_at);
+            const label = trackingStatusLabels[t.status] || t.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const iconClass = trackingStatusIcons[t.status] || 'fa-circle';
+            return `
+              <div class="timeline-item ${statusClass}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="flex items-center gap-2.5 mb-1">
+                    <i class="fas ${iconClass} text-xs ${isLast ? 'text-brand-600' : 'text-emerald-500'}"></i>
+                    <div class="font-bold text-gray-900 text-sm">${label}</div>
+                  </div>
+                  ${t.location ? `<div class="text-xs text-gray-500 mt-1 flex items-center gap-1.5"><i class="fas fa-location-dot text-[10px] text-gray-400"></i>${t.location}</div>` : ''}
+                  ${t.note ? `<div class="text-xs text-gray-600 mt-1.5 leading-relaxed">${t.note}</div>` : ''}
+                  <div class="text-xs text-gray-400 mt-2 font-medium">${time}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        const invoiceTabBtn = document.querySelector('[data-tab="invoice"]');
+        if (order.order_status === 'delivered') {
+          invoiceTabBtn.classList.remove('hidden');
+          await handleInvoice(order, paymentInfo, quotes);
+        } else {
+          invoiceTabBtn.classList.add('hidden');
+          if (document.querySelector('[data-tab="invoice"]').classList.contains('active')) {
+            switchTab('overview');
+          }
+        }
+
+        const lastUpdatedEl = document.getElementById('last-updated');
+        if (lastUpdatedEl) {
+          const bttMs = Date.now() + (6 * 60 * 60 * 1000);
+          const btt = new Date(bttMs);
+          let h = btt.getUTCHours();
+          const m = pad2(btt.getUTCMinutes());
+          const s = pad2(btt.getUTCSeconds());
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          lastUpdatedEl.textContent = `Last updated: ${pad2(h)}:${m}:${s} ${ampm} (BTT)`;
+          lastUpdatedEl.classList.remove('hidden');
+        }
+
+        switchTab('overview');
+
+        results.classList.remove('hidden');
+        subscribeToOrder(orderTextId);
+        if (order.order_status === 'delivered') {
+          setTimeout(() => {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#10b981', '#f59e0b'] });
+          }, 400);
+        }
+        saveRecentSearch(orderTextId);
+
+      } catch (err) {
+        console.error('Track error:', err);
+        showToast('Something went wrong. Please try again.', 'error');
+      } finally {
+        trackBtn.disabled = false;
+        trackBtnText.classList.remove('hidden');
+        trackSpinner.classList.add('hidden');
+      }
+    }
+    window.trackOrder = trackOrder;
 
     /* ========== PUSH NOTIFICATIONS ========== */
-async function requestNotificationPermission() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    await Notification.requestPermission();
-  }
-}
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+    }
 
-function sendLocalNotification(title, body) {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, { body, icon: 'https://cdn-icons-png.flaticon.com/512/1170/1170678.png' });
-  }
-}
+    function sendLocalNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: 'https://cdn-icons-png.flaticon.com/512/1170/1170678.png' });
+      }
+    }
 
-// Request on first user interaction
-document.body.addEventListener('click', () => requestNotificationPermission(), { once: true });
+    document.body.addEventListener('click', () => requestNotificationPermission(), { once: true });
 
     /* ==========================================================
        QUOTE RESPONSE
@@ -1062,7 +1147,7 @@ document.body.addEventListener('click', () => requestNotificationPermission(), {
           const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
           const originalText = btn?.innerHTML;
           if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
-          
+
           try {
             const { error: qErr } = await supabase
               .from('quotations')
@@ -1074,7 +1159,7 @@ document.body.addEventListener('click', () => requestNotificationPermission(), {
 
             const total = Math.round(currentQuote.total_amount || 0);
             const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* (Cash on Delivery).\nTotal: ₹${total}\n\nPlease confirm my order for delivery.`;
-            
+
             showToast('Quotation accepted!', 'success');
             setTimeout(() => {
               window.open('https://wa.me/97577113302?text=' + encodeURIComponent(msg), '_blank');
@@ -1279,176 +1364,163 @@ document.body.addEventListener('click', () => requestNotificationPermission(), {
     });
 
     /* ========== RECENT SEARCHES ========== */
-function saveRecentSearch(orderId) {
-  let recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
-  recent = recent.filter(id => id !== orderId);
-  recent.unshift(orderId);
-  recent = recent.slice(0, 5);
-  localStorage.setItem('s2b_recent', JSON.stringify(recent));
-  renderRecentSearches();
-}
-
-function renderRecentSearches() {
-  const container = document.getElementById('recent-searches');
-  const recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
-  if (!recent.length) { container.classList.add('hidden'); return; }
-  
-  container.innerHTML = recent.map(id => `
-    <button onclick="quickTrack('${id}')" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-brand-300 hover:text-brand-600 transition-colors flex items-center gap-1.5">
-      <i class="fas fa-history text-[10px] text-gray-400"></i> ${id}
-    </button>
-  `).join('');
-  container.classList.remove('hidden');
-}
-
-window.quickTrack = function(id) {
-  document.getElementById('track-input').value = id;
-  trackOrder();
-};
-
-// Call this on page load
-renderRecentSearches();
-
-/* ========== URL PARAMS & KEYBOARD ========== */
-document.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const order = params.get('order');
-  if (order) {
-    document.getElementById('track-input').value = order.toUpperCase();
-    trackOrder();
-  }
-  renderRecentSearches(); // keep from Feature 1
-});
-
-document.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    document.getElementById('track-input').focus();
-  }
-});
-
-/* ========== REFRESH TRACKING ========== */
-async function refreshTracking() {
-  const btn = document.getElementById('refresh-tracking-btn');
-  const icon = document.getElementById('refresh-icon');
-
-  if (!btn || btn.disabled) return;
-  if (!currentOrder) {
-    showToast('No order loaded', 'error');
-    return;
-  }
-
-  icon.classList.add('fa-spin');
-  btn.disabled = true;
-  btn.classList.add('opacity-75');
-
-  try {
-    // Re-use the full trackOrder() flow so everything stays in sync
-    const input = document.getElementById('track-input');
-    if (input && currentOrder.order_id) {
-      input.value = currentOrder.order_id;
+    function saveRecentSearch(orderId) {
+      let recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
+      recent = recent.filter(id => id !== orderId);
+      recent.unshift(orderId);
+      recent = recent.slice(0, 5);
+      localStorage.setItem('s2b_recent', JSON.stringify(recent));
+      renderRecentSearches();
     }
-    await trackOrder();
-  } catch (err) {
-    console.error('Refresh tracking error:', err);
-    showToast('Failed to refresh. Please try again.', 'error');
-  } finally {
-    icon.classList.remove('fa-spin');
-    btn.disabled = false;
-    btn.classList.remove('opacity-75');
-  }
-}
-window.refreshTracking = refreshTracking;
 
-/* ========== SHARE ORDER ========== */
-window.shareOrder = function() {
-  const orderId = document.getElementById('res-order-id').textContent;
-  if (orderId === '—') return;
-  const url = `${window.location.origin}${window.location.pathname}?order=${orderId}`;
-  
-  if (navigator.share) {
-    navigator.share({ title: `Track Shop2Bhutan Order ${orderId}`, url });
-  } else {
-    navigator.clipboard.writeText(url);
-    showToast('Tracking link copied!', 'success');
-  }
-};
-  </script>
+    function renderRecentSearches() {
+      const container = document.getElementById('recent-searches');
+      const recent = JSON.parse(localStorage.getItem('s2b_recent') || '[]');
+      if (!recent.length) { container.classList.add('hidden'); return; }
 
-<!-- PWA Bootstrap -->
-<script>
-(function() {
-  'use strict';
-
-  // 1. Hide splash screen gracefully
-  function hideSplash() {
-    const splash = document.getElementById('pwa-splash');
-    if (!splash) return;
-    // Ensure minimum visible time for perceived performance
-    const elapsed = Date.now() - (window.__pwaStart || Date.now());
-    const delay = Math.max(0, 800 - elapsed);
-    setTimeout(() => {
-      splash.classList.add('vanish');
-      document.body.classList.add('loaded');
-      setTimeout(() => splash.remove(), 650);
-    }, delay);
-  }
-
-  // Record start time
-  window.__pwaStart = Date.now();
-
-  // Hide on load + fallback
-  if (document.readyState === 'complete') {
-    hideSplash();
-  } else {
-    window.addEventListener('load', hideSplash);
-  }
-
-  // 2. Offline / Online banner
-  const offlineBanner = document.getElementById('offline-banner');
-  function updateOnlineStatus() {
-    if (!offlineBanner) return;
-    if (navigator.onLine) {
-      offlineBanner.classList.add('hidden');
-    } else {
-      offlineBanner.classList.remove('hidden');
+      container.innerHTML = recent.map(id => `
+        <button onclick="quickTrack('${id}')" class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:border-brand-300 hover:text-brand-600 transition-colors flex items-center gap-1.5">
+          <i class="fas fa-history text-[10px] text-gray-400"></i> ${id}
+        </button>
+      `).join('');
+      container.classList.remove('hidden');
     }
-  }
-  window.addEventListener('online', updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-  updateOnlineStatus();
 
-  // 3. Register Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then((reg) => {
-          console.log('[PWA] SW registered:', reg.scope);
-          // Optional: prompt update if new SW waiting
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker?.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[PWA] New version available. Refresh to update.');
-              }
-            });
-          });
-        })
-        .catch((err) => console.error('[PWA] SW registration failed:', err));
+    window.quickTrack = function(id) {
+      document.getElementById('track-input').value = id;
+      trackOrder();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const order = params.get('order');
+      if (order) {
+        document.getElementById('track-input').value = order.toUpperCase();
+        trackOrder();
+      }
+      renderRecentSearches();
     });
-  }
 
-  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      const searchInput = document.getElementById('track-input');
-      if (searchInput) {
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        searchInput.focus();
+        document.getElementById('track-input').focus();
+      }
+    });
+
+    /* ========== REFRESH TRACKING ========== */
+    async function refreshTracking() {
+      const btn = document.getElementById('refresh-tracking-btn');
+      const icon = document.getElementById('refresh-icon');
+
+      if (!btn || btn.disabled) return;
+      if (!currentOrder) {
+        showToast('No order loaded', 'error');
+        return;
+      }
+
+      icon.classList.add('fa-spin');
+      btn.disabled = true;
+      btn.classList.add('opacity-75');
+
+      try {
+        const input = document.getElementById('track-input');
+        if (input && currentOrder.order_id) {
+          input.value = currentOrder.order_id;
+        }
+        await trackOrder();
+      } catch (err) {
+        console.error('Refresh tracking error:', err);
+        showToast('Failed to refresh. Please try again.', 'error');
+      } finally {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
       }
     }
-  });
-})();
-</script>
+    window.refreshTracking = refreshTracking;
+
+    /* ========== SHARE ORDER ========== */
+    window.shareOrder = function() {
+      const orderId = document.getElementById('res-order-id').textContent;
+      if (orderId === '—') return;
+      const url = `${window.location.origin}${window.location.pathname}?order=${orderId}`;
+
+      if (navigator.share) {
+        navigator.share({ title: `Track Shop2Bhutan Order ${orderId}`, url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('Tracking link copied!', 'success');
+      }
+    };
+  </script>
+
+  <!-- PWA Bootstrap -->
+  <script>
+  (function() {
+    'use strict';
+
+    function hideSplash() {
+      const splash = document.getElementById('pwa-splash');
+      if (!splash) return;
+      const elapsed = Date.now() - (window.__pwaStart || Date.now());
+      const delay = Math.max(0, 800 - elapsed);
+      setTimeout(() => {
+        splash.classList.add('vanish');
+        document.body.classList.add('loaded');
+        setTimeout(() => splash.remove(), 650);
+      }, delay);
+    }
+
+    window.__pwaStart = Date.now();
+
+    if (document.readyState === 'complete') {
+      hideSplash();
+    } else {
+      window.addEventListener('load', hideSplash);
+    }
+
+    const offlineBanner = document.getElementById('offline-banner');
+    function updateOnlineStatus() {
+      if (!offlineBanner) return;
+      if (navigator.onLine) {
+        offlineBanner.classList.add('hidden');
+      } else {
+        offlineBanner.classList.remove('hidden');
+      }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => {
+            console.log('[PWA] SW registered:', reg.scope);
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker?.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] New version available. Refresh to update.');
+                }
+              });
+            });
+          })
+          .catch((err) => console.error('[PWA] SW registration failed:', err));
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        const searchInput = document.getElementById('track-input');
+        if (searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
