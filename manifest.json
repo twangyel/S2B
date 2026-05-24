@@ -1,12 +1,17 @@
 {
   "name": "Shop2Bhutan",
   "short_name": "S2B",
+  "description": "Shop2Bhutan shopping and order tracking platform",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
   "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["shopping", "business"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -19,6 +24,30 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Track Order",
+      "short_name": "Track",
+      "url": "/track.html",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Admin Panel",
+      "short_name": "Admin",
+      "url": "/admin-login.html",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
