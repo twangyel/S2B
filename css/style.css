@@ -266,6 +266,7 @@ p {
   transition: var(--transition);
   background: var(--surface);
   color: var(--text);
+  text-overflow: ellipsis;
 }
 
 .input-field::placeholder {
@@ -760,6 +761,7 @@ select.input-field {
   background: rgba(0, 0, 0, 0.25);
   border-color: rgba(255, 255, 255, 0.15);
   color: white;
+  min-width: 0;
 }
 
 .quick-add-row .input-field::placeholder {
@@ -778,6 +780,7 @@ select.input-field {
   border-radius: var(--radius);
   padding: 1.125rem;
   animation: fadeIn 0.3s ease;
+  overflow: hidden;
 }
 
 .quick-preview .preview-inner {
@@ -806,11 +809,17 @@ select.input-field {
   color: white;
   margin-bottom: 4px;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .quick-preview .preview-source {
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .quick-preview .preview-status {
@@ -865,6 +874,8 @@ select.input-field {
   display: flex;
   align-items: center;
   gap: 6px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* ── 11. Quick Cart Float ── */
@@ -1716,6 +1727,7 @@ select.input-field {
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
+  min-width: 0;
 }
 
 .product-meta-fields {
@@ -1824,6 +1836,7 @@ select.input-field {
   background: var(--bg);
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  overflow: hidden;
 }
 
 .preview-inner {
@@ -1857,6 +1870,9 @@ select.input-field {
 .preview-source {
   font-size: 0.75rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .add-product-btn {
