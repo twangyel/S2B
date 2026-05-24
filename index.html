@@ -10,12 +10,7 @@
   <meta property="og:type" content="website" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
- <!-- ===== PWA HEAD SNIPPET =====
+  <!-- ===== PWA HEAD SNIPPET =====
    Paste this ENTIRE block inside your <head> tag,
    ideally right after <meta charset> and before other links.
    ===== -->
@@ -46,10 +41,25 @@
 
 <!-- PWA Splash Screen Styles -->
 <link rel="stylesheet" href="/pwa-loader.css">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+<!-- Performance: preconnect to critical origins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
 </head>
 <body>
-  <div id="pwa-splash" class="pwa-splash">
+  <!-- ===== PWA BODY SNIPPET =====
+   Paste this as the VERY FIRST child inside <body> (before nav/main).
+   ===== -->
+
+<!-- PWA Splash Screen -->
+<div id="pwa-splash" class="pwa-splash">
   <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
   <div class="pwa-splash-ring"></div>
   <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
@@ -790,5 +800,84 @@
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
 </div>
+<!-- ===== PWA SCRIPT SNIPPET =====
+   Paste this right BEFORE the closing </body> tag.
+   ===== -->
+
+<!-- PWA Bootstrap -->
+<script>
+(function() {
+  'use strict';
+
+  // 1. Hide splash screen gracefully
+  function hideSplash() {
+    const splash = document.getElementById('pwa-splash');
+    if (!splash) return;
+    // Ensure minimum visible time for perceived performance
+    const elapsed = Date.now() - (window.__pwaStart || Date.now());
+    const delay = Math.max(0, 800 - elapsed);
+    setTimeout(() => {
+      splash.classList.add('vanish');
+      document.body.classList.add('loaded');
+      setTimeout(() => splash.remove(), 650);
+    }, delay);
+  }
+
+  // Record start time
+  window.__pwaStart = Date.now();
+
+  // Hide on load + fallback
+  if (document.readyState === 'complete') {
+    hideSplash();
+  } else {
+    window.addEventListener('load', hideSplash);
+  }
+
+  // 2. Offline / Online banner
+  const offlineBanner = document.getElementById('offline-banner');
+  function updateOnlineStatus() {
+    if (!offlineBanner) return;
+    if (navigator.onLine) {
+      offlineBanner.classList.add('hidden');
+    } else {
+      offlineBanner.classList.remove('hidden');
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // 3. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((reg) => {
+          console.log('[PWA] SW registered:', reg.scope);
+          // Optional: prompt update if new SW waiting
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker?.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] New version available. Refresh to update.');
+              }
+            });
+          });
+        })
+        .catch((err) => console.error('[PWA] SW registration failed:', err));
+    });
+  }
+
+  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const searchInput = document.getElementById('track-input');
+      if (searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    }
+  });
+})();
+</script>
 </body>
 </html>

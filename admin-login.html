@@ -6,18 +6,61 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Shop2Bhutan Admin">
+<!-- ===== PWA HEAD SNIPPET =====
+   Paste this ENTIRE block inside your <head> tag,
+   ideally right after <meta charset> and before other links.
+   ===== -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#4f46e5">
+<meta name="background-color" content="#ffffff">
+<meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
+
+<!-- iOS / Safari PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Shop2Bhutan">
+
+<!-- Icons & Manifest -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" type="image/svg+xml" href="/image/logo.svg">
+
+<!-- Performance: preconnect to critical origins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
+
+<!-- PWA Splash Screen Styles -->
+<link rel="stylesheet" href="/pwa-loader.css">
   <title>Admin Panel | Shop2Bhutan</title>
   <link rel="stylesheet" href="/css/login.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <meta name="theme-color" content="#4f46e5">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 </head>
 <body>
- 
+  <!-- ===== PWA BODY SNIPPET =====
+   Paste this as the VERY FIRST child inside <body> (before nav/main).
+   ===== -->
 
+<!-- PWA Splash Screen -->
+<div id="pwa-splash" class="pwa-splash">
+  <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
+  <div class="pwa-splash-ring"></div>
+  <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
+  <div class="pwa-splash-sub">Loading your experience…</div>
+</div>
+
+<!-- Offline Banner -->
+<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2.5 z-[9999] border-b border-amber-200 font-medium tracking-wide">
+  <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+  You're offline. Showing last updated data.
+</div>
   <nav>
     <div class="container nav-content">
       <a href="https://shop2bt.vercel.app/" class="logo">
@@ -121,66 +164,86 @@
   <footer class="login-footer">
     <p>© 2026 Shop2Bhutan. All rights reserved.</p>
   </footer>
+</script>
+  <script type="module" src="/js/admin_login.js"></script>  
+  <!-- ===== PWA SCRIPT SNIPPET =====
+   Paste this right BEFORE the closing </body> tag.
+   ===== -->
 
-   <script type="module">
+<!-- PWA Bootstrap -->
+<script>
+(function() {
+  'use strict';
+
+  // 1. Hide splash screen gracefully
+  function hideSplash() {
+    const splash = document.getElementById('pwa-splash');
+    if (!splash) return;
+    // Ensure minimum visible time for perceived performance
+    const elapsed = Date.now() - (window.__pwaStart || Date.now());
+    const delay = Math.max(0, 800 - elapsed);
+    setTimeout(() => {
+      splash.classList.add('vanish');
+      document.body.classList.add('loaded');
+      setTimeout(() => splash.remove(), 650);
+    }, delay);
+  }
+
+  // Record start time
+  window.__pwaStart = Date.now();
+
+  // Hide on load + fallback
+  if (document.readyState === 'complete') {
+    hideSplash();
+  } else {
+    window.addEventListener('load', hideSplash);
+  }
+
+  // 2. Offline / Online banner
   const offlineBanner = document.getElementById('offline-banner');
-
   function updateOnlineStatus() {
+    if (!offlineBanner) return;
     if (navigator.onLine) {
       offlineBanner.classList.add('hidden');
     } else {
       offlineBanner.classList.remove('hidden');
     }
   }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
 
-  // Wait slightly before checking connection
-  window.addEventListener('load', () => {
-    setTimeout(updateOnlineStatus, 500);
-  });
-
-  window.addEventListener('online', () => {
-    offlineBanner.classList.add('hidden');
-  });
-
-  window.addEventListener('offline', () => {
-    offlineBanner.classList.remove('hidden');
-  });
-</script>
-<script>
-    // Install Prompt
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('✅ Before Install Prompt fired!');
-      deferredPrompt = e;
-
-      const installBtn = document.getElementById('install-button');
-      if (installBtn) installBtn.classList.remove('hidden');
+  // 3. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((reg) => {
+          console.log('[PWA] SW registered:', reg.scope);
+          // Optional: prompt update if new SW waiting
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker?.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] New version available. Refresh to update.');
+              }
+            });
+          });
+        })
+        .catch((err) => console.error('[PWA] SW registration failed:', err));
     });
+  }
 
-    async function installApp() {
-      if (!deferredPrompt) return;
-
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log('Install outcome:', outcome);
-      deferredPrompt = null;
+  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const searchInput = document.getElementById('track-input');
+      if (searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
     }
-  </script>
-  <script type="module" src="/js/admin_login.js"></script>
- 
- <div id="offline-banner" class="hidden" aria-live="polite">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 20h.01"/>
-      <path d="M8.5 16.429a5 5 0 0 1 7 0"/>
-      <path d="M5 12.859a10 10 0 0 1 5.17-2.69"/>
-      <path d="M19 12.859a10 10 0 0 0-2.007-1.523"/>
-      <path d="M2 8.82a15 15 0 0 1 4.177-2.648"/>
-      <path d="M22 8.82a15 15 0 0 0-11.288-3.908"/>
-      <path d="M2 2l20 20"/>
-    </svg>
-    You're offline. Showing last updated data.
-  </div>
-  
+  });
+})();
+</script>
 </body>
 </html>

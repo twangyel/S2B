@@ -5,12 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Track Order | Shop2Bhutan</title>
   <meta name="description" content="Track your Shop2Bhutan order and review your quotation." />
+  <!-- ===== PWA HEAD SNIPPET =====
+   Paste this ENTIRE block inside your <head> tag,
+   ideally right after <meta charset> and before other links.
+   ===== -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#4f46e5">
+<meta name="background-color" content="#ffffff">
+<meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
+
+<!-- iOS / Safari PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Shop2Bhutan">
+
+<!-- Icons & Manifest -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="icon" type="image/svg+xml" href="/image/logo.svg">
+
+<!-- Performance: preconnect to critical origins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
+
+<!-- PWA Splash Screen Styles -->
+<link rel="stylesheet" href="/pwa-loader.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
- <meta name="theme-color" content="#4f46e5">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="/css/track.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -64,6 +92,23 @@
 <base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
+  <!-- ===== PWA BODY SNIPPET =====
+   Paste this as the VERY FIRST child inside <body> (before nav/main).
+   ===== -->
+
+<!-- PWA Splash Screen -->
+<div id="pwa-splash" class="pwa-splash">
+  <img src="/image/logo.svg" alt="Shop2Bhutan" class="pwa-splash-logo">
+  <div class="pwa-splash-ring"></div>
+  <div class="pwa-splash-title">Shop2<span class="pwa-splash-brand">Bhutan</span></div>
+  <div class="pwa-splash-sub">Loading your experience…</div>
+</div>
+
+<!-- Offline Banner -->
+<div id="offline-banner" class="hidden fixed top-0 left-0 right-0 bg-amber-50 text-amber-800 text-center text-xs py-2.5 z-[9999] border-b border-amber-200 font-medium tracking-wide">
+  <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+  You're offline. Showing last updated data.
+</div>
 
   <!-- Nav -->
   <nav class="nav-glass sticky top-0 z-40">
@@ -1305,5 +1350,84 @@ window.shareOrder = function() {
   }
 };
   </script>
+  <!-- ===== PWA SCRIPT SNIPPET =====
+   Paste this right BEFORE the closing </body> tag.
+   ===== -->
+
+<!-- PWA Bootstrap -->
+<script>
+(function() {
+  'use strict';
+
+  // 1. Hide splash screen gracefully
+  function hideSplash() {
+    const splash = document.getElementById('pwa-splash');
+    if (!splash) return;
+    // Ensure minimum visible time for perceived performance
+    const elapsed = Date.now() - (window.__pwaStart || Date.now());
+    const delay = Math.max(0, 800 - elapsed);
+    setTimeout(() => {
+      splash.classList.add('vanish');
+      document.body.classList.add('loaded');
+      setTimeout(() => splash.remove(), 650);
+    }, delay);
+  }
+
+  // Record start time
+  window.__pwaStart = Date.now();
+
+  // Hide on load + fallback
+  if (document.readyState === 'complete') {
+    hideSplash();
+  } else {
+    window.addEventListener('load', hideSplash);
+  }
+
+  // 2. Offline / Online banner
+  const offlineBanner = document.getElementById('offline-banner');
+  function updateOnlineStatus() {
+    if (!offlineBanner) return;
+    if (navigator.onLine) {
+      offlineBanner.classList.add('hidden');
+    } else {
+      offlineBanner.classList.remove('hidden');
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // 3. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((reg) => {
+          console.log('[PWA] SW registered:', reg.scope);
+          // Optional: prompt update if new SW waiting
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker?.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] New version available. Refresh to update.');
+              }
+            });
+          });
+        })
+        .catch((err) => console.error('[PWA] SW registration failed:', err));
+    });
+  }
+
+  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const searchInput = document.getElementById('track-input');
+      if (searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    }
+  });
+})();
+</script>
 </body>
 </html>
