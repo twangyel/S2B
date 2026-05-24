@@ -1,8 +1,8 @@
 {
   "name": "Shop2Bhutan",
-  "short_name": "Shop2Bhutan",
+  "short_name": "S2B",
   "description": "Shop from India, delivered to Bhutan. Track orders, view quotations, and manage purchases.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f46e5",
@@ -11,9 +11,14 @@
   "lang": "en",
   "dir": "ltr",
   "icons": [
-    { "src": "/image/logo.svg", "sizes": "72x72 96x96 128x128 144x152 192x192 384x384 512x512", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icons/icon-72x72.png?v=2", "sizes": "72x72", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-96x96.png?v=2", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-128x128.png?v=2", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-144x144.png?v=2", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-152x152.png?v=2", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192x192.png?v=2", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-384x384.png?v=2", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512x512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
     {
@@ -21,14 +26,14 @@
       "short_name": "Track",
       "description": "Track your order status and quotation",
       "url": "/track.html",
-      "icons": [{ "src": "/image/logo.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192x192.png?v=2", "sizes": "192x192" }]
     },
     {
       "name": "Admin Panel",
       "short_name": "Admin",
       "description": "Admin login and dashboard",
       "url": "/admin-login.html",
-      "icons": [{ "src": "/image/logo.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192x192.png?v=2", "sizes": "192x192" }]
     }
   ],
   "categories": ["shopping", "business"],
