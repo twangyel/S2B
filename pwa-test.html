@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Diagnostic | Shop2Bhutan</title>
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="/manifest.json">
+  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; }
+    .pass { color: #059669; }
+    .fail { color: #dc2626; }
+    .warn { color: #d97706; }
+    .check-row { display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; background:white; margin-bottom:8px; border:1px solid #e2e8f0; }
+    .icon-box { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-size:14px; flex-shrink:0; }
+    .icon-pass { background:#ecfdf5; }
+    .icon-fail { background:#fef2f2; }
+    .icon-warn { background:#fffbeb; }
+  </style>
+<base target="_blank">
+</head>
+<body class="p-4 max-w-lg mx-auto">
+  <h1 class="text-xl font-bold text-gray-900 mb-1">PWA Diagnostic</h1>
+  <p class="text-sm text-gray-500 mb-6">Checks why "Add to Home Screen" isn't appearing.</p>
+  <div id="results"></div>
+
+  <div class="mt-8 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+    <h2 class="text-sm font-bold text-indigo-900 mb-2">How to test on Android</h2>
+    <ol class="text-xs text-indigo-800 space-y-1 list-decimal pl-4">
+      <li>Open this page in <strong>Chrome</strong> (not Instagram/Snapchat browser)</li>
+      <li>Open Chrome menu (⋯) → "Add to Home screen" should appear</li>
+      <li>If not, open DevTools → Application → Manifest</li>
+      <li>Look for red errors under "Identity" and "Presentation"</li>
+    </ol>
+  </div>
+
+  <div class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+    <h2 class="text-sm font-bold text-gray-900 mb-2">Quick Fixes</h2>
+    <ul class="text-xs text-gray-700 space-y-1 list-disc pl-4">
+      <li><strong>Icons 404?</strong> Run <code>python generate_icons.py</code> and upload the <code>icons/</code> folder.</li>
+      <li><strong>Manifest 404?</strong> Ensure <code>/manifest.json</code> is at root, not <code>/public/manifest.json</code>.</li>
+      <li><strong>Not HTTPS?</strong> PWA install requires HTTPS (Vercel/Netlify provide this).</li>
+      <li><strong>Still nothing?</strong> Visit the site 2–3 times or wait 30s. Chrome has an engagement heuristic.</li>
+    </ul>
+  </div>
+
+<script>
+(async function() {
+  const results = document.getElementById('results');
+  const checks = [];
+
+  function add(status, title, detail) {
+    const icon = status === 'pass' ? '✓' : status === 'fail' ? '✕' : '!';
+    const cls = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : 'warn';
+    const box = status === 'pass' ? 'icon-pass' : status === 'fail' ? 'icon-fail' : 'icon-warn';
+    checks.push(`
+      <div class="check-row">
+        <div class="icon-box ${box} ${cls}">${icon}</div>
+        <div>
+          <div class="text-sm font-semibold ${cls}">${title}</div>
+          <div class="text-xs text-gray-500">${detail}</div>
+        </div>
+      </div>
+    `);
+  }
+
+  // 1. HTTPS
+  add(location.protocol === 'https:' ? 'pass' : 'warn',
+    'HTTPS',
+    location.protocol === 'https:' ? 'Secure connection active.' : 'PWA install requires HTTPS. Use Vercel/Netlify for free SSL.');
+
+  // 2. Manifest link
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  add(manifestLink ? 'pass' : 'fail',
+    'Manifest Link',
+    manifestLink ? `Found: ${manifestLink.href}` : 'Missing &lt;link rel="manifest"&gt; in &lt;head&gt;.');
+
+  // 3. Manifest fetch
+  let manifest = null;
+  try {
+    if (manifestLink) {
+      const res = await fetch(manifestLink.href);
+      if (res.ok) {
+        manifest = await res.json();
+        add('pass', 'Manifest Fetch', 'Manifest loaded successfully.');
+      } else {
+        add('fail', 'Manifest Fetch', `HTTP ${res.status} — check the path.`);
+      }
+    } else {
+      add('fail', 'Manifest Fetch', 'Cannot fetch without manifest link.');
+    }
+  } catch (e) {
+    add('fail', 'Manifest Fetch', e.message);
+  }
+
+  // 4. Manifest fields
+  if (manifest) {
+    const required = ['name', 'short_name', 'start_url', 'display', 'icons'];
+    const missing = required.filter(k => !manifest[k]);
+    add(missing.length === 0 ? 'pass' : 'fail',
+      'Manifest Fields',
+      missing.length === 0 ? 'All required fields present.' : `Missing: ${missing.join(', ')}`);
+
+    // 5. Icons check
+    const icons = manifest.icons || [];
+    const has192 = icons.some(i => i.sizes?.includes('192x192'));
+    const has512 = icons.some(i => i.sizes?.includes('512x512'));
+    if (has192 && has512) {
+      add('pass', 'Icon Sizes', '192×192 and 512×512 icons declared.');
+    } else {
+      add('fail', 'Icon Sizes', `Missing: ${!has192 ? '192×192 ' : ''}${!has512 ? '512×512' : ''}. These are REQUIRED for install.`);
+    }
+
+    // 6. Icon existence (fetch test)
+    const iconSrc = icons.find(i => i.sizes?.includes('192x192'))?.src || icons[0]?.src;
+    if (iconSrc) {
+      try {
+        const iconRes = await fetch(iconSrc, { method: 'HEAD' });
+        add(iconRes.ok ? 'pass' : 'fail',
+          'Icon Exists',
+          iconRes.ok ? `Found: ${iconSrc}` : `HTTP ${iconRes.status} — file missing at ${iconSrc}`);
+      } catch (e) {
+        add('fail', 'Icon Exists', `Cannot reach ${iconSrc}`);
+      }
+    } else {
+      add('fail', 'Icon Exists', 'No icon src to test.');
+    }
+  }
+
+  // 7. Service Worker
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    if (regs.length > 0) {
+      add('pass', 'Service Worker', `${regs.length} SW registered.`);
+    } else {
+      add('warn', 'Service Worker', 'No SW found. Visit index.html first to register it.');
+    }
+  } else {
+    add('fail', 'Service Worker', 'Browser does not support Service Workers.');
+  }
+
+  // 8. Display mode
+  if (manifest && manifest.display) {
+    const valid = ['standalone', 'fullscreen', 'minimal-ui', 'browser'];
+    add(valid.includes(manifest.display) ? 'pass' : 'fail',
+      'Display Mode', manifest.display);
+  }
+
+  // 9. BeforeInstallPrompt
+  let beforeInstall = false;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    beforeInstall = true;
+    e.preventDefault();
+  });
+  setTimeout(() => {
+    add(beforeInstall ? 'pass' : 'warn',
+      'Install Prompt Event',
+      beforeInstall ? 'beforeinstallprompt fired! You can trigger install.' : 'Not fired yet. May need user engagement (visit again, wait 30s).');
+  }, 500);
+
+  results.innerHTML = checks.join('');
+})();
+</script>
+</body>
+</html>
