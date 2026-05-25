@@ -42,9 +42,9 @@ function normalizeUrl(url) {
 window.normalizeUrl = normalizeUrl;
 
 function sanitize(str) {
+  // Preserve hyphens — valid in names and addresses
   return (str || '')
-    .replace(/[*_~`]/g, '')
-    .replace(/[-]/g, '')
+    .replace(/[*_~`<>]/g, '')
     .trim();
 }
 
@@ -1340,24 +1340,57 @@ async function loadLiveTicker() {
     items = TICKER_FALLBACK;
   }
 
-  const buildItems = (arr) => arr.map(item => `
-    <div class="ticker-item">
-      <span>${item.icon}</span>
-      <span>${escHtml(item.text)}</span>
-      <span class="ticker-city">${escHtml(item.city)}</span>
-      <span class="ticker-time">${escHtml(item.time)}</span>
-    </div>
-  `).join('');
+  // Store raw items so we can refresh timestamps
+  track._tickerItems = items;
+  track._tickerStartTime = Date.now();
 
-  const liveBadge = `
-    <div class="ticker-live-badge">
-      <span class="live-dot"></span>
-      Live
-    </div>
-  `;
+  function renderTicker(arr) {
+    const buildItems = (arr) => arr.map(item => `
+      <div class="ticker-item">
+        <span>${item.icon}</span>
+        <span>${escHtml(item.text)}</span>
+        <span class="ticker-city">${escHtml(item.city)}</span>
+        <span class="ticker-time">${escHtml(item.time)}</span>
+      </div>
+    `).join('');
 
-  const itemsHtml = buildItems(items);
-  track.innerHTML = liveBadge + itemsHtml + itemsHtml;
+    const liveBadge = `
+      <div class="ticker-live-badge">
+        <span class="live-dot"></span>
+        Live
+      </div>
+    `;
+
+    const itemsHtml = buildItems(arr);
+    // Duplicate items for seamless infinite scroll loop
+    track.innerHTML = liveBadge + itemsHtml + itemsHtml;
+
+    // Force CSS animation restart
+    track.style.animation = 'none';
+    track.offsetHeight; // reflow
+    track.style.animation = '';
+  }
+
+  renderTicker(items);
+
+  // Refresh timestamps every 60 seconds so "2 mins ago" stays accurate
+  setInterval(() => {
+    const stored = track._tickerItems;
+    if (!stored) return;
+    const startMs = track._tickerStartTime || Date.now();
+    const elapsedMins = Math.floor((Date.now() - startMs) / 60000);
+    const refreshed = stored.map(item => {
+      // Only refresh items that had a numeric "X mins ago" time
+      const match = item.time.match(/^(\d+) mins? ago$/);
+      if (match) {
+        const newMins = parseInt(match[1]) + elapsedMins;
+        const newTime = newMins < 60 ? newMins + ' mins ago' : Math.floor(newMins / 60) + ' hours ago';
+        return { ...item, time: newTime };
+      }
+      return item;
+    });
+    renderTicker(refreshed);
+  }, 60000);
 }
 window.loadLiveTicker = loadLiveTicker;
 

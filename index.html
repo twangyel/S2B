@@ -10,48 +10,94 @@
   <meta property="og:type" content="website" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <!-- ===== PWA HEAD SNIPPET =====
-   Paste this ENTIRE block inside your <head> tag,
-   ideally right after <meta charset> and before other links.
-   ===== -->
-
+  <!-- PWA meta -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#4f46e5">
 <meta name="background-color" content="#ffffff">
-<meta name="description" content="Shop from India, delivered to Bhutan. Track orders, view quotations, and shop seamlessly.">
-
-<!-- iOS / Safari PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Shop2Bhutan">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Shop2Bhutan">
-
-<!-- Icons & Manifest -->
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 <link rel="icon" type="image/svg+xml" href="/image/logo.svg">
-
-<!-- Performance: preconnect to critical origins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
-
-<!-- PWA Splash Screen Styles -->
 <link rel="stylesheet" href="/pwa-loader.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-<!-- Performance: preconnect to critical origins -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<link rel="dns-prefetch" href="https://deecrnfbvgbzyybqhywy.supabase.co">
+
+<!-- Ticker CSS -->
+<style>
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(90deg, #312e81 0%, #4f46e5 50%, #312e81 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 39;
+}
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  animation: tickerScroll 35s linear infinite;
+  will-change: transform;
+}
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 28px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.92);
+  border-right: 1px solid rgba(255,255,255,0.12);
+  height: 36px;
+}
+.ticker-city { color: rgba(255,255,255,0.6); font-size: 0.72rem; }
+.ticker-time { color: rgba(255,255,255,0.45); font-size: 0.7rem; }
+.ticker-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px 2px 8px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: #34d399;
+  border-radius: 50%;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+</style>
 </head>
 <body>
   <!-- ===== PWA BODY SNIPPET =====
@@ -71,6 +117,12 @@
   <svg class="inline-block w-3.5 h-3.5 mr-1 -mt-px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
   You're offline. Showing last updated data.
 </div>
+
+<!-- ── LIVE ACTIVITY TICKER ── -->
+<div class="ticker-wrapper" aria-label="Live activity">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
 <!-- ── NAV ── -->
 <nav id="mainNav">
   <div class="container nav-content">
@@ -84,6 +136,11 @@
         <i class="fa-solid fa-user"></i> My Account
       </a>
       <a href="/track.html" class="nav-btn btn-secondary">Track Order</a>
+      <button id="installBtn" onclick="installPWA()" style="display:none"
+        class="nav-btn btn-secondary" title="Install App">
+        <i class="fas fa-download"></i>
+        <span class="hidden sm:inline">Install</span>
+      </button>
       <a href="https://wa.me/97577113302" class="nav-btn btn-whatsapp">
         <i class="fa-brands fa-whatsapp"></i> WhatsApp
       </a>
@@ -799,83 +856,102 @@
 <div class="toast" id="toast"></div>
 <!-- ── MAIN MODULE ── -->
 <script type="module" src="/js/main.js"></script>
-</div>
 <!-- ===== PWA SCRIPT SNIPPET =====
    Paste this right BEFORE the closing </body> tag.
    ===== -->
 
 <!-- PWA Bootstrap -->
 <script>
-(function() {
+(function () {
   'use strict';
 
-  // 1. Hide splash screen gracefully
+  window.__pwaStart = Date.now();
+
+  // ── 1. SPLASH SCREEN ──────────────────────────────────────────
+  let splashHidden = false;
   function hideSplash() {
+    if (splashHidden) return;
+    splashHidden = true;
     const splash = document.getElementById('pwa-splash');
-    if (!splash) return;
-    // Ensure minimum visible time for perceived performance
-    const elapsed = Date.now() - (window.__pwaStart || Date.now());
-    const delay = Math.max(0, 800 - elapsed);
+    if (!splash) { document.body.classList.add('loaded'); return; }
+    const elapsed = Date.now() - window.__pwaStart;
+    const delay = Math.max(0, 600 - elapsed);
     setTimeout(() => {
       splash.classList.add('vanish');
       document.body.classList.add('loaded');
-      setTimeout(() => splash.remove(), 650);
+      document.body.style.overflow = 'auto';
+      setTimeout(() => { splash.classList.add('force-gone'); requestAnimationFrame(() => splash.remove()); }, 550);
     }, delay);
   }
+  if (document.readyState === 'complete') { hideSplash(); }
+  else { window.addEventListener('load', hideSplash, { once: true }); setTimeout(hideSplash, 4000); }
 
-  // Record start time
-  window.__pwaStart = Date.now();
-
-  // Hide on load + fallback
-  if (document.readyState === 'complete') {
-    hideSplash();
-  } else {
-    window.addEventListener('load', hideSplash);
-  }
-
-  // 2. Offline / Online banner
+  // ── 2. OFFLINE / ONLINE BANNER ────────────────────────────────
   const offlineBanner = document.getElementById('offline-banner');
   function updateOnlineStatus() {
     if (!offlineBanner) return;
-    if (navigator.onLine) {
-      offlineBanner.classList.add('hidden');
-    } else {
-      offlineBanner.classList.remove('hidden');
-    }
+    offlineBanner.classList.toggle('hidden', navigator.onLine);
   }
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
   updateOnlineStatus();
 
-  // 3. Register Service Worker
+  // ── 3. SERVICE WORKER ─────────────────────────────────────────
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then((reg) => {
-          console.log('[PWA] SW registered:', reg.scope);
-          // Optional: prompt update if new SW waiting
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker?.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[PWA] New version available. Refresh to update.');
-              }
-            });
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/service-worker.js');
+        console.log('[PWA] SW registered:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[PWA] New SW ready — activating immediately');
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
           });
-        })
-        .catch((err) => console.error('[PWA] SW registration failed:', err));
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      } catch (err) {
+        console.error('[PWA] SW registration failed:', err);
+      }
     });
   }
 
-  // 4. Keyboard shortcut: Ctrl/Cmd + K focuses search (track page)
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      const searchInput = document.getElementById('track-input');
-      if (searchInput) {
-        e.preventDefault();
-        searchInput.focus();
-      }
-    }
+  // ── 4. MOBILE VIEWPORT HEIGHT FIX ────────────────────────────
+  function setAppHeight() {
+    document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+  }
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', setAppHeight);
+  setAppHeight();
+
+  // ── 5. PWA INSTALL PROMPT ─────────────────────────────────────
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('[PWA] Install prompt ready');
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'flex';
+  });
+  window.installPWA = function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choice) => {
+      console.log('[PWA] User choice:', choice.outcome);
+      deferredPrompt = null;
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'none';
+    });
+  };
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
   });
 })();
 </script>
