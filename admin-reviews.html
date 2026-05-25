@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="/css/admin_reviews.css" />
   <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#4f46e5">
-<base target="_blank">
 </head>
 <body class="bg-gray-50 min-h-screen antialiased">
 
@@ -71,6 +70,13 @@
       </div>
     </div>
   </nav>
+
+  <!-- RLS Warning Banner (shown by JS if realtime channels fail) -->
+  <div id="rls-warning" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center gap-2">
+    <i class="fas fa-triangle-exclamation text-amber-500"></i>
+    <span><strong>Realtime notifications may be blocked.</strong> Check Supabase RLS: the <code>anon</code> role needs SELECT policy on orders/reviews/payments tables, or use a service role key.</span>
+    <button onclick="this.parentElement.classList.add('hidden')" class="ml-auto text-amber-600 hover:text-amber-800">✕</button>
+  </div>
 
   <!-- Tabs -->
   <div class="max-w-7xl mx-auto">

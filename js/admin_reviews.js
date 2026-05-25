@@ -1661,7 +1661,10 @@ document.getElementById('verify-modal')?.addEventListener('click', (e) => {
    ========================================================== */
 let notifications = [];
 let notifRealtimeChannels = [];
-let notifSoundEnabled = false;
+let notifSoundEnabled = (() => {
+  try { return localStorage.getItem('s2b_notif_sound') === 'true'; }
+  catch(e) { return false; }
+})();
 const NOTIF_MAX_AGE_HOURS = 48;
 
 function initNotifications() {
@@ -1695,8 +1698,18 @@ function saveNotifications() {
 
 function setupNotificationRealtime() {
   // FIX #5: Add error handling to all subscriptions
-  const handleSubError = (err, channelName) => {
-    if (err) console.error(`Notification channel "${channelName}" failed:`, err);
+  let _rlsWarningShown = false;
+  const handleSubError = (status, err, channelName) => {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+      console.error(`[Notif] Channel "${channelName}" status: ${status}`, err || '');
+      console.warn('[Notif] CHANNEL_ERROR usually means Supabase RLS is blocking the anon role. Add a SELECT policy or use a service role key.');
+      if (!_rlsWarningShown) {
+        _rlsWarningShown = true;
+        document.getElementById('rls-warning')?.classList.remove('hidden');
+      }
+    } else if (status === 'SUBSCRIBED') {
+      console.log(`[Notif] ✅ Channel "${channelName}" subscribed`);
+    }
   };
 
   const ordersChannel = supabase
@@ -1712,7 +1725,7 @@ function setupNotificationRealtime() {
         dedupKey: order.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe((status, err) => handleSubError(err, 'orders'));
+    .subscribe((status, err) => handleSubError(status, err, 'orders'));
 
   const reviewsChannel = supabase
     .channel('notif-reviews')
@@ -1727,7 +1740,7 @@ function setupNotificationRealtime() {
         dedupKey: review.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe((status, err) => handleSubError(err, 'reviews'));
+    .subscribe((status, err) => handleSubError(status, err, 'reviews'));
 
   const paymentsChannel = supabase
     .channel('notif-payments')
@@ -1742,7 +1755,7 @@ function setupNotificationRealtime() {
         dedupKey: pay.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe((status, err) => handleSubError(err, 'payments'));
+    .subscribe((status, err) => handleSubError(status, err, 'payments'));
 
   const payUpdateChannel = supabase
     .channel('notif-payments-updates')
@@ -1766,11 +1779,22 @@ function setupNotificationRealtime() {
           message: `Order fully paid. Ready to process.`,
           data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
           icon: 'fa-check-double',
-          dedupKey: pay.id + '-verified'  // FIX #1: Unique dedup key for status change
+          dedupKey: pay.id + '-verified'
+        });
+      }
+      // Direct pending→verified (most common flow: admin verifies uploaded proof)
+      if (old.status === 'pending' && pay.status === 'verified' && pay.payment_proof_url) {
+        addNotification({
+          type: 'payment',
+          title: 'Payment Proof Verified',
+          message: `₹${Math.round(pay.total_amount || 0).toLocaleString('en-IN')} payment confirmed via ${pay.payment_method || '—'}`,
+          data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
+          icon: 'fa-check-circle',
+          dedupKey: pay.id + '-proof-verified'
         });
       }
     })
-    .subscribe((status, err) => handleSubError(err, 'payments-updates'));
+    .subscribe((status, err) => handleSubError(status, err, 'payments-updates'));
 
   const usersChannel = supabase
     .channel('notif-users')
@@ -1785,7 +1809,7 @@ function setupNotificationRealtime() {
         dedupKey: user.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe((status, err) => handleSubError(err, 'users'));
+    .subscribe((status, err) => handleSubError(status, err, 'users'));
 
   const quotesChannel = supabase
     .channel('notif-quotes')
@@ -1813,7 +1837,7 @@ function setupNotificationRealtime() {
         });
       }
     })
-    .subscribe((status, err) => handleSubError(err, 'quotations'));
+    .subscribe((status, err) => handleSubError(status, err, 'quotations'));
 
   // FIX #3: Add tracking events channel (was missing)
   const trackingChannel = supabase
@@ -1829,7 +1853,7 @@ function setupNotificationRealtime() {
         dedupKey: event.id  // FIX #1: Unique dedup key
       });
     })
-    .subscribe((status, err) => handleSubError(err, 'tracking'));
+    .subscribe((status, err) => handleSubError(status, err, 'tracking'));
 
   notifRealtimeChannels = [ordersChannel, reviewsChannel, paymentsChannel, payUpdateChannel, usersChannel, quotesChannel, trackingChannel];
 }
@@ -1839,7 +1863,7 @@ function addNotification({ type, title, message, data = {}, icon = 'fa-bell', de
   const effectiveKey = dedupKey || (type + '-' + message);
   const recent = notifications.find(n => 
     (n.dedupKey || (n.type + '-' + n.message)) === effectiveKey && 
-    (Date.now() - new Date(n.created_at).getTime()) < 5000
+    (Date.now() - new Date(n.created_at).getTime()) < 30000  // 30s dedup window
   );
   if (recent) return;
 
@@ -1942,6 +1966,13 @@ function getTimeAgo(iso) {
 }
 
 function setupNotificationUI() {
+  // Sync sound button icon with persisted preference on load
+  const soundBtnInit = document.getElementById('notif-sound-toggle');
+  if (soundBtnInit) {
+    const iconEl = soundBtnInit.querySelector('i');
+    if (iconEl) iconEl.className = notifSoundEnabled ? 'fas fa-volume-up text-xs' : 'fas fa-volume-mute text-xs';
+    soundBtnInit.classList.toggle('text-indigo-600', notifSoundEnabled);
+  }
   const toggle = document.getElementById('notif-toggle');
   const dropdown = document.getElementById('notif-dropdown');
   const markAll = document.getElementById('notif-mark-all');
@@ -1976,10 +2007,16 @@ function setupNotificationUI() {
   soundBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     notifSoundEnabled = !notifSoundEnabled;
+    try { localStorage.setItem('s2b_notif_sound', String(notifSoundEnabled)); } catch(e) {}
     const icon = soundBtn.querySelector('i');
     icon.className = notifSoundEnabled ? 'fas fa-volume-up text-xs' : 'fas fa-volume-mute text-xs';
     soundBtn.classList.toggle('text-indigo-600', notifSoundEnabled);
-    showToast(notifSoundEnabled ? 'Notification sound enabled' : 'Notification sound muted', 'info');
+    showToast(notifSoundEnabled ? '🔔 Notification sound enabled' : '🔇 Notification sound muted', 'info');
+    // Unlock audio context on first gesture (required by browsers)
+    if (notifSoundEnabled) {
+      const audio = document.getElementById('notif-sound');
+      if (audio) { audio.play().then(() => audio.pause()).catch(() => {}); }
+    }
   });
 }
 
@@ -2013,7 +2050,10 @@ function playNotifSound() {
   const audio = document.getElementById('notif-sound');
   if (audio) {
     audio.currentTime = 0;
-    audio.play().catch(() => {});
+    audio.play().catch((err) => {
+      // Browsers block autoplay before a user gesture — this is expected on first load
+      console.warn('[Notif] Sound blocked (autoplay policy):', err.message);
+    });
   }
 }
 
