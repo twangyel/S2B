@@ -108,10 +108,17 @@
           <img src="/image/logo.svg" alt="Shop2Bhutan logo">
         </div>
       </a>
-      <a href="https://wa.me/97577113302" target="_blank" class="support-chip text-sm font-semibold text-emerald-700 px-4 py-2 rounded-xl flex items-center gap-2">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span class="hidden sm:inline">Support</span>
-      </a>
+      <div class="flex items-center gap-2">
+        <button id="installBtn" onclick="installPWA()" style="display:none"
+          class="support-chip text-sm font-semibold text-brand-600 px-4 py-2 rounded-xl flex items-center gap-2 border border-brand-200 bg-brand-50 hover:bg-brand-100 transition-colors">
+          <i class="fas fa-download"></i>
+          <span class="hidden sm:inline">Install App</span>
+        </button>
+        <a href="https://wa.me/97577113302" target="_blank" class="support-chip text-sm font-semibold text-emerald-700 px-4 py-2 rounded-xl flex items-center gap-2">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span class="hidden sm:inline">Support</span>
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -1434,13 +1441,6 @@
       renderRecentSearches();
     });
 
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('track-input').focus();
-      }
-    });
-
     /* ========== REFRESH TRACKING ========== */
     async function refreshTracking() {
       const btn = document.getElementById('refresh-tracking-btn');
@@ -1515,66 +1515,111 @@
   (function() {
     'use strict';
 
+    window.__pwaStart = Date.now();
+
+    // ── 1. SPLASH SCREEN ──────────────────────────────────────────
+    let splashHidden = false;
     function hideSplash() {
+      if (splashHidden) return;
+      splashHidden = true;
       const splash = document.getElementById('pwa-splash');
-      if (!splash) return;
-      const elapsed = Date.now() - (window.__pwaStart || Date.now());
-      const delay = Math.max(0, 800 - elapsed);
+      if (!splash) { document.body.classList.add('loaded'); return; }
+      const elapsed = Date.now() - window.__pwaStart;
+      const delay = Math.max(0, 600 - elapsed);
       setTimeout(() => {
         splash.classList.add('vanish');
         document.body.classList.add('loaded');
-        setTimeout(() => splash.remove(), 650);
+        document.body.style.overflow = 'auto';
+        setTimeout(() => { splash.classList.add('force-gone'); requestAnimationFrame(() => splash.remove()); }, 550);
       }, delay);
     }
-
-    window.__pwaStart = Date.now();
 
     if (document.readyState === 'complete') {
       hideSplash();
     } else {
-      window.addEventListener('load', hideSplash);
+      window.addEventListener('load', hideSplash, { once: true });
+      setTimeout(hideSplash, 4000); // emergency fallback
     }
 
+    // ── 2. OFFLINE / ONLINE BANNER ────────────────────────────────
     const offlineBanner = document.getElementById('offline-banner');
     function updateOnlineStatus() {
       if (!offlineBanner) return;
-      if (navigator.onLine) {
-        offlineBanner.classList.add('hidden');
-      } else {
-        offlineBanner.classList.remove('hidden');
-      }
+      offlineBanner.classList.toggle('hidden', navigator.onLine);
     }
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
 
+    // ── 3. SERVICE WORKER ─────────────────────────────────────────
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((reg) => {
-            console.log('[PWA] SW registered:', reg.scope);
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              newWorker?.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[PWA] New version available. Refresh to update.');
-                }
-              });
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('/service-worker.js');
+          console.log('[PWA] SW registered:', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('[PWA] New version available. Refresh to update.');
+              }
             });
-          })
-          .catch((err) => console.error('[PWA] SW registration failed:', err));
+          });
+        } catch (err) {
+          console.error('[PWA] SW registration failed:', err);
+        }
       });
     }
 
+    // ── 4. CTRL/CMD + K SEARCH SHORTCUT ──────────────────────────
     document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         const searchInput = document.getElementById('track-input');
-        if (searchInput) {
-          e.preventDefault();
-          searchInput.focus();
-        }
+        if (searchInput) { e.preventDefault(); searchInput.focus(); }
       }
     });
+
+    // ── 5. MOBILE VIEWPORT HEIGHT FIX ────────────────────────────
+    function setAppHeight() {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    }
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+    setAppHeight();
+
+    // ── 6. PWA INSTALL PROMPT ─────────────────────────────────────
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();         // stop the browser's own mini-infobar
+      deferredPrompt = e;
+      console.log('[PWA] Install prompt ready');
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'flex';
+    });
+
+    window.installPWA = function () {
+      if (!deferredPrompt) {
+        console.log('[PWA] Install prompt not available');
+        return;
+      }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        console.log('[PWA] User choice:', choice.outcome);
+        deferredPrompt = null;
+        const btn = document.getElementById('installBtn');
+        if (btn) btn.style.display = 'none';
+      });
+    };
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] App installed successfully');
+      deferredPrompt = null;
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'none';
+    });
+
   })();
   </script>
 </body>
