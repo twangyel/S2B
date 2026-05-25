@@ -1,6 +1,6 @@
-const STATIC_CACHE = 's2b-static-v1';
-const DYNAMIC_CACHE = 's2b-dynamic-v1';
-const IMAGE_CACHE = 's2b-images-v1';
+const STATIC_CACHE  = 's2b-static-v2';   // ← bumped; forces old cache eviction on deploy
+const DYNAMIC_CACHE = 's2b-dynamic-v2';
+const IMAGE_CACHE   = 's2b-images-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -10,22 +10,19 @@ const PRECACHE_ASSETS = [
   '/offline.html',
   '/manifest.json',
   '/pwa-loader.css',
-  '/image/logo.svg'
+  '/image/logo.svg',
 ];
 
-// Install: Precache core shell
+// ─── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(PRECACHE_ASSETS))
       .then(() => self.skipWaiting())
-      
   );
 });
 
-
-
-// Activate: Clean old caches
+// ─── ACTIVATE ─────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     Promise.all([
@@ -36,40 +33,51 @@ self.addEventListener('activate', (event) => {
             .map((key) => caches.delete(key))
         )
       ),
-      self.clients.claim()
+      self.clients.claim(),
     ])
   );
 });
 
-// Helper: check if request is for Supabase/API
-function isApiRequest(url) {
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+/**
+ * Requests that must ALWAYS go straight to the network.
+ * Returning true here means event.respondWith(fetch(request)) — never a cache.
+ */
+function shouldBypass(url, request) {
   return (
+    // Supabase: REST, auth, storage, realtime
     url.hostname.includes('supabase.co') ||
-    url.pathname.startsWith('/rest/') ||
-    url.pathname.startsWith('/auth/') ||
-    url.pathname.startsWith('/storage/')
+    // CDN assets that may update frequently or have CORS quirks
+    url.hostname.includes('cdn.jsdelivr.net') ||
+    url.hostname.includes('cdnjs.cloudflare.com') ||
+    url.hostname.includes('cdn.tailwindcss.com') ||
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.hostname.includes('fonts.gstatic.com') ||
+    // WebSocket upgrades — SW can't cache these
+    request.headers.get('upgrade') === 'websocket' ||
+    // Non-GET verbs
+    request.method !== 'GET'
   );
 }
 
-// Fetch handler
+// ─── FETCH ────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') return;
-
-  // 1. API / Supabase: Network only (never cache live data)
-  if (isApiRequest(url)) {
+  // ── BYPASS: pass straight to network, no caching ──────────────────────────
+  //    Previously this block just did `return` — which left the request
+  //    unanswered on mobile, causing the "network error" you were seeing.
+  if (shouldBypass(url, request)) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // 2. HTML Navigation: Stale-while-revalidate
-  // HTML Navigation: Stale-while-revalidate + OFFLINE fallback
-if (request.mode === 'navigate' || request.destination === 'document') {
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const networkFetch = fetch(request)
+  // ── HTML NAVIGATION: network-first, fall back to cache, then offline ───────
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.ok) {
             const clone = networkResponse.clone();
@@ -77,25 +85,21 @@ if (request.mode === 'navigate' || request.destination === 'document') {
           }
           return networkResponse;
         })
-        .catch(() => {
-          return cached || caches.match('/offline.html');
-        });
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match('/offline.html'))
+        )
+    );
+    return;
+  }
 
-      return cached || networkFetch;
-    })
-  );
-  return;
-}
-
-  // 3. Images: Cache-first
+  // ── IMAGES: cache-first ────────────────────────────────────────────────────
   if (request.destination === 'image') {
     event.respondWith(
       caches.match(request).then((cached) =>
         cached ||
         fetch(request).then((response) => {
           if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(IMAGE_CACHE).then((cache) => cache.put(request, clone));
+            caches.open(IMAGE_CACHE).then((cache) => cache.put(request, response.clone()));
           }
           return response;
         })
@@ -104,20 +108,26 @@ if (request.mode === 'navigate' || request.destination === 'document') {
     return;
   }
 
-  // 4. CSS, JS, Fonts, CDN assets: Cache-first with background update
+  // ── STATIC ASSETS (local CSS, JS, icons): stale-while-revalidate ──────────
   event.respondWith(
     caches.match(request).then((cached) => {
       const networkFetch = fetch(request)
         .then((response) => {
           if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, response.clone()));
           }
           return response;
         })
-        .catch(() => cached);
+        .catch(() => cached); // offline: serve whatever we have
 
       return cached || networkFetch;
     })
   );
+});
+
+// ─── MESSAGE: allow the page to force SW update ───────────────────────────────
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

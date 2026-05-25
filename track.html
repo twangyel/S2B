@@ -1144,9 +1144,23 @@
       } catch (err) {
         console.error('Track error:', err);
         const errMsg = err && err.message ? err.message : String(err);
-        // Show a more helpful message on mobile
         if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('Failed')) {
-          showToast('Network error. Check your connection and try again.', 'error');
+          showToast('Network error. Clearing cache & retrying…', 'error');
+          // If a SW is active it may be serving a bad cached response —
+          // unregister + wipe caches, then reload to fix it automatically.
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            setTimeout(async () => {
+              try {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+                const keys = await caches.keys();
+                await Promise.all(keys.map(k => caches.delete(k)));
+                window.location.reload();
+              } catch (e) {
+                console.warn('[PWA] Cache clear failed:', e);
+              }
+            }, 2000);
+          }
         } else if (errMsg.includes('Realtime') || errMsg.includes('websocket') || errMsg.includes('WebSocket')) {
           showToast('Order loaded. Live updates unavailable on this device.', 'info');
         } else {
@@ -1562,9 +1576,15 @@
             if (!newWorker) return;
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[PWA] New version available. Refresh to update.');
+                console.log('[PWA] New SW ready — activating immediately');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
+          });
+          // Reload when new SW takes control so fresh assets are used
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[PWA] Controller changed — reloading');
+            window.location.reload();
           });
         } catch (err) {
           console.error('[PWA] SW registration failed:', err);
