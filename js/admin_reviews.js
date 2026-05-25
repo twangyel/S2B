@@ -23,8 +23,25 @@ let portalLoaded = false;
 let otpCodesLoaded = false;
 let portalUsersLoaded = false;
 let currentPortalSubTab = 'otp';
-let currentOrderSubTab = 'orders';
 let authChecked = false;
+let currentOrderSubTab = 'orders';
+let allTrips = [];
+let tripsLoaded = false;
+let allMessageLogs = [];
+let messagesLoaded = false;
+let tripSelectedOrders = new Set();
+
+const WA_TEMPLATES = [
+  { id: 'custom', name: 'Custom Message', message: '' },
+  { id: 'otp', name: 'Send OTP', message: 'Hello,\n\nYour Shop2Bhutan portal login code is: *{code}*\n\nEnter this code at https://shop2bt.vercel.app/portal.html to view your orders.\n\nThis code expires in 10 minutes.\n\n— Shop2Bhutan' },
+  { id: 'quote_ready', name: 'Quotation Ready', message: 'Hello,\n\nYour quotation for Order *{order_id}* is ready.\n\nTotal: ₹{total}\n\nPlease accept and proceed with payment via the portal:\nhttps://shop2bt.vercel.app/portal.html\n\n— Shop2Bhutan' },
+  { id: 'advance_reminder', name: 'Advance Reminder', message: 'Hello,\n\nReminder: 50% advance payment of ₹{amount} is due for Order *{order_id}*.\n\nPlease upload payment proof via the portal.\n\n— Shop2Bhutan' },
+  { id: 'balance_reminder', name: 'Balance Due Reminder', message: 'Hello,\n\nYour order *{order_id}* is out for delivery. Balance due: ₹{amount}.\n\nPlease keep the exact amount ready.\n\n— Shop2Bhutan' },
+  { id: 'tracking_update', name: 'Tracking Update', message: 'Hello,\n\nYour order *{order_id}* status has been updated to: *{status}*.\n\nTrack live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan' },
+  { id: 'delivered', name: 'Delivered + Review Request', message: 'Hello,\n\nYour order *{order_id}* has been delivered ✅.\n\nWe hope you love it! Please leave a review:\nhttps://shop2bt.vercel.app/\n\n— Shop2Bhutan' }
+];
+
+
 
 
 
@@ -83,7 +100,7 @@ async function init() {
    TAB VISUALS
    ========================================================== */
 function updateTabVisuals(index) {
-  [0, 1, 2, 3].forEach(i => {
+  [0, 1, 2, 3, 4].forEach(i => {
     const btn = document.getElementById(`tab-${i}`);
     const pane = document.getElementById(`content-${i}`);
     if (!btn || !pane) return;
@@ -108,8 +125,9 @@ function switchTab(index) {
   updateTabVisuals(index);
   if (index === 0 && !reviewsLoaded) loadReviews();
   if (index === 1 && !ordersLoaded) loadOrders();
-  if (index === 2) { /* Analytics - already has placeholder */ }
+  if (index === 2 && !analyticsLoaded) loadAnalytics();
   if (index === 3 && !portalLoaded) loadPortal();
+  if (index === 4 && !tripsLoaded) loadTrips();
 }
 window.switchTab = switchTab;
 
@@ -421,7 +439,7 @@ function renderOrders(orders) {
         <div>
           <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact</h4>
           <p class="text-sm text-gray-800 bg-white rounded-lg p-3 border border-gray-200">
-            ${esc(name)}<<br>
+            ${esc(name)}<br>
             <span class="text-gray-500">+975 ${esc(phone)}</span>
           </p>
         </div>
@@ -467,7 +485,9 @@ function renderOrders(orders) {
               : `<button disabled class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 cursor-not-allowed" title="Tracking available after payment confirmation"><i class="fas fa-truck-fast text-xs"></i></button>`
             }
             <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
-          </div>
+          <button onclick="window.openTimelineModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Activity Timeline"><i class="fas fa-stream text-xs"></i></button>
+${o.order_status !== 'cancelled' && o.order_status !== 'delivered' ? `<button onclick="window.openCancelModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Cancel Order"><i class="fas fa-ban text-xs"></i></button>` : ''}
+            </div>
         </td>
       </tr>
       <tr class="hidden bg-gray-50/50" id="order-details-${o.id}">
@@ -630,6 +650,11 @@ async function saveQuotation() {
   const note = document.getElementById('quote-note').value.trim();
   const total = Math.round(productPrice + shipping + service + delivery);
 
+const actualProduct = parseFloat(document.getElementById('quote-actual-product')?.value) || 0;
+const actualShipping = parseFloat(document.getElementById('quote-actual-shipping')?.value) || 0;
+const actualCustoms = parseFloat(document.getElementById('quote-actual-customs')?.value) || 0;
+const profit = Math.round(total - (actualProduct + actualShipping + actualCustoms));
+
   if (productPrice <= 0) {
     showToast('Product price is required', 'error');
     return;
@@ -654,9 +679,14 @@ async function saveQuotation() {
       shipping_fee: Math.round(shipping),
       service_fee: Math.round(service),
       delivery_fee: Math.round(delivery),
+      actual_product_price: Math.round(actualProduct),
+actual_shipping_cost: Math.round(actualShipping),
+actual_customs_cost: Math.round(actualCustoms),
+profit_amount: profit,
       total_amount: total,
       note: note || null,
       updated_at: new Date().toISOString()
+      
     };
 
     let error;
@@ -774,7 +804,7 @@ async function loadQuotations() {
   } catch (err) {
     console.error('Load quotations failed:', err);
     loader?.classList.add('hidden');
-    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load quotations'}</td></tr>`;
+   tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">...`;
     wrap?.classList.remove('hidden');
     showToast('Failed to load quotations', 'error');
   }
@@ -816,6 +846,7 @@ function renderQuotations(quotes) {
         <td class="px-6 py-4"><div class="font-semibold text-gray-900 text-sm">${esc(name)}</div></td>
         <td class="px-6 py-4 text-sm text-gray-700">₹${Math.round(q.product_price || 0).toLocaleString('en-IN')}</td>
         <td class="px-6 py-4 text-sm font-semibold text-gray-900">₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}</td>
+        <td class="px-6 py-4 text-sm font-semibold ${(q.profit_amount || 0) < 0 ? 'text-red-600' : 'text-emerald-600'}">₹${Math.round(q.profit_amount || 0).toLocaleString('en-IN')}</td>
         <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status] || statusColors.pending}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${statusDisplayMap[status] || status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
         <td class="px-6 py-4 text-gray-500 text-xs font-medium whitespace-nowrap">${date}</td>
         <td class="px-6 py-4 text-right"><button onclick="window.openQuoteModal('${q.order_id}', '${esc(order.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors ml-auto" title="Edit Quotation"><i class="fas fa-pen text-xs"></i></button></td>
@@ -935,8 +966,9 @@ function renderPayments(payments) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 shadow-sm" title="Verify 50% Advance"><i class="fas fa-check"></i> Verify 50%</button>`;
     } else if (isPartial) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Full Payment"><i class="fas fa-check-double"></i> Verify Full</button>`;
-    } else if (status === 'verified') {
-      actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>`;
+    }     else if (status === 'verified') {
+      actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>
+      <button onclick="window.openRefundModal('${p.order_id || ''}', '${esc(order.order_id || '')}', ${Math.round(total)})" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors ml-1" title="Record Refund"><i class="fas fa-undo text-xs"></i></button>`;
     }
 
     return `
@@ -1235,7 +1267,7 @@ function canUpdateTracking(order) {
    ========================================================== */
 function switchPortalSubTab(tab) {
   currentPortalSubTab = tab;
-  ['otp', 'users'].forEach(t => {
+ ['otp', 'users', 'messages'].forEach(t => {
     const btn = document.getElementById(`portal-subtab-${t}`);
     const panel = document.getElementById(`portal-panel-${t}`);
     if (!btn || !panel) return;
@@ -1251,6 +1283,7 @@ function switchPortalSubTab(tab) {
   });
   if (tab === 'otp' && !otpCodesLoaded) loadOtpCodes();
   if (tab === 'users' && !portalUsersLoaded) loadPortalUsers();
+  if (tab === 'messages' && !messagesLoaded) loadMessageLogs();
 }
 window.switchPortalSubTab = switchPortalSubTab;
 
@@ -1483,7 +1516,7 @@ function renderPortalUsers(users, orderCounts) {
         <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(joined)}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-            <button onclick="window.viewUserOrders('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Orders"><i class="fas fa-box text-xs"></i></button>
+           <button onclick="window.openCustomerModal('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Profile"><i class="fas fa-user text-xs"></i></button>
             <button onclick="window.openWaUser('${esc(phone)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
           </div>
         </td>
@@ -1654,6 +1687,9 @@ document.getElementById('tracking-modal')?.addEventListener('click', (e) => {
 });
 document.getElementById('verify-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeVerifyModal();
+});
+document.getElementById('customer-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeCustomerModal();
 });
 
 /* ==========================================================
@@ -2080,6 +2116,1173 @@ function notifyPaymentVerified(amount, method) {
   });
 }
 window.notifyPaymentVerified = notifyPaymentVerified;
+
+/* ==========================================================
+   ANALYTICS DASHBOARD
+   ========================================================== */
+let analyticsLoaded = false;
+let analyticsCharts = {};
+
+async function loadAnalytics() {
+  if (analyticsLoaded) return;
+
+  try {
+    const [{ data: payments }, { data: orders }, { data: quotes }] = await Promise.all([
+      supabase.from('payments').select('total_amount, status, advance_paid, due_amount, payment_method, created_at'),
+      supabase.from('orders').select('order_status, delivery_city, created_at'),
+      supabase.from('quotations').select('status')
+    ]);
+
+    renderAnalytics({
+      payments: payments || [],
+      orders: orders || [],
+      quotes: quotes || []
+    });
+
+    analyticsLoaded = true;
+  } catch (err) {
+    console.error('Analytics load failed:', err);
+    showToast('Failed to load analytics', 'error');
+  }
+
+  loadActionsDashboard();
+}
+window.loadAnalytics = loadAnalytics;
+
+
+
+function renderAnalytics({ payments, orders, quotes }) {
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+
+  // --- Card Metrics ---
+  const verifiedPayments = payments.filter(p => p.status === 'verified');
+  const totalRevenue = verifiedPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+  
+  const pendingPayments = payments.filter(p => p.status === 'pending' || p.status === 'partial');
+  const pendingRevenue = pendingPayments.reduce((sum, p) => {
+    const remaining = p.status === 'partial' ? (p.due_amount || 0) : (p.total_amount || 0);
+    return sum + remaining;
+  }, 0);
+
+  const currentMonthKey = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Thimphu', month: 'short', year: 'numeric'
+  }).format(new Date());
+
+  const monthRevenue = verifiedPayments.filter(p => {
+    const key = formatBhutanMonth(p.created_at);
+    return key === currentMonthKey;
+  }).reduce((sum, p) => sum + (p.total_amount || 0), 0);
+
+  const aov = verifiedPayments.length > 0
+    ? Math.round(totalRevenue / verifiedPayments.length)
+    : 0;
+
+  const todayOrders = orders.filter(o => isTodayBhutan(o.created_at)).length;
+  const acceptedQuotes = quotes.filter(q => q.status === 'accepted').length;
+  const quoteRate = quotes.length > 0 ? Math.round((acceptedQuotes / quotes.length) * 100) : 0;
+
+ setText('metric-total-revenue', '₹' + Math.round(totalRevenue).toLocaleString('en-IN'));
+setText('metric-pending-revenue', '₹' + Math.round(pendingRevenue).toLocaleString('en-IN'));
+setText('metric-month-revenue', '₹' + Math.round(monthRevenue).toLocaleString('en-IN'));
+setText('metric-aov', '₹' + aov.toLocaleString('en-IN'));
+setText('metric-total-orders', orders.length.toLocaleString('en-IN'));
+setText('metric-quote-rate', quoteRate + '%');
+setText('metric-today-orders', todayOrders);
+
+  // --- Charts ---
+  renderRevenueChart(verifiedPayments);
+  renderCityChart(orders);
+  renderStatusChart(orders);
+  renderPaymentChart(payments);
+}
+
+function formatBhutanMonth(isoString) {
+  if (!isoString) return null;
+  const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(isoString) ? isoString : isoString + 'Z';
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Thimphu', month: 'short', year: 'numeric'
+  }).format(d);
+}
+
+function isTodayBhutan(isoString) {
+  if (!isoString) return false;
+  const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(isoString) ? isoString : isoString + 'Z';
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) return false;
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Thimphu', day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+  return fmt.format(d) === fmt.format(new Date());
+}
+
+function getLast6MonthsLabels() {
+  const labels = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    labels.push(new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Thimphu', month: 'short', year: 'numeric'
+    }).format(d));
+  }
+  return labels;
+}
+
+function destroyChart(id) {
+  if (analyticsCharts[id]) {
+    analyticsCharts[id].destroy();
+    delete analyticsCharts[id];
+  }
+}
+
+function renderRevenueChart(payments) {
+  const labels = getLast6MonthsLabels();
+  const data = labels.map(label => {
+    return payments.filter(p => formatBhutanMonth(p.created_at) === label)
+      .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+  });
+
+  destroyChart('revenue');
+  const ctx = document.getElementById('revenue-chart').getContext('2d');
+  analyticsCharts.revenue = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.map(l => l.split(' ')[0]), // "Jan", "Feb"...
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: data,
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79, 70, 229, 0.08)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#4f46e5'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v) } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderCityChart(orders) {
+  const counts = {};
+  orders.forEach(o => {
+    const city = o.delivery_city || 'Unknown';
+    counts[city] = (counts[city] || 0) + 1;
+  });
+  const labels = Object.keys(counts);
+  const data = Object.values(counts);
+  const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+  destroyChart('city');
+  const ctx = document.getElementById('city-chart').getContext('2d');
+  analyticsCharts.city = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Orders',
+        data,
+        backgroundColor: colors,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+    }
+  });
+}
+
+function renderStatusChart(orders) {
+  const counts = {};
+  orders.forEach(o => {
+    const s = o.order_status || 'pending';
+    counts[s] = (counts[s] || 0) + 1;
+  });
+  const labels = Object.keys(counts).map(s => s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+  const data = Object.values(counts);
+  const colors = ['#f59e0b', '#4f46e5', '#3b82f6', '#0ea5e9', '#14b8a6', '#06b6d4', '#8b5cf6', '#10b981', '#ef4444'];
+
+  destroyChart('status');
+  const ctx = document.getElementById('status-chart').getContext('2d');
+  analyticsCharts.status = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderPaymentChart(payments) {
+  const counts = {};
+  payments.forEach(p => {
+    const m = p.payment_method || 'Unknown';
+    counts[m] = (counts[m] || 0) + 1;
+  });
+  const labels = Object.keys(counts);
+  const data = Object.values(counts);
+  const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+  destroyChart('payment');
+  const ctx = document.getElementById('payment-chart').getContext('2d');
+  analyticsCharts.payment = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+/* ==========================================================
+   CUSTOMER DETAIL MODAL
+   ========================================================== */
+let currentCustomerId = null;
+
+async function openCustomerModal(userId) {
+  currentCustomerId = userId;
+  const modal = document.getElementById('customer-modal');
+  const content = document.getElementById('customer-modal-content');
+
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+
+  try {
+    const { data: user, error: userErr } = await supabase
+      .from('users')
+      .select('id, full_name, whatsapp, email, created_at, admin_notes')
+      .eq('id', userId)
+      .single();
+
+    if (userErr || !user) throw userErr || new Error('User not found');
+
+    const { data: orders, error: ordersErr } = await supabase
+      .from('orders')
+      .select('id, order_id, delivery_city, delivery_address, product_links, order_status, total_amount, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (ordersErr) throw ordersErr;
+
+    const orderTextIds = (orders || []).map(o => o.order_id).filter(Boolean);
+    let payments = [];
+    if (orderTextIds.length > 0) {
+      const { data: pmtData, error: pmtErr } = await supabase
+        .from('payments')
+        .select('order_id, total_amount, status, advance_paid, due_amount, payment_method, created_at')
+        .in('order_id', orderTextIds);
+      if (!pmtErr) payments = pmtData || [];
+    }
+
+    renderCustomerModal(user, orders || [], payments);
+  } catch (err) {
+    console.error('Customer modal load failed:', err);
+    showToast('Failed to load customer details', 'error');
+    closeCustomerModal();
+  }
+}
+window.openCustomerModal = openCustomerModal;
+
+function closeCustomerModal() {
+  const modal = document.getElementById('customer-modal');
+  const content = document.getElementById('customer-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    currentCustomerId = null;
+  }, 200);
+}
+window.closeCustomerModal = closeCustomerModal;
+
+function renderCustomerModal(user, orders, payments) {
+  const name = user.full_name || 'Anonymous';
+  document.getElementById('customer-modal-name').textContent = name;
+  document.getElementById('customer-modal-avatar').textContent = name.charAt(0).toUpperCase();
+
+  const phone = user.whatsapp || '—';
+  const joined = user.created_at ? formatBtnDate(user.created_at) : '—';
+  document.getElementById('customer-modal-meta').textContent = `+975 ${phone} • Joined ${joined}`;
+
+  document.getElementById('customer-admin-notes').value = user.admin_notes || '';
+
+  const totalOrders = orders.length;
+  const verifiedPayments = payments.filter(p => p.status === 'verified');
+  const totalSpent = verifiedPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+  const aov = verifiedPayments.length > 0 ? Math.round(totalSpent / verifiedPayments.length) : 0;
+  const isTrusted = verifiedPayments.length >= 3;
+
+  document.getElementById('cust-stat-orders').textContent = totalOrders;
+  document.getElementById('cust-stat-spent').textContent = '₹' + Math.round(totalSpent).toLocaleString('en-IN');
+  document.getElementById('cust-stat-aov').textContent = '₹' + aov.toLocaleString('en-IN');
+  document.getElementById('cust-stat-status').innerHTML = isTrusted
+    ? '<span class="inline-flex items-center gap-1 text-emerald-600 text-sm font-semibold"><i class="fas fa-shield-alt text-xs"></i> Trusted</span>'
+    : '<span class="text-gray-400 text-sm">Regular</span>';
+
+  const ordersList = document.getElementById('customer-orders-list');
+  if (orders.length === 0) {
+    ordersList.innerHTML = '<p class="text-sm text-gray-400 italic">No orders found</p>';
+  } else {
+    const statusColors = {
+      pending: 'text-amber-600 bg-amber-50 border-amber-100',
+      quoted: 'text-indigo-600 bg-indigo-50 border-indigo-100',
+      confirmed: 'text-blue-600 bg-blue-50 border-blue-100',
+      ordered: 'text-sky-600 bg-sky-50 border-sky-100',
+      reached_jaigaon: 'text-teal-600 bg-teal-50 border-teal-100',
+      reached_phuntsholing: 'text-cyan-600 bg-cyan-50 border-cyan-100',
+      out_for_delivery: 'text-violet-600 bg-violet-50 border-violet-100',
+      shipped: 'text-purple-600 bg-purple-50 border-purple-100',
+      delivered: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+      cancelled: 'text-red-600 bg-red-50 border-red-100'
+    };
+
+    ordersList.innerHTML = orders.map(o => {
+      const payment = payments.find(p => p.order_id === o.order_id);
+      const total = payment?.total_amount || o.total_amount || 0;
+      const date = formatBtnDate(o.created_at);
+      const statusClass = statusColors[o.order_status] || statusColors.pending;
+      const productCount = safeParseArray(o.product_links).length;
+
+      return `
+        <div class="flex items-center justify-between p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-box text-gray-400 text-xs"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold text-gray-900 truncate">${esc(o.order_id || '—')}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded border ${statusClass} font-medium capitalize">${esc((o.order_status || 'pending').replace(/_/g, ' '))}</span>
+              </div>
+              <div class="text-xs text-gray-500 mt-0.5">${productCount} item${productCount !== 1 ? 's' : ''} • ${esc(o.delivery_city || '—')} • ${date}</div>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0 ml-3">
+            <div class="text-sm font-bold text-gray-900">₹${Math.round(total).toLocaleString('en-IN')}</div>
+            <div class="text-[10px] text-gray-400 uppercase">${esc(payment?.payment_method || 'No payment')}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const addrList = document.getElementById('customer-addresses-list');
+  const uniqueAddresses = [...new Set(orders.map(o => o.delivery_address).filter(Boolean))];
+  if (uniqueAddresses.length === 0) {
+    addrList.innerHTML = '<span class="text-sm text-gray-400 italic">No addresses recorded</span>';
+  } else {
+    addrList.innerHTML = uniqueAddresses.map(a => `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200">
+        <i class="fas fa-map-marker-alt text-gray-400"></i> ${esc(a)}
+      </span>
+    `).join('');
+  }
+}
+
+async function saveAdminNotes() {
+  if (!currentCustomerId) return;
+  const notes = document.getElementById('customer-admin-notes').value.trim();
+  const btn = document.getElementById('btn-save-notes');
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Saving...';
+
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ admin_notes: notes || null, updated_at: new Date().toISOString() })
+      .eq('id', currentCustomerId);
+
+    if (error) throw error;
+    showToast('Notes saved successfully', 'success');
+  } catch (err) {
+    console.error('Save notes failed:', err);
+    showToast('Failed to save notes: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.saveAdminNotes = saveAdminNotes;
+
+/* ==========================================================
+   ORDER ACTIVITY TIMELINE
+   ========================================================== */
+async function openTimelineModal(orderUuid, orderTextId) {
+  const modal = document.getElementById('timeline-modal');
+  const content = document.getElementById('timeline-modal-content');
+  document.getElementById('timeline-subtitle').textContent = `Order: ${orderTextId || orderUuid.slice(0, 8)}`;
+  document.getElementById('timeline-list').innerHTML = '<p class="text-sm text-gray-400 italic">Loading timeline...</p>';
+
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+
+  try {
+    const [orderRes, trackRes, payRes, quoteRes] = await Promise.all([
+      supabase.from('orders').select('created_at, order_status, updated_at, cancellation_reason, cancelled_at').eq('id', orderUuid).single(),
+      supabase.from('tracking_events').select('status, location, note, created_at').eq('order_id', orderUuid).order('created_at', { ascending: false }),
+      supabase.from('payments').select('status, total_amount, advance_paid, due_amount, payment_method, created_at, updated_at').eq('order_id', orderTextId).order('created_at', { ascending: false }),
+      supabase.from('quotations').select('status, total_amount, created_at, updated_at').eq('order_id', orderUuid).single()
+    ]);
+
+    const events = [];
+    const o = orderRes.data;
+    if (o) {
+      events.push({ time: o.created_at, type: 'order', title: 'Order Submitted', desc: 'Customer placed the order', icon: 'fa-shopping-cart', color: 'bg-gray-500' });
+      if (o.order_status === 'cancelled' && o.cancelled_at) {
+        events.push({ time: o.cancelled_at, type: 'cancel', title: 'Order Cancelled', desc: o.cancellation_reason || 'No reason provided', icon: 'fa-ban', color: 'bg-red-500' });
+      }
+    }
+
+    (trackRes.data || []).forEach(t => {
+      events.push({ time: t.created_at, type: 'tracking', title: `Status: ${(t.status || '').replace(/_/g, ' ')}`, desc: `${t.location ? `📍 ${t.location}` : ''}${t.note ? ` • ${t.note}` : ''}`, icon: 'fa-truck-fast', color: 'bg-indigo-500' });
+    });
+
+    (payRes.data || []).forEach(p => {
+      let title = `Payment ${p.status}`;
+      if (p.status === 'pending') title = 'Payment Pending';
+      if (p.status === 'partial') title = '50% Advance Verified';
+      if (p.status === 'verified') title = 'Payment Fully Verified';
+      events.push({ time: p.created_at, type: 'payment', title, desc: `₹${Math.round(p.total_amount || 0).toLocaleString('en-IN')} via ${p.payment_method || '—'}`, icon: 'fa-money-bill-wave', color: 'bg-emerald-500' });
+    });
+
+    if (quoteRes.data) {
+      const q = quoteRes.data;
+      const qTitle = q.status === 'accepted' ? 'Quotation Accepted' : q.status === 'rejected' ? 'Quotation Rejected' : 'Quotation Sent';
+      events.push({ time: q.created_at, type: 'quote', title: qTitle, desc: `Total quoted: ₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}`, icon: 'fa-file-invoice-dollar', color: 'bg-amber-500' });
+    }
+
+    events.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    const list = document.getElementById('timeline-list');
+    if (events.length === 0) {
+      list.innerHTML = '<p class="text-sm text-gray-400 italic">No activity recorded yet.</p>';
+    } else {
+      list.innerHTML = events.map(e => {
+        const date = formatBtnDate(e.time);
+        return `
+          <div class="relative">
+            <div class="absolute -left-[21px] top-0 w-3 h-3 rounded-full ${e.color} ring-4 ring-white"></div>
+            <div class="mb-1 flex items-center gap-2">
+              <span class="text-xs font-semibold text-gray-900">${esc(e.title)}</span>
+              <span class="text-[10px] text-gray-400">${date}</span>
+            </div>
+            <p class="text-sm text-gray-600 leading-relaxed">${esc(e.desc)}</p>
+          </div>`;
+      }).join('');
+    }
+  } catch (err) {
+    console.error('Timeline load failed:', err);
+    document.getElementById('timeline-list').innerHTML = '<p class="text-sm text-red-500">Failed to load timeline.</p>';
+  }
+}
+window.openTimelineModal = openTimelineModal;
+
+function closeTimelineModal() {
+  const modal = document.getElementById('timeline-modal');
+  const content = document.getElementById('timeline-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => modal.classList.add('hidden'), 200);
+}
+window.closeTimelineModal = closeTimelineModal;
+
+/* ==========================================================
+   CANCELLATION WORKFLOW
+   ========================================================== */
+let cancelTargetId = null;
+
+function openCancelModal(orderUuid, orderTextId) {
+  cancelTargetId = orderUuid;
+  document.getElementById('cancel-reason').value = '';
+  const modal = document.getElementById('cancel-modal');
+  const content = document.getElementById('cancel-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.openCancelModal = openCancelModal;
+
+function closeCancelModal() {
+  const modal = document.getElementById('cancel-modal');
+  const content = document.getElementById('cancel-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => { modal.classList.add('hidden'); cancelTargetId = null; }, 200);
+}
+window.closeCancelModal = closeCancelModal;
+
+async function confirmCancelOrder() {
+  if (!cancelTargetId) return;
+  const reason = document.getElementById('cancel-reason').value.trim();
+  const btn = document.getElementById('confirm-cancel-btn');
+  btn.disabled = true;
+  btn.textContent = 'Cancelling...';
+
+  try {
+    const { error } = await supabase.from('orders').update({
+      order_status: 'cancelled',
+      cancellation_reason: reason || null,
+      cancelled_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }).eq('id', cancelTargetId);
+
+    if (error) throw error;
+
+    const idx = allOrders.findIndex(o => o.id === cancelTargetId);
+    if (idx >= 0) {
+      allOrders[idx].order_status = 'cancelled';
+      allOrders[idx].cancellation_reason = reason;
+    }
+
+    closeCancelModal();
+    showToast('Order cancelled', 'info');
+    renderOrders(allOrders);
+    await refreshOrders();
+  } catch (err) {
+    console.error('Cancel failed:', err);
+    showToast('Failed to cancel order: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Cancel Order';
+  }
+}
+window.confirmCancelOrder = confirmCancelOrder;
+
+/* ==========================================================
+   REFUND WORKFLOW
+   ========================================================== */
+let refundTargetOrderTextId = null;
+let refundMaxAmount = 0;
+
+function openRefundModal(orderTextId, displayId, maxAmount) {
+  refundTargetOrderTextId = orderTextId;
+  refundMaxAmount = maxAmount;
+  document.getElementById('refund-amount').value = maxAmount;
+  document.getElementById('refund-reason').value = '';
+  document.getElementById('refund-subtitle').textContent = `Order: ${displayId || orderTextId}`;
+  const modal = document.getElementById('refund-modal');
+  const content = document.getElementById('refund-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.openRefundModal = openRefundModal;
+
+function closeRefundModal() {
+  const modal = document.getElementById('refund-modal');
+  const content = document.getElementById('refund-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => { modal.classList.add('hidden'); refundTargetOrderTextId = null; }, 200);
+}
+window.closeRefundModal = closeRefundModal;
+
+async function saveRefund() {
+  if (!refundTargetOrderTextId) return;
+  const amount = parseFloat(document.getElementById('refund-amount').value) || 0;
+  const reason = document.getElementById('refund-reason').value.trim();
+  const method = document.getElementById('refund-method').value;
+
+  if (amount <= 0 || amount > refundMaxAmount) {
+    showToast(`Refund amount must be between 1 and ${refundMaxAmount}`, 'error');
+    return;
+  }
+
+  const btn = document.getElementById('save-refund-btn');
+  btn.disabled = true;
+  btn.textContent = 'Recording...';
+
+  try {
+    const { error } = await supabase.from('refunds').insert([{
+      order_id: refundTargetOrderTextId,
+      amount: Math.round(amount),
+      reason: reason || null,
+      method: method,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    }]);
+    if (error) throw error;
+
+    closeRefundModal();
+    showToast('Refund recorded and pending processing', 'success');
+  } catch (err) {
+    console.error('Refund failed:', err);
+    showToast('Failed to record refund: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Record Refund';
+  }
+}
+window.saveRefund = saveRefund;
+
+/* ==========================================================
+   WHATSAPP TEMPLATES + MESSAGE LOG
+   ========================================================== */
+async function sendWhatsAppWithTemplate({ phone, templateId, variables = {}, orderTextId, userId, orderUuid }) {
+  const tpl = WA_TEMPLATES.find(t => t.id === templateId) || WA_TEMPLATES[0];
+  let msg = tpl.message;
+  Object.entries(variables).forEach(([k, v]) => {
+    msg = msg.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+  });
+
+  if (templateId === 'custom') {
+    msg = window.prompt('Enter your custom message:', '') || '';
+    if (!msg.trim()) return;
+  }
+
+  const cleanPhone = String(phone).replace(/\D/g, '');
+  const waUrl = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(msg);
+  window.open(waUrl, '_blank');
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    await supabase.from('message_logs').insert([{
+      user_id: userId || null,
+      order_id: orderTextId || null,
+      phone: cleanPhone,
+      message: msg,
+      template_name: tpl.name,
+      sent_by: session?.user?.email || 'admin',
+      created_at: new Date().toISOString()
+    }]);
+  } catch (e) {
+    console.warn('Message log failed:', e);
+  }
+}
+
+window.sendWhatsAppWithTemplate = sendWhatsAppWithTemplate;
+
+function getTemplateMenuHtml({ phone, orderTextId, total, balance, status, userId, code }) {
+  return WA_TEMPLATES.map(t => {
+    let vars = {};
+    if (t.id === 'otp') vars = { code: code || 'CODE' };
+    else if (t.id === 'quote_ready') vars = { order_id: orderTextId, total: total || '0' };
+    else if (t.id === 'advance_reminder') vars = { order_id: orderTextId, amount: Math.round((total || 0) * 0.5) };
+    else if (t.id === 'balance_reminder') vars = { order_id: orderTextId, amount: balance || '0' };
+    else if (t.id === 'tracking_update') vars = { order_id: orderTextId, status: (status || '').replace(/_/g, ' ') };
+    else if (t.id === 'delivered') vars = { order_id: orderTextId };
+    const varJson = JSON.stringify(vars).replace(/"/g, '&quot;');
+    return `<button onclick="window.sendWhatsAppWithTemplate({phone:'${esc(phone)}',templateId:'${t.id}',variables:${varJson},orderTextId:'${esc(orderTextId || '')}',userId:'${esc(userId || '')}')" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors">${esc(t.name)}</button>`;
+  }).join('');
+}
+
+// Override existing WA functions to show template picker
+window.openWaFromOtp = function(phone, code) {
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone, code });
+  document.body.appendChild(menu);
+  const rect = event.target.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+};
+
+window.openWaUser = function(phone) {
+  if (!phone || phone === '—') return;
+  const clean = String(phone).replace(/\D/g, '');
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone: clean });
+  document.body.appendChild(menu);
+ const rect = (event?.target || document.activeElement).getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+};
+
+/* ==========================================================
+   MESSAGE LOG TAB
+   ========================================================== */
+async function loadMessageLogs() {
+  const loader = document.getElementById('messages-loader');
+  const empty = document.getElementById('messages-empty');
+  const wrap = document.getElementById('messages-table-wrap');
+  const tbody = document.getElementById('messages-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('message_logs')
+      .select('*, users(full_name)')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+    allMessageLogs = data || [];
+    messagesLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allMessageLogs.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+    renderMessageLogs(allMessageLogs);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load messages failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load messages'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load message logs', 'error');
+  }
+}
+window.loadMessageLogs = loadMessageLogs;
+
+async function refreshMessageLogs() {
+  messagesLoaded = false;
+  await loadMessageLogs();
+}
+window.refreshMessageLogs = refreshMessageLogs;
+
+function renderMessageLogs(logs) {
+  const tbody = document.getElementById('messages-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = logs.map(m => {
+    const name = m.users?.full_name || '—';
+    const date = formatBtnDate(m.created_at);
+    const preview = (m.message || '').slice(0, 60) + ((m.message || '').length > 60 ? '...' : '');
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(date)}</td>
+        <td class="px-6 py-4 text-sm text-gray-900 font-medium">${esc(name)}</td>
+        <td class="px-6 py-4 text-xs text-gray-600"><span class="px-2 py-1 rounded-md bg-gray-100 border border-gray-200 font-medium">${esc(m.template_name || 'Custom')}</span></td>
+        <td class="px-6 py-4 text-xs font-mono text-gray-500">${esc(m.order_id || '—')}</td>
+        <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="${esc(m.message)}">${esc(preview)}</td>
+        <td class="px-6 py-4 text-right text-xs text-gray-400">${esc(m.sent_by || 'admin')}</td>
+      </tr>`;
+  }).join('');
+}
+
+/* ==========================================================
+   TRIPS / BATCH MANAGEMENT
+   ========================================================== */
+async function loadTrips() {
+  const loader = document.getElementById('trips-loader');
+  const empty = document.getElementById('trips-empty');
+  const wrap = document.getElementById('trips-table-wrap');
+  const tbody = document.getElementById('trips-tbody');
+  if (!tbody) return;
+
+  loader?.classList.remove('hidden');
+  empty?.classList.add('hidden');
+  wrap?.classList.add('hidden');
+
+  try {
+    const { data, error } = await supabase
+      .from('trips')
+      .select('*, trip_orders(count)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    allTrips = data || [];
+    tripsLoaded = true;
+    loader?.classList.add('hidden');
+
+    if (allTrips.length === 0) {
+      empty?.classList.remove('hidden');
+      return;
+    }
+    renderTrips(allTrips);
+    wrap?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Load trips failed:', err);
+    loader?.classList.add('hidden');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load trips'}</td></tr>`;
+    wrap?.classList.remove('hidden');
+    showToast('Failed to load trips', 'error');
+  }
+}
+window.loadTrips = loadTrips;
+
+async function refreshTrips() {
+  tripsLoaded = false;
+  await loadTrips();
+}
+window.refreshTrips = refreshTrips;
+
+function renderTrips(trips) {
+  const tbody = document.getElementById('trips-tbody');
+  if (!tbody) return;
+
+  const statusColors = {
+    preparing: 'bg-amber-50 text-amber-700 border-amber-100',
+    in_transit: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+    delivered: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    cancelled: 'bg-red-50 text-red-700 border-red-100'
+  };
+
+  tbody.innerHTML = trips.map(t => {
+    const count = t.trip_orders?.count || 0;
+    const date = formatBtnDate(t.created_at);
+    const status = t.status || 'preparing';
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
+        <td class="px-6 py-4 text-sm font-semibold text-gray-900">${esc(t.name)}</td>
+        <td class="px-6 py-4 text-sm text-gray-700">${esc(t.city || 'Mixed')}</td>
+        <td class="px-6 py-4 text-sm text-gray-700"><span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-medium">${count} order${count!==1?'s':''}</span></td>
+        <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColors[status]||statusColors.preparing}"><span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>${esc(status.replace(/_/g,' '))}</span></td>
+        <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${date}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            <button onclick="window.openTripDetailModal('${t.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100" title="Manage Trip"><i class="fas fa-cog"></i> Manage</button>
+            <button onclick="window.deleteTrip('${t.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Delete"><i class="fas fa-trash-alt text-xs"></i></button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+/* Create Trip */
+function openTripModal() {
+  tripSelectedOrders.clear();
+  document.getElementById('trip-name').value = '';
+  document.getElementById('trip-city').value = '';
+  document.getElementById('trip-selected-count').textContent = '0';
+  renderTripOrderSelector();
+  const modal = document.getElementById('trip-modal');
+  const content = document.getElementById('trip-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+}
+window.openTripModal = openTripModal;
+
+function closeTripModal() {
+  const modal = document.getElementById('trip-modal');
+  const content = document.getElementById('trip-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => modal.classList.add('hidden'), 200);
+}
+window.closeTripModal = closeTripModal;
+
+function renderTripOrderSelector() {
+  const container = document.getElementById('trip-orders-list');
+  const eligible = allOrders.filter(o => o.order_status !== 'cancelled' && o.order_status !== 'delivered');
+  if (eligible.length === 0) {
+    container.innerHTML = '<p class="p-4 text-sm text-gray-400 italic">No eligible orders available.</p>';
+    return;
+  }
+  container.innerHTML = eligible.map(o => {
+    const user = o.users || {};
+    const checked = tripSelectedOrders.has(o.id) ? 'checked' : '';
+    return `
+      <label class="flex items-center gap-3 p-3 hover:bg-white cursor-pointer transition-colors">
+        <input type="checkbox" value="${o.id}" onchange="window.toggleTripOrder(this)" ${checked} class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-gray-900 truncate">${esc(o.order_id || '—')}</span>
+            <span class="text-[10px] text-gray-500">${esc(o.delivery_city || '—')}</span>
+          </div>
+          <div class="text-xs text-gray-500">${esc(user.full_name || '—')} • ${esc(user.whatsapp || '—')}</div>
+        </div>
+      </label>`;
+  }).join('');
+}
+
+function toggleTripOrder(checkbox) {
+  if (checkbox.checked) tripSelectedOrders.add(checkbox.value);
+  else tripSelectedOrders.delete(checkbox.value);
+  document.getElementById('trip-selected-count').textContent = tripSelectedOrders.size;
+}
+window.toggleTripOrder = toggleTripOrder;
+
+async function saveTrip() {
+  const name = document.getElementById('trip-name').value.trim();
+  const city = document.getElementById('trip-city').value;
+  if (!name) { showToast('Enter a trip name', 'error'); return; }
+  if (tripSelectedOrders.size === 0) { showToast('Select at least one order', 'error'); return; }
+
+  const btn = document.getElementById('save-trip-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  try {
+    const { data: trip, error: tripErr } = await supabase.from('trips').insert([{
+      name, city: city || null, status: 'preparing', created_at: new Date().toISOString()
+    }]).select().single();
+    if (tripErr) throw tripErr;
+
+    const links = Array.from(tripSelectedOrders).map(oid => ({
+      trip_id: trip.id,
+      order_id: oid
+    }));
+    const { error: linkErr } = await supabase.from('trip_orders').insert(links);
+    if (linkErr) throw linkErr;
+
+    closeTripModal();
+    showToast('Trip created with ' + tripSelectedOrders.size + ' orders', 'success');
+    await refreshTrips();
+  } catch (err) {
+    console.error('Create trip failed:', err);
+    showToast('Failed to create trip: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Trip';
+  }
+}
+window.saveTrip = saveTrip;
+
+/* Trip Detail / Bulk Update */
+let currentTripId = null;
+
+async function openTripDetailModal(tripId) {
+  currentTripId = tripId;
+  const trip = allTrips.find(t => t.id === tripId);
+  if (!trip) return;
+
+  document.getElementById('trip-detail-id').value = tripId;
+  document.getElementById('trip-detail-name').textContent = trip.name;
+  document.getElementById('trip-detail-meta').textContent = 'Loading orders...';
+  document.getElementById('trip-bulk-status').value = 'reached_jaigaon';
+  document.getElementById('trip-bulk-note').value = '';
+
+  const modal = document.getElementById('trip-detail-modal');
+  const content = document.getElementById('trip-detail-modal-content');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    modal.classList.add('opacity-100');
+    content?.classList.remove('scale-95');
+    content?.classList.add('scale-100');
+  });
+
+  try {
+    const { data, error } = await supabase
+      .from('trip_orders')
+      .select('order_id, orders(id, order_id, users(full_name, whatsapp), delivery_city, order_status)')
+      .eq('trip_id', tripId);
+
+    if (error) throw error;
+
+    const list = document.getElementById('trip-detail-orders');
+    const orders = (data || []).map(d => d.orders).filter(Boolean);
+    document.getElementById('trip-detail-meta').textContent = `${orders.length} orders`;
+
+    if (orders.length === 0) {
+      list.innerHTML = '<p class="text-sm text-gray-400 italic">No orders in this trip.</p>';
+    } else {
+      list.innerHTML = orders.map(o => {
+        const u = o.users || {};
+        return `
+          <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100 text-sm">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-semibold text-gray-900 truncate">${esc(o.order_id || '—')}</span>
+              <span class="text-[10px] text-gray-500">${esc(o.delivery_city || '—')}</span>
+            </div>
+            <div class="text-xs text-gray-500 flex-shrink-0">${esc(u.full_name || '—')}</div>
+          </div>`;
+      }).join('');
+    }
+  } catch (err) {
+    console.error('Trip detail load failed:', err);
+    document.getElementById('trip-detail-orders').innerHTML = '<p class="text-sm text-red-500">Failed to load orders.</p>';
+  }
+}
+window.openTripDetailModal = openTripDetailModal;
+
+function closeTripDetailModal() {
+  const modal = document.getElementById('trip-detail-modal');
+  const content = document.getElementById('trip-detail-modal-content');
+  modal.classList.remove('opacity-100');
+  content?.classList.remove('scale-100');
+  content?.classList.add('scale-95');
+  setTimeout(() => { modal.classList.add('hidden'); currentTripId = null; }, 200);
+}
+window.closeTripDetailModal = closeTripDetailModal;
+
+async function bulkUpdateTrip() {
+  if (!currentTripId) return;
+  const status = document.getElementById('trip-bulk-status').value;
+  const note = document.getElementById('trip-bulk-note').value.trim();
+
+  const btn = document.getElementById('trip-bulk-update-btn');
+  btn.disabled = true;
+  btn.textContent = 'Updating...';
+
+  try {
+    const { data: links, error: linkErr } = await supabase
+      .from('trip_orders')
+      .select('order_id')
+      .eq('trip_id', currentTripId);
+    if (linkErr) throw linkErr;
+
+    const orderIds = (links || []).map(l => l.order_id);
+    if (orderIds.length === 0) { showToast('No orders to update', 'error'); return; }
+
+    const now = new Date().toISOString();
+    const trackingRows = orderIds.map(oid => ({
+      order_id: oid,
+      status: status,
+      location: note || null,
+      note: note || `Bulk updated via trip: ${status.replace(/_/g, ' ')}`,
+      created_at: now
+    }));
+
+    const { error: trackErr } = await supabase.from('tracking_events').insert(trackingRows);
+    if (trackErr) throw trackErr;
+
+    const { error: orderErr } = await supabase.from('orders').update({
+      order_status: status,
+      updated_at: now
+    }).in('id', orderIds);
+    if (orderErr) throw orderErr;
+
+    const { error: tripErr } = await supabase.from('trips').update({
+      status: status === 'delivered' ? 'delivered' : 'in_transit',
+      updated_at: now
+    }).eq('id', currentTripId);
+    if (tripErr) throw tripErr;
+
+    closeTripDetailModal();
+    showToast(`Updated ${orderIds.length} orders to ${status.replace(/_/g, ' ')}`, 'success');
+    await refreshTrips();
+    if (currentOrderSubTab === 'orders') await refreshOrders();
+  } catch (err) {
+    console.error('Bulk update failed:', err);
+    showToast('Failed to update trip: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Update All Orders';
+  }
+}
+window.bulkUpdateTrip = bulkUpdateTrip;
+
+async function deleteTrip(tripId) {
+  if (!confirm('Delete this trip? Orders will NOT be deleted.')) return;
+  try {
+    const { error } = await supabase.from('trips').delete().eq('id', tripId);
+    if (error) throw error;
+    showToast('Trip deleted', 'success');
+    await refreshTrips();
+  } catch (err) {
+    showToast('Failed to delete trip: ' + err.message, 'error');
+  }
+}
+window.deleteTrip = deleteTrip;
+
+/* ==========================================================
+   PENDING ACTION DASHBOARD (Analytics Tab)
+   ========================================================== */
+async function loadActionsDashboard() {
+  try {
+    const [{ count: pendingReviews }, { data: pendingQuoteOrders }, { data: pendingPay }, { data: forwardOrders }] = await Promise.all([
+      supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('is_approved', false),
+      supabase.from('orders').select('id').eq('order_status', 'pending'),
+      supabase.from('payments').select('id').eq('status', 'pending'),
+      supabase.from('orders').select('id').in('order_status', ['confirmed', 'ordered'])
+    ]);
+
+    document.getElementById('todo-reviews').textContent = pendingReviews || 0;
+    document.getElementById('todo-quotes').textContent = (pendingQuoteOrders || []).length;
+    document.getElementById('todo-payments').textContent = (pendingPay || []).length;
+    document.getElementById('todo-forward').textContent = (forwardOrders || []).length;
+  } catch (err) {
+    console.error('Actions dashboard failed:', err);
+  }
+}
+
+/* ==========================================================
+   EVENT WIRING (add to existing block)
+   ========================================================== */
+// Add these inside your existing event wiring section:
+document.getElementById('timeline-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTimelineModal(); });
+document.getElementById('cancel-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeCancelModal(); });
+document.getElementById('refund-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeRefundModal(); });
+document.getElementById('trip-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTripModal(); });
+document.getElementById('trip-detail-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTripDetailModal(); });
+
+// Profit auto-calc listeners
+['quote-actual-product', 'quote-actual-shipping', 'quote-actual-customs'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateQuoteProfit);
+});
+
+function updateQuoteProfit() {
+  const product = parseFloat(document.getElementById('quote-product-price')?.value) || 0;
+  const shipping = parseFloat(document.getElementById('quote-shipping')?.value) || 0;
+  const service = parseFloat(document.getElementById('quote-service')?.value) || 0;
+  const delivery = parseFloat(document.getElementById('quote-delivery')?.value) || 0;
+  const actualProduct = parseFloat(document.getElementById('quote-actual-product')?.value) || 0;
+  const actualShipping = parseFloat(document.getElementById('quote-actual-shipping')?.value) || 0;
+  const actualCustoms = parseFloat(document.getElementById('quote-actual-customs')?.value) || 0;
+  const total = product + shipping + service + delivery;
+  const profit = total - (actualProduct + actualShipping + actualCustoms);
+  const el = document.getElementById('quote-profit-display');
+  if (el) {
+    el.textContent = '₹ ' + Math.round(profit).toLocaleString('en-IN');
+    el.className = 'text-lg font-bold ' + (profit < 0 ? 'text-red-600' : 'text-emerald-700');
+  }
+}
 
 /* ==========================================================
    START
