@@ -24,12 +24,16 @@ let otpCodesLoaded = false;
 let portalUsersLoaded = false;
 let currentPortalSubTab = 'otp';
 let authChecked = false;
+<<<<<<< HEAD
 let currentOrderSubTab = 'orders';
+=======
+>>>>>>> 1c5cd4d (Update all files and folders)
 let allTrips = [];
 let tripsLoaded = false;
 let allMessageLogs = [];
 let messagesLoaded = false;
 let tripSelectedOrders = new Set();
+<<<<<<< HEAD
 
 const WA_TEMPLATES = [
   { id: 'custom', name: 'Custom Message', message: '' },
@@ -42,7 +46,18 @@ const WA_TEMPLATES = [
 ];
 
 
+=======
+>>>>>>> 1c5cd4d (Update all files and folders)
 
+const WA_TEMPLATES = [
+  { id: 'custom', name: 'Custom Message', message: '' },
+  { id: 'otp', name: 'Send OTP', message: 'Hello,\n\nYour Shop2Bhutan portal login code is: *{code}*\n\nEnter this code at https://shop2bt.vercel.app/portal.html to view your orders.\n\nThis code expires in 10 minutes.\n\n— Shop2Bhutan' },
+  { id: 'quote_ready', name: 'Quotation Ready', message: 'Hello,\n\nYour quotation for Order *{order_id}* is ready.\n\nTotal: ₹{total}\n\nPlease accept and proceed with payment via the portal:\nhttps://shop2bt.vercel.app/portal.html\n\n— Shop2Bhutan' },
+  { id: 'advance_reminder', name: 'Advance Reminder', message: 'Hello,\n\nReminder: 50% advance payment of ₹{amount} is due for Order *{order_id}*.\n\nPlease upload payment proof via the portal.\n\n— Shop2Bhutan' },
+  { id: 'balance_reminder', name: 'Balance Due Reminder', message: 'Hello,\n\nYour order *{order_id}* is out for delivery. Balance due: ₹{amount}.\n\nPlease keep the exact amount ready.\n\n— Shop2Bhutan' },
+  { id: 'tracking_update', name: 'Tracking Update', message: 'Hello,\n\nYour order *{order_id}* status has been updated to: *{status}*.\n\nTrack live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan' },
+  { id: 'delivered', name: 'Delivered + Review Request', message: 'Hello,\n\nYour order *{order_id}* has been delivered ✅.\n\nWe hope you love it! Please leave a review:\nhttps://shop2bt.vercel.app/\n\n— Shop2Bhutan' }
+];
 
 
 /* ==========================================================
@@ -100,7 +115,11 @@ async function init() {
    TAB VISUALS
    ========================================================== */
 function updateTabVisuals(index) {
+<<<<<<< HEAD
   [0, 1, 2, 3, 4].forEach(i => {
+=======
+  [0, 1, 2, 3, 4].forEach(i => {   // ← added 4
+>>>>>>> 1c5cd4d (Update all files and folders)
     const btn = document.getElementById(`tab-${i}`);
     const pane = document.getElementById(`content-${i}`);
     if (!btn || !pane) return;
@@ -485,7 +504,11 @@ function renderOrders(orders) {
               : `<button disabled class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 cursor-not-allowed" title="Tracking available after payment confirmation"><i class="fas fa-truck-fast text-xs"></i></button>`
             }
             <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
+<<<<<<< HEAD
           <button onclick="window.openTimelineModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Activity Timeline"><i class="fas fa-stream text-xs"></i></button>
+=======
+            <button onclick="window.openTimelineModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Activity Timeline"><i class="fas fa-stream text-xs"></i></button>
+>>>>>>> 1c5cd4d (Update all files and folders)
 ${o.order_status !== 'cancelled' && o.order_status !== 'delivered' ? `<button onclick="window.openCancelModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Cancel Order"><i class="fas fa-ban text-xs"></i></button>` : ''}
             </div>
         </td>
@@ -621,7 +644,13 @@ window.closeQuoteModal = closeQuoteModal;
   document.getElementById(id)?.addEventListener('input', () => {
     autoCalculateServiceFee();
     updateQuoteTotal();
+    updateQuoteProfit();   // ← added
   });
+});
+
+document.getElementById('quote-service')?.addEventListener('input', () => {
+  updateQuoteTotal();
+  updateQuoteProfit();     // ← added
 });
 
 document.getElementById('quote-service')?.addEventListener('input', updateQuoteTotal);
@@ -650,9 +679,15 @@ async function saveQuotation() {
   const note = document.getElementById('quote-note').value.trim();
   const total = Math.round(productPrice + shipping + service + delivery);
 
+<<<<<<< HEAD
 const actualProduct = parseFloat(document.getElementById('quote-actual-product')?.value) || 0;
 const actualShipping = parseFloat(document.getElementById('quote-actual-shipping')?.value) || 0;
 const actualCustoms = parseFloat(document.getElementById('quote-actual-customs')?.value) || 0;
+=======
+  const actualProduct = parseFloat(document.getElementById('quote-actual-product').value) || 0;
+const actualShipping = parseFloat(document.getElementById('quote-actual-shipping').value) || 0;
+const actualCustoms = parseFloat(document.getElementById('quote-actual-customs').value) || 0;
+>>>>>>> 1c5cd4d (Update all files and folders)
 const profit = Math.round(total - (actualProduct + actualShipping + actualCustoms));
 
   if (productPrice <= 0) {
@@ -688,6 +723,8 @@ profit_amount: profit,
       updated_at: new Date().toISOString()
       
     };
+
+    
 
     let error;
     if (existing) {
@@ -966,9 +1003,15 @@ function renderPayments(payments) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 shadow-sm" title="Verify 50% Advance"><i class="fas fa-check"></i> Verify 50%</button>`;
     } else if (isPartial) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Full Payment"><i class="fas fa-check-double"></i> Verify Full</button>`;
+<<<<<<< HEAD
     }     else if (status === 'verified') {
       actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>
       <button onclick="window.openRefundModal('${p.order_id || ''}', '${esc(order.order_id || '')}', ${Math.round(total)})" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors ml-1" title="Record Refund"><i class="fas fa-undo text-xs"></i></button>`;
+=======
+    } else if (status === 'verified') {
+      actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>
+  <button onclick="window.openRefundModal('${p.order_id || ''}', '${esc(order.order_id || '')}', ${Math.round(total)})" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors ml-1" title="Record Refund"><i class="fas fa-undo text-xs"></i></button>`;
+>>>>>>> 1c5cd4d (Update all files and folders)
     }
 
     return `
@@ -1374,7 +1417,7 @@ function renderOtpCodes(codes) {
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
             ${isActive ? `<button onclick="window.copyOtpCode('${esc(code)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100" title="Copy code"><i class="fas fa-copy"></i> Copy</button>` : ''}
-            <button onclick="window.openWaFromOtp('${esc(phone)}', '${esc(code)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+            <button onclick="window.openWaFromOtp('${esc(phone)}', '${esc(code)}', event)" ...>
           </div>
         </td>
       </tr>`;
@@ -1464,13 +1507,22 @@ async function loadPortalUsers() {
       return;
     }
 
+    // FIX: fetch actual rows and count client-side instead of broken count:exact
     const userIds = allPortalUsers.map(u => u.id);
-    const { data: orderCounts } = await supabase
+    const { data: orderRows, error: orderErr } = await supabase
       .from('orders')
-      .select('user_id', { count: 'exact' })
+      .select('user_id')
       .in('user_id', userIds);
 
-    renderPortalUsers(allPortalUsers, orderCounts || []);
+    if (orderErr) console.warn('Order count fetch warning:', orderErr);
+
+    // Build a count map client-side
+    const countMap = {};
+    (orderRows || []).forEach(o => {
+      countMap[o.user_id] = (countMap[o.user_id] || 0) + 1;
+    });
+
+    renderPortalUsers(allPortalUsers, countMap);
     wrap?.classList.remove('hidden');
   } catch (err) {
     console.error('Load users failed:', err);
@@ -1488,7 +1540,7 @@ async function refreshPortalUsers() {
 }
 window.refreshPortalUsers = refreshPortalUsers;
 
-function renderPortalUsers(users, orderCounts) {
+function renderPortalUsers(users, countMap) {
   const tbody = document.getElementById('users-tbody');
   if (!tbody) return;
 
@@ -1498,7 +1550,7 @@ function renderPortalUsers(users, orderCounts) {
     const email = u.email || '—';
     const _uDate = u.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(u.created_at) ? u.created_at : u.created_at + 'Z') : null;
     const joined = _uDate && !isNaN(_uDate) ? _uDate.toLocaleDateString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-    const count = orderCounts.filter(o => o.user_id === u.id).length;
+    const count = countMap[u.id] || 0;   // ← use map lookup
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
@@ -1516,8 +1568,13 @@ function renderPortalUsers(users, orderCounts) {
         <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(joined)}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+<<<<<<< HEAD
            <button onclick="window.openCustomerModal('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Profile"><i class="fas fa-user text-xs"></i></button>
             <button onclick="window.openWaUser('${esc(phone)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+=======
+            <button onclick="window.openCustomerModal('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Profile"><i class="fas fa-user text-xs"></i></button>
+            <button onclick="window.openWaUser('${esc(phone)}', event)" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+>>>>>>> 1c5cd4d (Update all files and folders)
           </div>
         </td>
       </tr>`;
@@ -1533,10 +1590,33 @@ function viewUserOrders(userId) {
 }
 window.viewUserOrders = viewUserOrders;
 
-function openWaUser(phone) {
+window.openWaFromOtp = function(phone, code, event) {
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone, code });
+  document.body.appendChild(menu);
+  const rect = event.target.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+};
+
+window.openWaUser = function(phone, event) {
   if (!phone || phone === '—') return;
-  window.open('https://wa.me/975' + phone, '_blank');
-}
+  const clean = String(phone).replace(/\D/g, '');
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone: clean });
+  document.body.appendChild(menu);
+  const rect = event.target.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+};
 window.openWaUser = openWaUser;
 
 /* ==========================================================
@@ -1678,6 +1758,9 @@ function showToast(message, type = 'info') {
 document.getElementById('confirm-delete-btn')?.addEventListener('click', confirmDelete);
 document.getElementById('delete-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeAllModals();
+});
+document.getElementById('customer-modal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeCustomerModal();
 });
 document.getElementById('quote-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeQuoteModal();
@@ -2144,6 +2227,7 @@ async function loadAnalytics() {
     console.error('Analytics load failed:', err);
     showToast('Failed to load analytics', 'error');
   }
+<<<<<<< HEAD
 
   loadActionsDashboard();
 }
@@ -2157,6 +2241,12 @@ function renderAnalytics({ payments, orders, quotes }) {
     if (el) el.textContent = text;
   };
 
+=======
+}
+window.loadAnalytics = loadAnalytics;
+
+function renderAnalytics({ payments, orders, quotes }) {
+>>>>>>> 1c5cd4d (Update all files and folders)
   // --- Card Metrics ---
   const verifiedPayments = payments.filter(p => p.status === 'verified');
   const totalRevenue = verifiedPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
@@ -2184,6 +2274,7 @@ function renderAnalytics({ payments, orders, quotes }) {
   const acceptedQuotes = quotes.filter(q => q.status === 'accepted').length;
   const quoteRate = quotes.length > 0 ? Math.round((acceptedQuotes / quotes.length) * 100) : 0;
 
+<<<<<<< HEAD
  setText('metric-total-revenue', '₹' + Math.round(totalRevenue).toLocaleString('en-IN'));
 setText('metric-pending-revenue', '₹' + Math.round(pendingRevenue).toLocaleString('en-IN'));
 setText('metric-month-revenue', '₹' + Math.round(monthRevenue).toLocaleString('en-IN'));
@@ -2191,6 +2282,15 @@ setText('metric-aov', '₹' + aov.toLocaleString('en-IN'));
 setText('metric-total-orders', orders.length.toLocaleString('en-IN'));
 setText('metric-quote-rate', quoteRate + '%');
 setText('metric-today-orders', todayOrders);
+=======
+  document.getElementById('metric-total-revenue').textContent = '₹' + Math.round(totalRevenue).toLocaleString('en-IN');
+  document.getElementById('metric-pending-revenue').textContent = '₹' + Math.round(pendingRevenue).toLocaleString('en-IN');
+  document.getElementById('metric-month-revenue').textContent = '₹' + Math.round(monthRevenue).toLocaleString('en-IN');
+  document.getElementById('metric-aov').textContent = '₹' + aov.toLocaleString('en-IN');
+  document.getElementById('metric-total-orders').textContent = orders.length.toLocaleString('en-IN');
+  document.getElementById('metric-quote-rate').textContent = quoteRate + '%';
+  document.getElementById('metric-today-orders').textContent = todayOrders;
+>>>>>>> 1c5cd4d (Update all files and folders)
 
   // --- Charts ---
   renderRevenueChart(verifiedPayments);
@@ -2808,8 +2908,11 @@ async function sendWhatsAppWithTemplate({ phone, templateId, variables = {}, ord
   }
 }
 
+<<<<<<< HEAD
 window.sendWhatsAppWithTemplate = sendWhatsAppWithTemplate;
 
+=======
+>>>>>>> 1c5cd4d (Update all files and folders)
 function getTemplateMenuHtml({ phone, orderTextId, total, balance, status, userId, code }) {
   return WA_TEMPLATES.map(t => {
     let vars = {};
@@ -2820,7 +2923,11 @@ function getTemplateMenuHtml({ phone, orderTextId, total, balance, status, userI
     else if (t.id === 'tracking_update') vars = { order_id: orderTextId, status: (status || '').replace(/_/g, ' ') };
     else if (t.id === 'delivered') vars = { order_id: orderTextId };
     const varJson = JSON.stringify(vars).replace(/"/g, '&quot;');
+<<<<<<< HEAD
     return `<button onclick="window.sendWhatsAppWithTemplate({phone:'${esc(phone)}',templateId:'${t.id}',variables:${varJson},orderTextId:'${esc(orderTextId || '')}',userId:'${esc(userId || '')}')" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors">${esc(t.name)}</button>`;
+=======
+    return `<button onclick="window.sendWhatsAppWithTemplate({phone:'${esc(phone)}',templateId:'${t.id}',variables:${varJson},orderTextId:'${esc(orderTextId || '')}',userId:'${userId || ''}'})" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors">${esc(t.name)}</button>`;
+>>>>>>> 1c5cd4d (Update all files and folders)
   }).join('');
 }
 
@@ -2845,7 +2952,11 @@ window.openWaUser = function(phone) {
   menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
   menu.innerHTML = getTemplateMenuHtml({ phone: clean });
   document.body.appendChild(menu);
+<<<<<<< HEAD
  const rect = (event?.target || document.activeElement).getBoundingClientRect();
+=======
+  const rect = event.target.getBoundingClientRect();
+>>>>>>> 1c5cd4d (Update all files and folders)
   menu.style.top = (rect.bottom + 4) + 'px';
   menu.style.left = rect.left + 'px';
   const close = () => menu.remove();
@@ -3236,13 +3347,30 @@ window.deleteTrip = deleteTrip;
    ========================================================== */
 async function loadActionsDashboard() {
   try {
+<<<<<<< HEAD
     const [{ count: pendingReviews }, { data: pendingQuoteOrders }, { data: pendingPay }, { data: forwardOrders }] = await Promise.all([
+=======
+    const [
+      { count: pendingReviews, error: e1 },
+      { data: pendingQuoteOrders, error: e2 },
+      { data: pendingPay, error: e3 },
+      { data: forwardOrders, error: e4 }
+    ] = await Promise.all([
+>>>>>>> 1c5cd4d (Update all files and folders)
       supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('is_approved', false),
       supabase.from('orders').select('id').eq('order_status', 'pending'),
       supabase.from('payments').select('id').eq('status', 'pending'),
       supabase.from('orders').select('id').in('order_status', ['confirmed', 'ordered'])
     ]);
 
+<<<<<<< HEAD
+=======
+    if (e1) console.warn('Pending reviews count error:', e1);
+    if (e2) console.warn('Pending orders error:', e2);
+    if (e3) console.warn('Pending payments error:', e3);
+    if (e4) console.warn('Forward orders error:', e4);
+
+>>>>>>> 1c5cd4d (Update all files and folders)
     document.getElementById('todo-reviews').textContent = pendingReviews || 0;
     document.getElementById('todo-quotes').textContent = (pendingQuoteOrders || []).length;
     document.getElementById('todo-payments').textContent = (pendingPay || []).length;
