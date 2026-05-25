@@ -1797,7 +1797,7 @@ function setupNotificationRealtime() {
     .channel('notif-payments-updates')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments' }, (payload) => {
       const pay = payload.new;
-      const old = payload.old;
+      const old = (payload.old && Object.keys(payload.old).length > 0) ? payload.old : {};
       if (old.status === 'pending' && pay.status === 'partial') {
         addNotification({
           type: 'payment',
@@ -1851,7 +1851,7 @@ function setupNotificationRealtime() {
     .channel('notif-quotes')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quotations' }, (payload) => {
       const q = payload.new;
-      const old = payload.old;
+      const old = (payload.old && Object.keys(payload.old).length > 0) ? payload.old : {};
       if (old.status === 'pending' && q.status === 'accepted') {
         addNotification({
           type: 'quotation',
@@ -2068,8 +2068,8 @@ function handleNotifClick(id) {
 
   if (notif.data?.tab !== undefined) {
     const tabIndex = parseInt(notif.data.tab);
-    if (tabIndex >= 0 && tabIndex <= 3) {
-      switchTab(tabIndex);
+    if (tabIndex >= 0 && tabIndex <= 4) {
+      window.switchTab(tabIndex);
       if (notif.data.subtab) {
         if (tabIndex === 1) switchOrderSubTab(notif.data.subtab);
         if (tabIndex === 3) switchPortalSubTab(notif.data.subtab);
@@ -3284,6 +3284,102 @@ function updateQuoteProfit() {
   }
 }
 
+/* ==========================================================
+   AUTO-REFRESH SYSTEM
+   ========================================================== */
+let autoRefreshIntervals = {};
+const REFRESH_INTERVALS = {
+  reviews: 30000,      // 30 seconds
+  orders: 20000,       // 20 seconds  
+  quotations: 25000,   // 25 seconds
+  payments: 20000,     // 20 seconds
+  analytics: 60000,    // 60 seconds
+  portal: 30000,       // 30 seconds
+  trips: 30000,        // 30 seconds
+  messages: 30000      // 30 seconds
+};
+
+function startAutoRefresh(tabName, refreshFn) {
+  stopAutoRefresh(tabName);
+  autoRefreshIntervals[tabName] = setInterval(() => {
+    console.log(`[AutoRefresh] Refreshing ${tabName}...`);
+    refreshFn().catch(err => console.warn(`[AutoRefresh] ${tabName} refresh failed:`, err));
+  }, REFRESH_INTERVALS[tabName]);
+}
+
+function stopAutoRefresh(tabName) {
+  if (autoRefreshIntervals[tabName]) {
+    clearInterval(autoRefreshIntervals[tabName]);
+    delete autoRefreshIntervals[tabName];
+  }
+}
+
+function stopAllAutoRefresh() {
+  Object.keys(autoRefreshIntervals).forEach(stopAutoRefresh);
+}
+
+// Update switchTab to handle auto-refresh
+const originalSwitchTab = switchTab;
+window.switchTab = function(index) {
+  stopAllAutoRefresh();
+  originalSwitchTab(index);
+  
+  // Start auto-refresh for active tab
+  switch(index) {
+    case 0: startAutoRefresh('reviews', refreshReviews); break;
+    case 1: 
+      startAutoRefresh('orders', refreshOrders);
+      startAutoRefresh('quotations', refreshQuotations);
+      startAutoRefresh('payments', refreshPayments);
+      break;
+    case 2: startAutoRefresh('analytics', loadAnalytics); break;
+    case 3: 
+      startAutoRefresh('portal', loadPortal);
+      startAutoRefresh('messages', refreshMessageLogs);
+      break;
+    case 4: startAutoRefresh('trips', refreshTrips); break;
+  }
+};
+
+// Update sub-tab switching to handle auto-refresh
+const originalSwitchOrderSubTab = switchOrderSubTab;
+window.switchOrderSubTab = function(tab) {
+  originalSwitchOrderSubTab(tab);
+  // Restart order tab refresh when switching subtabs
+  stopAutoRefresh('orders');
+  stopAutoRefresh('quotations');
+  stopAutoRefresh('payments');
+  
+  switch(tab) {
+    case 'orders': startAutoRefresh('orders', refreshOrders); break;
+    case 'quotations': startAutoRefresh('quotations', refreshQuotations); break;
+    case 'payments': startAutoRefresh('payments', refreshPayments); break;
+  }
+};
+
+const originalSwitchPortalSubTab = switchPortalSubTab;
+window.switchPortalSubTab = function(tab) {
+  originalSwitchPortalSubTab(tab);
+  stopAutoRefresh('portal');
+  stopAutoRefresh('messages');
+  
+  switch(tab) {
+    case 'otp': startAutoRefresh('portal', refreshOtpCodes); break;
+    case 'users': startAutoRefresh('portal', refreshPortalUsers); break;
+    case 'messages': startAutoRefresh('messages', refreshMessageLogs); break;
+  }
+};
+
+// Clean up on page hide
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopAllAutoRefresh();
+  } else {
+    // Restart based on current tab
+    const activeTab = [0,1,2,3,4].find(i => !document.getElementById(`content-${i}`)?.classList.contains('hidden'));
+    if (activeTab !== undefined) window.switchTab(activeTab);
+  }
+});
 /* ==========================================================
    START
    ========================================================== */

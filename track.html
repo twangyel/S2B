@@ -386,6 +386,35 @@
               <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><i class="fas fa-check-circle text-emerald-600 text-xl"></i></div>
               <div class="font-bold text-emerald-800 text-lg mb-1">Quotation Accepted</div>
               <p class="text-sm text-emerald-600 leading-relaxed" id="accepted-msg-text">—</p>
+              <!-- NEW: Payment breakdown for 50/50 -->
+  <div id="payment-breakdown" class="hidden mt-4 p-4 bg-white rounded-lg border border-emerald-100 text-left">
+    <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Payment Schedule</div>
+    <div class="space-y-2">
+      <div class="flex justify-between items-center p-2 bg-emerald-50/50 rounded-lg">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">1</div>
+          <span class="text-sm font-medium text-gray-700">Advance Payment (50%)</span>
+        </div>
+        <span class="text-sm font-bold text-emerald-700" id="advance-amount">₹0</span>
+      </div>
+      <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg opacity-60">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-[10px] font-bold">2</div>
+          <span class="text-sm font-medium text-gray-700">Balance Due (50%)</span>
+        </div>
+        <span class="text-sm font-bold text-gray-500" id="balance-amount">₹0</span>
+      </div>
+    </div>
+    <div class="mt-3 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
+      <i class="fas fa-info-circle mr-1"></i>
+      Pay the advance now. Balance will be due before delivery.
+    </div>
+  </div>
+  
+  <a id="wa-pay-btn" href="#" target="_blank" class="whatsapp-btn inline-flex items-center gap-2 mt-4 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-all">
+    <i class="fa-brands fa-whatsapp text-lg"></i> <span id="wa-btn-text">Pay on WhatsApp</span>
+  </a>
+</div>
               <a id="wa-pay-btn" href="#" target="_blank" class="whatsapp-btn inline-flex items-center gap-2 mt-4 px-6 py-2.5 text-white rounded-xl text-sm font-bold transition-all"><i class="fa-brands fa-whatsapp text-lg"></i> Pay on WhatsApp</a>
             </div>
 
@@ -1193,64 +1222,109 @@
     /* ==========================================================
        QUOTE RESPONSE
        ========================================================== */
-    async function respondQuote(response) {
-      if (!currentQuote || !currentOrder) return;
+    /* ==========================================================
+   QUOTE RESPONSE (FIXED FOR 50/50 PAYMENT)
+   ========================================================== */
+async function respondQuote(response) {
+  if (!currentQuote || !currentOrder) return;
 
-      if (response === 'accepted') {
-        if (currentPaymentInfo?.payment_method === 'Cash on Delivery') {
-          const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
-          const originalText = btn?.innerHTML;
-          if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
+  if (response === 'accepted') {
+    const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+    const originalText = btn?.innerHTML;
+    if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
 
-          try {
-            const { error: qErr } = await supabase
-              .from('quotations')
-              .update({ status: 'accepted', updated_at: new Date().toISOString() })
-              .eq('id', currentQuote.id);
-            if (qErr) throw qErr;
+    try {
+      const { error: qErr } = await supabase
+        .from('quotations')
+        .update({ status: 'accepted', updated_at: new Date().toISOString() })
+        .eq('id', currentQuote.id);
+      if (qErr) throw qErr;
 
-            await supabase.from('orders').update({ order_status: 'quoted' }).eq('id', currentOrder.id);
+      await supabase.from('orders').update({ order_status: 'quoted' }).eq('id', currentOrder.id);
 
-            const total = Math.round(currentQuote.total_amount || 0);
-            const msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* (Cash on Delivery).\nTotal: ₹${total}\n\nPlease confirm my order for delivery.`;
+      // Determine payment method
+      const isCod = currentPaymentInfo?.payment_method === 'Cash on Delivery';
+      const isFullPayment = currentPaymentInfo?.payment_method === 'Full Payment';
+      const isFiftyFifty = !isCod && !isFullPayment; // Default is 50/50
+      
+      const total = Math.round(currentQuote.total_amount || 0);
+      const advance = Math.round(total * 0.5);
+      const balance = total - advance;
 
-            showToast('Quotation accepted!', 'success');
-            setTimeout(() => {
-              window.open('https://wa.me/97577113302?text=' + encodeURIComponent(msg), '_blank');
-              trackOrder();
-            }, 1000);
-          } catch (err) {
-            console.error('COD accept error:', err);
-            showToast('Failed to accept. Please try again.', 'error');
-            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-          }
-          return;
-        }
-
-        document.getElementById('quote-actions').classList.add('hidden');
-        document.getElementById('payment-form').classList.remove('hidden');
-        return;
+      let msg = '';
+      let waBtnText = '';
+      
+      if (isCod) {
+        msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}* (Cash on Delivery).\nTotal: ₹${total}\n\nPlease confirm my order for delivery.`;
+        waBtnText = 'Confirm COD on WhatsApp';
+      } else if (isFullPayment) {
+        msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}*.\nTotal: ₹${total}\nPayment: Full Payment\n\nShare payment details.`;
+        waBtnText = 'Pay Full Amount';
+      } else {
+        // 50/50 Payment - Show breakdown
+        msg = `Hello Shop2Bhutan,\n\nI have accepted the quotation for Order *${currentOrder.order_id}*.\n\nTotal: ₹${total}\nAdvance (50%): ₹${advance}\nBalance Due: ₹${balance}\n\nPlease share payment details for the advance.`;
+        waBtnText = 'Pay 50% Advance';
       }
 
-      const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
-      const originalText = btn?.innerHTML;
-      if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
-
-      try {
-        const { error: qErr } = await supabase
-          .from('quotations')
-          .update({ status: response, updated_at: new Date().toISOString() })
-          .eq('id', currentQuote.id);
-        if (qErr) throw qErr;
-        showToast('Quotation rejected.', 'success');
-        trackOrder();
-      } catch (err) {
-        console.error('Respond error:', err);
-        showToast('Failed to respond. Please try again.', 'error');
-        if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+      showToast('Quotation accepted!', 'success');
+      
+      // Update UI with payment breakdown
+      document.getElementById('quote-actions').classList.add('hidden');
+      document.getElementById('payment-form').classList.add('hidden');
+      document.getElementById('quote-accepted-msg').classList.remove('hidden');
+      document.getElementById('quote-rejected-msg').classList.add('hidden');
+      
+      const msgText = document.getElementById('accepted-msg-text');
+      const waBtn = document.getElementById('wa-pay-btn');
+      const breakdownDiv = document.getElementById('payment-breakdown');
+      
+      if (isFiftyFifty) {
+        msgText.innerHTML = `Please review your payment schedule below. Pay the <strong>₹${advance.toLocaleString('en-IN')}</strong> advance to confirm your order.`;
+        breakdownDiv.classList.remove('hidden');
+        document.getElementById('advance-amount').textContent = '₹' + advance.toLocaleString('en-IN');
+        document.getElementById('balance-amount').textContent = '₹' + balance.toLocaleString('en-IN');
+      } else if (isCod) {
+        msgText.innerHTML = `Your Cash on Delivery order is confirmed. Total: <strong>₹${total.toLocaleString('en-IN')}</strong>`;
+        breakdownDiv.classList.add('hidden');
+      } else {
+        msgText.innerHTML = `Please pay <strong>₹${total.toLocaleString('en-IN')}</strong> (full amount) via WhatsApp.`;
+        breakdownDiv.classList.add('hidden');
       }
+      
+      document.getElementById('wa-btn-text').textContent = waBtnText;
+      waBtn.href = 'https://wa.me/97577113302?text=' + encodeURIComponent(msg);
+      
+      // Auto-refresh to sync state
+      setTimeout(() => trackOrder(), 2000);
+      
+    } catch (err) {
+      console.error('Accept error:', err);
+      showToast('Failed to accept. Please try again.', 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
     }
-    window.respondQuote = respondQuote;
+    return;
+  }
+
+  // Rejected flow remains same...
+  const btn = document.querySelector(`button[onclick="respondQuote('${response}')"]`);
+  const originalText = btn?.innerHTML;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="loading-spinner"></div> Processing...'; }
+
+  try {
+    const { error: qErr } = await supabase
+      .from('quotations')
+      .update({ status: response, updated_at: new Date().toISOString() })
+      .eq('id', currentQuote.id);
+    if (qErr) throw qErr;
+    showToast('Quotation rejected.', 'info');
+    trackOrder();
+  } catch (err) {
+    console.error('Respond error:', err);
+    showToast('Failed to respond. Please try again.', 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  }
+}
+window.respondQuote = respondQuote;
 
     /* ==========================================================
        PAYMENT PROOF

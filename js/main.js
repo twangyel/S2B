@@ -856,7 +856,7 @@ function buildReview() {
         '<div class="review-block-val">' + escHtml(name || '—') + '</div>',
         '<div class="review-block-sub">+975 ' + escHtml(phone || '—') + '</div>',
       '</div>',
-      '<button class="review-edit-btn" onclick="goStep(1)">Edit</button>',
+      '<button type="button" class="review-edit-btn" onclick="goStep(1)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -866,7 +866,7 @@ function buildReview() {
         '<div class="review-block-val">' + escHtml(selectedCity || '—') + '</div>',
         '<div class="review-block-sub">' + escHtml(address || '—') + '</div>',
       '</div>',
-      '<button class="review-edit-btn" onclick="goStep(2)">Edit</button>',
+      '<button type="button" class="review-edit-btn" onclick="goStep(2)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -875,7 +875,7 @@ function buildReview() {
         '<div class="review-block-title">Products</div>',
         '<div class="review-block-val" style="font-weight:400;">' + (productHtml || '<em>No products added yet</em>') + '</div>',
       '</div>',
-      '<button class="review-edit-btn" onclick="goStep(3)">Edit</button>',
+      '<button type="button" class="review-edit-btn" onclick="goStep(3)">Edit</button>',
     '</div>',
 
     '<div class="review-block">',
@@ -884,7 +884,7 @@ function buildReview() {
         '<div class="review-block-title">Payment</div>',
         '<div class="review-block-val">' + escHtml(selectedPaymentMethod || '—') + '</div>',
       '</div>',
-      '<button class="review-edit-btn" onclick="goStep(4)">Edit</button>',
+      '<button type="button" class="review-edit-btn" onclick="goStep(4)">Edit</button>',
     '</div>',
 
     fileCount > 0 ? [
@@ -1143,7 +1143,7 @@ form.addEventListener('submit', async function(e) {
       '💳 Payment: ' + paymentMethod + '\n' +
       '📍 Address: ' + addressVal + '\n\n' +
       '🛒 Products:\n' + productsText + screenshotNote +
-      '\n\n👉 You can also view all your orders at: https://shop2bt.vercel.app/portal.html';
+      '\n\n👉 You can also view all your orders at: https://shop2bt.vercel.app/track.html';
 
     document.getElementById('whatsappConfirmBtn').href =
       'https://wa.me/97577113302?text=' + encodeURIComponent(message);
