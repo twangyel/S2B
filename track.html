@@ -82,6 +82,7 @@
     }
   </script>
   <base target="_blank">
+<base target="_blank">
 </head>
 <body class="min-h-screen antialiased">
 
@@ -507,7 +508,17 @@
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(
       "https://deecrnfbvgbzyybqhywy.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZWNybmZidmdienl5YnFoeXd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk4MTAsImV4cCI6MjA5NDY1NTgxMH0.zO07GeHD-EW_6589vP07nTP95zFNIhp8YG57I5vWOf8",
+      {
+        realtime: {
+          worker: true,
+          heartbeatCallback: (status) => {
+            if (status === 'disconnected') {
+              console.log('[Realtime] Heartbeat disconnected, will auto-reconnect');
+            }
+          }
+        }
+      }
     );
 
     function pad2(n) { return String(n).padStart(2, '0'); }
@@ -552,24 +563,33 @@
 
     function subscribeToOrder(orderId) {
       if (realtimeChannel) {
-        supabase.removeChannel(realtimeChannel);
+        try { supabase.removeChannel(realtimeChannel); } catch (e) { /* ignore */ }
         realtimeChannel = null;
       }
-      realtimeChannel = supabase
-        .channel(`public:order-${orderId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `order_id=eq.${orderId}` }, () => {
-          showToast('Order updated', 'info');
-          trackOrder();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'quotations', filter: `order_id=eq.${orderId}` }, () => {
-          showToast('Quotation updated', 'info');
-          trackOrder();
-        })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `order_id=eq.${orderId}` }, () => {
-          showToast('New tracking update!', 'success');
-          trackOrder();
-        })
-        .subscribe();
+      // Mobile browsers often throttle/block WebSockets — use a timeout to avoid blocking
+      setTimeout(() => {
+        try {
+          realtimeChannel = supabase
+            .channel(`public:order-${orderId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `order_id=eq.${orderId}` }, () => {
+              showToast('Order updated', 'info');
+              trackOrder();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'quotations', filter: `order_id=eq.${orderId}` }, () => {
+              showToast('Quotation updated', 'info');
+              trackOrder();
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `order_id=eq.${orderId}` }, () => {
+              showToast('New tracking update!', 'success');
+              trackOrder();
+            })
+            .subscribe((status) => {
+              console.log('[Realtime] Subscription status:', status);
+            });
+        } catch (e) {
+          console.warn('[Realtime] Could not subscribe:', e.message || e);
+        }
+      }, 100);
     }
 
     const trackingStatusLabels = {
@@ -1101,7 +1121,12 @@
         switchTab('overview');
 
         results.classList.remove('hidden');
-        subscribeToOrder(orderTextId);
+        // Subscribe to realtime updates — wrapped safely so mobile WebSocket failures don't break tracking
+        try {
+          subscribeToOrder(orderTextId);
+        } catch (subErr) {
+          console.warn('[Realtime] Subscription skipped on this device:', subErr.message || subErr);
+        }
         if (order.order_status === 'delivered') {
           setTimeout(() => {
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#10b981', '#f59e0b'] });
@@ -1111,7 +1136,15 @@
 
       } catch (err) {
         console.error('Track error:', err);
-        showToast('Something went wrong. Please try again.', 'error');
+        const errMsg = err && err.message ? err.message : String(err);
+        // Show a more helpful message on mobile
+        if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('Failed')) {
+          showToast('Network error. Check your connection and try again.', 'error');
+        } else if (errMsg.includes('Realtime') || errMsg.includes('websocket') || errMsg.includes('WebSocket')) {
+          showToast('Order loaded. Live updates unavailable on this device.', 'info');
+        } else {
+          showToast('Something went wrong. Please try again.', 'error');
+        }
       } finally {
         trackBtn.disabled = false;
         trackBtnText.classList.remove('hidden');
@@ -1446,13 +1479,35 @@
       if (orderId === '—') return;
       const url = `${window.location.origin}${window.location.pathname}?order=${orderId}`;
 
-      if (navigator.share) {
-        navigator.share({ title: `Track Shop2Bhutan Order ${orderId}`, url });
+      if (typeof navigator !== 'undefined' && navigator.share && typeof navigator.share === 'function') {
+        navigator.share({ title: `Track Shop2Bhutan Order ${orderId}`, url }).catch(() => {
+          // Fallback if share sheet fails (common on some Android browsers)
+          fallbackCopy(url);
+        });
       } else {
-        navigator.clipboard.writeText(url);
-        showToast('Tracking link copied!', 'success');
+        fallbackCopy(url);
       }
     };
+
+    function fallbackCopy(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Tracking link copied!', 'success');
+        }).catch(() => {
+          // Final fallback for older browsers
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); showToast('Tracking link copied!', 'success'); } catch (e) { showToast('Could not copy link', 'error'); }
+          document.body.removeChild(ta);
+        });
+      } else {
+        showToast('Copy not supported on this device', 'error');
+      }
+    }
   </script>
 
   <!-- PWA Bootstrap -->
