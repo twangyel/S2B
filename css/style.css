@@ -2947,6 +2947,45 @@ footer {
   animation: livePulse 1.5s ease-in-out infinite;
 }
 
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(90deg, #312e81 0%, #4f46e5 50%, #312e81 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 39;
+}
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  animation: tickerScroll 35s linear infinite;
+  will-change: transform;
+  flex-shrink: 0;           /* don't let flexbox squash the track */
+  min-width: 0;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px 2px 8px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  margin-right: 8px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;               /* stay above the scrolling track */
+}
+
 /* ── 26. Utilities ── */
 .section-divider {
   height: 1px;

@@ -1297,25 +1297,48 @@ const TICKER_FALLBACK = [
   { icon: '🚚', text: 'Crossing Bhutan border', city: 'Phuntsholing', time: '45 mins ago' },
 ];
 
+/* ==========================================================
+   LIVE ACTIVITY TICKER  (v2 — Real-time, no-flicker, pinned badge)
+   ========================================================== */
 async function loadLiveTicker() {
   const track = document.getElementById('tickerTrack');
   if (!track) return;
 
-  let items = [];
+  let tickerData = []; // { icon, text, city, baseTime: Date, isFallback }
 
-  try {
-    const { data: orders, error } = await supabase
-      .from('orders')
-      .select('order_id, delivery_city, product_links, order_status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(8);
+  /* ---------- helpers ---------- */
+  function formatTimeAgo(totalMinutes) {
+    if (totalMinutes < 1) return 'Just now';
+    if (totalMinutes < 60) return totalMinutes + ' min' + (totalMinutes === 1 ? '' : 's') + ' ago';
+    const hours = Math.floor(totalMinutes / 60);
+    if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+    const days = Math.floor(hours / 24);
+    return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+  }
 
-    if (!error && orders && orders.length > 0) {
-      const now = new Date();
-      items = orders.map(o => {
-        const minsAgo = Math.floor((now - new Date(o.created_at)) / 60000);
-        const timeText = minsAgo < 1 ? 'Just now' : minsAgo < 60 ? minsAgo + ' mins ago' : Math.floor(minsAgo / 60) + ' hours ago';
+  function parseFallbackMinutes(timeStr) {
+    if (timeStr === 'Just now') return 0;
+    const m = timeStr.match(/^(\d+)\s+min/i);
+    if (m) return parseInt(m[1], 10);
+    const h = timeStr.match(/^(\d+)\s+hour/i);
+    if (h) return parseInt(h[1], 10) * 60;
+    const d = timeStr.match(/^(\d+)\s+day/i);
+    if (d) return parseInt(d[1], 10) * 1440;
+    return 0;
+  }
 
+  async function fetchOrderItems() {
+    try {
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('order_id, delivery_city, product_links, order_status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error || !orders || orders.length === 0) return null;
+
+      return orders.map(o => {
+        const createdAt = new Date(o.created_at);
         let store = 'a store';
         try {
           const link = o.product_links?.[0] || '';
@@ -1326,71 +1349,105 @@ async function loadLiveTicker() {
         const isDelivered = o.order_status === 'delivered';
         return {
           icon: isDelivered ? '📦' : '🛒',
-          text: isDelivered ? 'Delivered to ' + (o.delivery_city || 'Bhutan') : 'Ordered from ' + store,
+          text: isDelivered
+            ? 'Delivered to ' + (o.delivery_city || 'Bhutan')
+            : 'Ordered from ' + store,
           city: o.delivery_city || 'Bhutan',
-          time: timeText
+          baseTime: createdAt,
+          isFallback: false
         };
       });
+    } catch (e) {
+      console.log('Ticker fetch error:', e);
+      return null;
     }
-  } catch (e) {
-    console.log('Ticker: using fallback data');
   }
 
-  if (items.length === 0) {
-    items = TICKER_FALLBACK;
+  function buildFallbackItems() {
+    return TICKER_FALLBACK.map(f => ({
+      ...f,
+      baseTime: new Date(Date.now() - parseFallbackMinutes(f.time) * 60000),
+      isFallback: true
+    }));
   }
 
-  // Store raw items so we can refresh timestamps
-  track._tickerItems = items;
-  track._tickerStartTime = Date.now();
+  /* ---------- render ---------- */
+  function renderTicker(items) {
+    const html = items.map(item => {
+      const minsAgo = Math.floor((Date.now() - item.baseTime) / 60000);
+      const timeText = formatTimeAgo(minsAgo);
+      return `
+        <div class="ticker-item">
+          <span>${item.icon}</span>
+          <span>${escHtml(item.text)}</span>
+          <span class="ticker-city">${escHtml(item.city)}</span>
+          <span class="ticker-time">${escHtml(timeText)}</span>
+        </div>
+      `;
+    }).join('');
 
-  function renderTicker(arr) {
-    const buildItems = (arr) => arr.map(item => `
-      <div class="ticker-item">
-        <span>${item.icon}</span>
-        <span>${escHtml(item.text)}</span>
-        <span class="ticker-city">${escHtml(item.city)}</span>
-        <span class="ticker-time">${escHtml(item.time)}</span>
-      </div>
-    `).join('');
+    // Duplicate for seamless infinite scroll
+    track.innerHTML = html + html;
 
-    const liveBadge = `
-      <div class="ticker-live-badge">
-        <span class="live-dot"></span>
-        Live
-      </div>
-    `;
-
-    const itemsHtml = buildItems(arr);
-    // Duplicate items for seamless infinite scroll loop
-    track.innerHTML = liveBadge + itemsHtml + itemsHtml;
-
-    // Force CSS animation restart
+    // Restart animation from position 0 so the loop stays seamless
     track.style.animation = 'none';
     track.offsetHeight; // reflow
     track.style.animation = '';
   }
 
-  renderTicker(items);
+  /* ---------- light-weight time update (no flicker) ---------- */
+  function updateTickerTimes() {
+    if (!tickerData.length) return;
+    const timeEls = track.querySelectorAll('.ticker-time');
+    const half = timeEls.length / 2; // content is duplicated
 
-  // Refresh timestamps every 60 seconds so "2 mins ago" stays accurate
+    for (let i = 0; i < half; i++) {
+      const minsAgo = Math.floor((Date.now() - tickerData[i].baseTime) / 60000);
+      const timeText = formatTimeAgo(minsAgo);
+      if (timeEls[i]) timeEls[i].textContent = timeText;
+      if (timeEls[i + half]) timeEls[i + half].textContent = timeText;
+    }
+  }
+
+  /* ---------- full rebuild (new data) ---------- */
+  async function rebuildTicker() {
+    let items = await fetchOrderItems();
+    if (!items || items.length === 0) {
+      items = buildFallbackItems();
+    }
+    tickerData = items;
+    renderTicker(items);
+  }
+
+  /* ---------- init ---------- */
+  await rebuildTicker();
+
+  // 1. Refresh timestamps every 60s without touching animation or DOM structure
   setInterval(() => {
-    const stored = track._tickerItems;
-    if (!stored) return;
-    const startMs = track._tickerStartTime || Date.now();
-    const elapsedMins = Math.floor((Date.now() - startMs) / 60000);
-    const refreshed = stored.map(item => {
-      // Only refresh items that had a numeric "X mins ago" time
-      const match = item.time.match(/^(\d+) mins? ago$/);
-      if (match) {
-        const newMins = parseInt(match[1]) + elapsedMins;
-        const newTime = newMins < 60 ? newMins + ' mins ago' : Math.floor(newMins / 60) + ' hours ago';
-        return { ...item, time: newTime };
-      }
-      return item;
-    });
-    renderTicker(refreshed);
+    updateTickerTimes();
   }, 60000);
+
+  // 2. Re-fetch live data from Supabase every 2.5 minutes
+  setInterval(() => {
+    rebuildTicker();
+  }, 150000);
+
+  // 3. Supabase Realtime — instant update when a new order is inserted
+  try {
+    supabase
+      .channel('public:orders')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'orders' },
+        (payload) => {
+          console.log('[Ticker] Realtime INSERT received:', payload);
+          rebuildTicker();
+        }
+      )
+      .subscribe();
+  } catch (e) {
+    console.log('[Ticker] Realtime subscription failed:', e);
+  }
 }
 window.loadLiveTicker = loadLiveTicker;
 
