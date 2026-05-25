@@ -309,69 +309,97 @@
       </div>
 
       <!-- ANALYTICS TAB -->
-<div id="content-2" class="tab-content hidden">
-  
-  <div class="mb-8">
-  <h3 class="text-lg font-bold text-gray-900 mb-4">Pending Actions</h3>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pending Reviews</div>
-      <div class="text-2xl font-bold text-gray-900" id="todo-reviews">0</div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Awaiting Quotes</div>
-      <div class="text-2xl font-bold text-gray-900" id="todo-quotes">0</div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pending Payments</div>
-      <div class="text-2xl font-bold text-gray-900" id="todo-payments">0</div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-      <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Forward to Courier</div>
-      <div class="text-2xl font-bold text-gray-900" id="todo-forward">0</div>
-    </div>
-  </div>
-</div>
-  <!-- Revenue Cards -->
-  <!-- To-Do / Pending Actions Dashboard -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div onclick="window.switchTab(0)" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-amber-300 hover:shadow-md transition-all">
-    <div class="flex items-center justify-between mb-3">
-      <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"><i class="fas fa-star text-amber-600"></i></div>
-      <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Reviews</span>
-    </div>
-    <div class="text-2xl font-bold text-gray-900" id="todo-reviews">0</div>
-    <div class="text-sm text-gray-500 mt-1">Pending Approval</div>
-  </div>
-  <div onclick="window.switchTab(1); window.switchOrderSubTab('orders')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all">
-    <div class="flex items-center justify-between mb-3">
-      <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center"><i class="fas fa-file-invoice text-indigo-600"></i></div>
-      <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">Orders</span>
-    </div>
-    <div class="text-2xl font-bold text-gray-900" id="todo-quotes">0</div>
-    <div class="text-sm text-gray-500 mt-1">Awaiting Quotation</div>
-  </div>
-  <div onclick="window.switchTab(1); window.switchOrderSubTab('payments')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
-    <div class="flex items-center justify-between mb-3">
-      <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center"><i class="fas fa-money-bill-wave text-blue-600"></i></div>
-      <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Payments</span>
-    </div>
-    <div class="text-2xl font-bold text-gray-900" id="todo-payments">0</div>
-    <div class="text-sm text-gray-500 mt-1">Unverified Payments</div>
-  </div>
-  <div onclick="window.switchTab(1); window.switchOrderSubTab('orders')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all">
-    <div class="flex items-center justify-between mb-3">
-      <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center"><i class="fas fa-truck-fast text-emerald-600"></i></div>
-      <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Forward</span>
-    </div>
-    <div class="text-2xl font-bold text-gray-900" id="todo-forward">0</div>
-    <div class="text-sm text-gray-500 mt-1">Orders to Forward</div>
-  </div>
-</div>
+      <div id="content-2" class="tab-content hidden">
+        <!-- Revenue Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Revenue</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-total-revenue">₹0</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pending Revenue</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-pending-revenue">₹0</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">This Month</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-month-revenue">₹0</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Avg Order Value</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-aov">₹0</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Orders</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-total-orders">0</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Quote Acceptance</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-quote-rate">0%</div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Today's Orders</div>
+            <div class="text-2xl font-bold text-gray-900" id="metric-today-orders">0</div>
+          </div>
+        </div>
 
-<!-- Revenue Cards (keep your existing revenue cards here) -->
-<!-- Charts Grid (keep your existing charts here) -->
-</div>
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <h4 class="text-sm font-bold text-gray-900 mb-4">Revenue Trend (6 Months)</h4>
+            <div class="h-64"><canvas id="revenue-chart"></canvas></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <h4 class="text-sm font-bold text-gray-900 mb-4">Orders by City</h4>
+            <div class="h-64"><canvas id="city-chart"></canvas></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <h4 class="text-sm font-bold text-gray-900 mb-4">Order Status Breakdown</h4>
+            <div class="h-64"><canvas id="status-chart"></canvas></div>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm">
+            <h4 class="text-sm font-bold text-gray-900 mb-4">Payment Methods</h4>
+            <div class="h-64"><canvas id="payment-chart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Pending Actions Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div onclick="window.switchTab(0)" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-amber-300 hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"><i class="fas fa-star text-amber-600"></i></div>
+              <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Reviews</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900" id="todo-reviews">0</div>
+            <div class="text-sm text-gray-500 mt-1">Pending Approval</div>
+          </div>
+          <div onclick="window.switchTab(1); window.switchOrderSubTab('orders')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center"><i class="fas fa-file-invoice text-indigo-600"></i></div>
+              <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">Orders</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900" id="todo-quotes">0</div>
+            <div class="text-sm text-gray-500 mt-1">Awaiting Quotation</div>
+          </div>
+          <div onclick="window.switchTab(1); window.switchOrderSubTab('payments')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center"><i class="fas fa-money-bill-wave text-blue-600"></i></div>
+              <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Payments</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900" id="todo-payments">0</div>
+            <div class="text-sm text-gray-500 mt-1">Unverified Payments</div>
+          </div>
+          <div onclick="window.switchTab(1); window.switchOrderSubTab('orders')" class="cursor-pointer bg-white rounded-xl p-5 border border-gray-200/80 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center"><i class="fas fa-truck-fast text-emerald-600"></i></div>
+              <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Forward</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900" id="todo-forward">0</div>
+            <div class="text-sm text-gray-500 mt-1">Orders to Forward</div>
+          </div>
+        </div>
+      </div>
 
       <!-- PORTAL TAB -->
       <div id="content-3" class="tab-content hidden">
@@ -520,48 +548,49 @@
 </div>
       </div>
 
+      <!-- TRIPS TAB -->
+      <div id="content-4" class="tab-content hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div class="p-6 border-b border-gray-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900 tracking-tight">Delivery Trips & Batches</h2>
+              <p class="text-sm text-gray-500 mt-1">Group orders into routes for bulk tracking updates</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="window.openTripModal()" class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">
+                <i class="fas fa-plus mr-1"></i> Create Trip
+              </button>
+              <button onclick="window.refreshTrips()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh"><i class="fas fa-sync-alt text-sm"></i></button>
+            </div>
+          </div>
+          <div id="trips-loader" class="hidden py-16 text-center">
+            <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
+            <p class="text-gray-500 text-sm font-medium">Loading trips...</p>
+          </div>
+          <div id="trips-empty" class="hidden py-16 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4"><i class="fas fa-route text-gray-300 text-2xl"></i></div>
+            <h3 class="text-gray-900 font-semibold mb-1">No trips yet</h3>
+            <p class="text-gray-500 text-sm">Create a batch to manage multiple deliveries together.</p>
+          </div>
+          <div id="trips-table-wrap" class="hidden overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th class="px-6 py-4">Trip Name</th>
+                  <th class="px-6 py-4">City</th>
+                  <th class="px-6 py-4">Orders</th>
+                  <th class="px-6 py-4">Status</th>
+                  <th class="px-6 py-4">Created</th>
+                  <th class="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="trips-tbody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
-    <!-- TRIPS TAB -->
-<div id="content-4" class="tab-content hidden">
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
-    <div class="p-6 border-b border-gray-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Delivery Trips & Batches</h2>
-        <p class="text-sm text-gray-500 mt-1">Group orders into routes for bulk tracking updates</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button onclick="window.openTripModal()" class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200 active:scale-95">
-          <i class="fas fa-plus mr-1"></i> Create Trip
-        </button>
-        <button onclick="window.refreshTrips()" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80 rounded-xl transition-colors" title="Refresh"><i class="fas fa-sync-alt text-sm"></i></button>
-      </div>
-    </div>
-    <div id="trips-loader" class="hidden py-16 text-center">
-      <div class="inline-block w-8 h-8 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-      <p class="text-gray-500 text-sm font-medium">Loading trips...</p>
-    </div>
-    <div id="trips-empty" class="hidden py-16 text-center">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-100 mb-4"><i class="fas fa-route text-gray-300 text-2xl"></i></div>
-      <h3 class="text-gray-900 font-semibold mb-1">No trips yet</h3>
-      <p class="text-gray-500 text-sm">Create a batch to manage multiple deliveries together.</p>
-    </div>
-    <div id="trips-table-wrap" class="hidden overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-gray-50/80 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            <th class="px-6 py-4">Trip Name</th>
-            <th class="px-6 py-4">City</th>
-            <th class="px-6 py-4">Orders</th>
-            <th class="px-6 py-4">Status</th>
-            <th class="px-6 py-4">Created</th>
-            <th class="px-6 py-4 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="trips-tbody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
   </div>
 
   <!-- Customer Detail Modal -->

@@ -23,31 +23,14 @@ let portalLoaded = false;
 let otpCodesLoaded = false;
 let portalUsersLoaded = false;
 let currentPortalSubTab = 'otp';
-let authChecked = false;
-<<<<<<< HEAD
 let currentOrderSubTab = 'orders';
-=======
->>>>>>> 1c5cd4d (Update all files and folders)
+let authChecked = false;
 let allTrips = [];
 let tripsLoaded = false;
 let allMessageLogs = [];
 let messagesLoaded = false;
 let tripSelectedOrders = new Set();
-<<<<<<< HEAD
-
-const WA_TEMPLATES = [
-  { id: 'custom', name: 'Custom Message', message: '' },
-  { id: 'otp', name: 'Send OTP', message: 'Hello,\n\nYour Shop2Bhutan portal login code is: *{code}*\n\nEnter this code at https://shop2bt.vercel.app/portal.html to view your orders.\n\nThis code expires in 10 minutes.\n\n— Shop2Bhutan' },
-  { id: 'quote_ready', name: 'Quotation Ready', message: 'Hello,\n\nYour quotation for Order *{order_id}* is ready.\n\nTotal: ₹{total}\n\nPlease accept and proceed with payment via the portal:\nhttps://shop2bt.vercel.app/portal.html\n\n— Shop2Bhutan' },
-  { id: 'advance_reminder', name: 'Advance Reminder', message: 'Hello,\n\nReminder: 50% advance payment of ₹{amount} is due for Order *{order_id}*.\n\nPlease upload payment proof via the portal.\n\n— Shop2Bhutan' },
-  { id: 'balance_reminder', name: 'Balance Due Reminder', message: 'Hello,\n\nYour order *{order_id}* is out for delivery. Balance due: ₹{amount}.\n\nPlease keep the exact amount ready.\n\n— Shop2Bhutan' },
-  { id: 'tracking_update', name: 'Tracking Update', message: 'Hello,\n\nYour order *{order_id}* status has been updated to: *{status}*.\n\nTrack live progress here:\nhttps://shop2bt.vercel.app/track.html\n\n— Shop2Bhutan' },
-  { id: 'delivered', name: 'Delivered + Review Request', message: 'Hello,\n\nYour order *{order_id}* has been delivered ✅.\n\nWe hope you love it! Please leave a review:\nhttps://shop2bt.vercel.app/\n\n— Shop2Bhutan' }
-];
-
-
-=======
->>>>>>> 1c5cd4d (Update all files and folders)
+let analyticsLoaded = false;
 
 const WA_TEMPLATES = [
   { id: 'custom', name: 'Custom Message', message: '' },
@@ -115,11 +98,7 @@ async function init() {
    TAB VISUALS
    ========================================================== */
 function updateTabVisuals(index) {
-<<<<<<< HEAD
-  [0, 1, 2, 3, 4].forEach(i => {
-=======
   [0, 1, 2, 3, 4].forEach(i => {   // ← added 4
->>>>>>> 1c5cd4d (Update all files and folders)
     const btn = document.getElementById(`tab-${i}`);
     const pane = document.getElementById(`content-${i}`);
     if (!btn || !pane) return;
@@ -391,7 +370,7 @@ async function loadOrders() {
   } catch (err) {
     console.error('Load orders failed:', err);
     loader?.classList.add('hidden');
-    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load orders'}</td></tr>`; //cols add extra column
+    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load orders'}</td></tr>`;
     wrap?.classList.remove('hidden');
     showToast('Failed to load orders', 'error');
   }
@@ -458,7 +437,7 @@ function renderOrders(orders) {
         <div>
           <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact</h4>
           <p class="text-sm text-gray-800 bg-white rounded-lg p-3 border border-gray-200">
-            ${esc(name)}<br>
+            ${esc(name)}<<br>
             <span class="text-gray-500">+975 ${esc(phone)}</span>
           </p>
         </div>
@@ -504,11 +483,7 @@ function renderOrders(orders) {
               : `<button disabled class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 cursor-not-allowed" title="Tracking available after payment confirmation"><i class="fas fa-truck-fast text-xs"></i></button>`
             }
             <button onclick="window.viewOrderDetails('${o.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" title="View Details"><i class="fas fa-eye text-xs"></i></button>
-<<<<<<< HEAD
-          <button onclick="window.openTimelineModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Activity Timeline"><i class="fas fa-stream text-xs"></i></button>
-=======
             <button onclick="window.openTimelineModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors" title="Activity Timeline"><i class="fas fa-stream text-xs"></i></button>
->>>>>>> 1c5cd4d (Update all files and folders)
 ${o.order_status !== 'cancelled' && o.order_status !== 'delivered' ? `<button onclick="window.openCancelModal('${o.id}', '${esc(o.order_id || '')}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Cancel Order"><i class="fas fa-ban text-xs"></i></button>` : ''}
             </div>
         </td>
@@ -598,17 +573,24 @@ function openQuoteModal(orderUuid, orderTextId) {
     document.getElementById('quote-service').value = existing.service_fee || '';
     document.getElementById('quote-delivery').value = existing.delivery_fee || '';
     document.getElementById('quote-note').value = existing.note || '';
+    document.getElementById('quote-actual-product').value = existing.actual_product_price || '';
+    document.getElementById('quote-actual-shipping').value = existing.actual_shipping_cost || '';
+    document.getElementById('quote-actual-customs').value = existing.actual_customs_cost || '';
     document.getElementById('save-quote-btn').textContent = 'Update Quotation';
   } else {
     document.getElementById('quote-product-price').value = '';
     document.getElementById('quote-shipping').value = '';
     document.getElementById('quote-service').value = '';
     document.getElementById('quote-note').value = '';
+    document.getElementById('quote-actual-product').value = '';
+    document.getElementById('quote-actual-shipping').value = '';
+    document.getElementById('quote-actual-customs').value = '';
     document.getElementById('save-quote-btn').textContent = 'Send Quotation';
   }
 
   autoCalculateServiceFee();
   updateQuoteTotal();
+  updateQuoteProfit();
 
   const modal = document.getElementById('quote-modal');
   const content = document.getElementById('quote-modal-content');
@@ -644,16 +626,14 @@ window.closeQuoteModal = closeQuoteModal;
   document.getElementById(id)?.addEventListener('input', () => {
     autoCalculateServiceFee();
     updateQuoteTotal();
-    updateQuoteProfit();   // ← added
+    updateQuoteProfit();
   });
 });
 
 document.getElementById('quote-service')?.addEventListener('input', () => {
   updateQuoteTotal();
-  updateQuoteProfit();     // ← added
+  updateQuoteProfit();
 });
-
-document.getElementById('quote-service')?.addEventListener('input', updateQuoteTotal);
 
 function autoCalculateServiceFee() {
   const productPrice = parseFloat(document.getElementById('quote-product-price')?.value) || 0;
@@ -679,16 +659,10 @@ async function saveQuotation() {
   const note = document.getElementById('quote-note').value.trim();
   const total = Math.round(productPrice + shipping + service + delivery);
 
-<<<<<<< HEAD
-const actualProduct = parseFloat(document.getElementById('quote-actual-product')?.value) || 0;
-const actualShipping = parseFloat(document.getElementById('quote-actual-shipping')?.value) || 0;
-const actualCustoms = parseFloat(document.getElementById('quote-actual-customs')?.value) || 0;
-=======
   const actualProduct = parseFloat(document.getElementById('quote-actual-product').value) || 0;
-const actualShipping = parseFloat(document.getElementById('quote-actual-shipping').value) || 0;
-const actualCustoms = parseFloat(document.getElementById('quote-actual-customs').value) || 0;
->>>>>>> 1c5cd4d (Update all files and folders)
-const profit = Math.round(total - (actualProduct + actualShipping + actualCustoms));
+  const actualShipping = parseFloat(document.getElementById('quote-actual-shipping').value) || 0;
+  const actualCustoms = parseFloat(document.getElementById('quote-actual-customs').value) || 0;
+  const profit = Math.round(total - (actualProduct + actualShipping + actualCustoms));
 
   if (productPrice <= 0) {
     showToast('Product price is required', 'error');
@@ -715,16 +689,13 @@ const profit = Math.round(total - (actualProduct + actualShipping + actualCustom
       service_fee: Math.round(service),
       delivery_fee: Math.round(delivery),
       actual_product_price: Math.round(actualProduct),
-actual_shipping_cost: Math.round(actualShipping),
-actual_customs_cost: Math.round(actualCustoms),
-profit_amount: profit,
+      actual_shipping_cost: Math.round(actualShipping),
+      actual_customs_cost: Math.round(actualCustoms),
+      profit_amount: profit,
       total_amount: total,
       note: note || null,
       updated_at: new Date().toISOString()
-      
     };
-
-    
 
     let error;
     if (existing) {
@@ -841,7 +812,7 @@ async function loadQuotations() {
   } catch (err) {
     console.error('Load quotations failed:', err);
     loader?.classList.add('hidden');
-   tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">...`;
+    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-red-500 text-sm">${err.message || 'Failed to load quotations'}</td></tr>`;
     wrap?.classList.remove('hidden');
     showToast('Failed to load quotations', 'error');
   }
@@ -1003,15 +974,9 @@ function renderPayments(payments) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 shadow-sm" title="Verify 50% Advance"><i class="fas fa-check"></i> Verify 50%</button>`;
     } else if (isPartial) {
       actionBtn = `<button onclick="window.verifyPayment('${p.id}', '${order.id}', '${esc(order.order_id || '')}', '${esc(phone)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-600 shadow-sm" title="Verify Full Payment"><i class="fas fa-check-double"></i> Verify Full</button>`;
-<<<<<<< HEAD
-    }     else if (status === 'verified') {
-      actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>
-      <button onclick="window.openRefundModal('${p.order_id || ''}', '${esc(order.order_id || '')}', ${Math.round(total)})" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors ml-1" title="Record Refund"><i class="fas fa-undo text-xs"></i></button>`;
-=======
     } else if (status === 'verified') {
       actionBtn = `<span class="text-xs text-gray-400 font-medium"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Verified</span>
   <button onclick="window.openRefundModal('${p.order_id || ''}', '${esc(order.order_id || '')}', ${Math.round(total)})" class="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors ml-1" title="Record Refund"><i class="fas fa-undo text-xs"></i></button>`;
->>>>>>> 1c5cd4d (Update all files and folders)
     }
 
     return `
@@ -1269,12 +1234,10 @@ function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
 function formatBtnDate(isoString) {
   if (!isoString) return '—';
-  // Ensure the string is treated as UTC by appending 'Z' if no timezone info present
   const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(isoString) ? isoString : isoString + 'Z';
   const d = new Date(normalized);
   if (isNaN(d.getTime())) return '—';
 
-  // Use Intl.DateTimeFormat with explicit Bhutan timezone (UTC+6, no DST)
   return new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Asia/Thimphu',
     day: '2-digit',
@@ -1417,7 +1380,7 @@ function renderOtpCodes(codes) {
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
             ${isActive ? `<button onclick="window.copyOtpCode('${esc(code)}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100" title="Copy code"><i class="fas fa-copy"></i> Copy</button>` : ''}
-            <button onclick="window.openWaFromOtp('${esc(phone)}', '${esc(code)}', event)" ...>
+            <button onclick="window.openWaFromOtp('${esc(phone)}', '${esc(code)}', event)" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Send WhatsApp"><i class="fab fa-whatsapp text-xs"></i></button>
           </div>
         </td>
       </tr>`;
@@ -1439,11 +1402,35 @@ function copyOtpCode(code) {
 }
 window.copyOtpCode = copyOtpCode;
 
-function openWaFromOtp(phone, code) {
-  const msg = `Hello,\n\nYour Shop2Bhutan portal login code is: *${code}*\n\nEnter this code at https://shop2bt.vercel.app/portal.html to view your orders.\n\nThis code expires in 10 minutes.\n\n— Shop2Bhutan`;
-  window.open('https://wa.me/' + phone.replace('+', '') + '?text=' + encodeURIComponent(msg), '_blank');
+function openWaFromOtp(phone, code, event) {
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone, code });
+  document.body.appendChild(menu);
+  const rect = event.target.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
 }
 window.openWaFromOtp = openWaFromOtp;
+
+function openWaUser(phone, event) {
+  if (!phone || phone === '—') return;
+  const clean = String(phone).replace(/\D/g, '');
+  const menu = document.createElement('div');
+  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
+  menu.innerHTML = getTemplateMenuHtml({ phone: clean });
+  document.body.appendChild(menu);
+  const rect = event.target.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = rect.left + 'px';
+  const close = () => menu.remove();
+  menu.addEventListener('click', () => setTimeout(close, 50));
+  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
+}
+window.openWaUser = openWaUser;
 
 async function generateAdminOtp() {
   const raw = document.getElementById('otp-gen-phone')?.value.trim().replace(/\D/g, '');
@@ -1507,7 +1494,6 @@ async function loadPortalUsers() {
       return;
     }
 
-    // FIX: fetch actual rows and count client-side instead of broken count:exact
     const userIds = allPortalUsers.map(u => u.id);
     const { data: orderRows, error: orderErr } = await supabase
       .from('orders')
@@ -1516,7 +1502,6 @@ async function loadPortalUsers() {
 
     if (orderErr) console.warn('Order count fetch warning:', orderErr);
 
-    // Build a count map client-side
     const countMap = {};
     (orderRows || []).forEach(o => {
       countMap[o.user_id] = (countMap[o.user_id] || 0) + 1;
@@ -1550,7 +1535,7 @@ function renderPortalUsers(users, countMap) {
     const email = u.email || '—';
     const _uDate = u.created_at ? new Date(/[Z+\-]\d{2}:?\d{2}$|Z$/.test(u.created_at) ? u.created_at : u.created_at + 'Z') : null;
     const joined = _uDate && !isNaN(_uDate) ? _uDate.toLocaleDateString('en-US', { timeZone: 'Asia/Thimphu', month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-    const count = countMap[u.id] || 0;   // ← use map lookup
+    const count = countMap[u.id] || 0;
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors group border-b border-gray-50 last:border-0">
@@ -1568,13 +1553,8 @@ function renderPortalUsers(users, countMap) {
         <td class="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">${esc(joined)}</td>
         <td class="px-6 py-4 text-right">
           <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-<<<<<<< HEAD
-           <button onclick="window.openCustomerModal('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Profile"><i class="fas fa-user text-xs"></i></button>
-            <button onclick="window.openWaUser('${esc(phone)}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
-=======
             <button onclick="window.openCustomerModal('${u.id}')" class="flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="View Profile"><i class="fas fa-user text-xs"></i></button>
             <button onclick="window.openWaUser('${esc(phone)}', event)" class="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Message on WhatsApp"><i class="fab fa-whatsapp"></i></button>
->>>>>>> 1c5cd4d (Update all files and folders)
           </div>
         </td>
       </tr>`;
@@ -1589,35 +1569,6 @@ function viewUserOrders(userId) {
   showToast('Showing orders for selected customer', 'info');
 }
 window.viewUserOrders = viewUserOrders;
-
-window.openWaFromOtp = function(phone, code, event) {
-  const menu = document.createElement('div');
-  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
-  menu.innerHTML = getTemplateMenuHtml({ phone, code });
-  document.body.appendChild(menu);
-  const rect = event.target.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = rect.left + 'px';
-  const close = () => menu.remove();
-  menu.addEventListener('click', () => setTimeout(close, 50));
-  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
-};
-
-window.openWaUser = function(phone, event) {
-  if (!phone || phone === '—') return;
-  const clean = String(phone).replace(/\D/g, '');
-  const menu = document.createElement('div');
-  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
-  menu.innerHTML = getTemplateMenuHtml({ phone: clean });
-  document.body.appendChild(menu);
-  const rect = event.target.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = rect.left + 'px';
-  const close = () => menu.remove();
-  menu.addEventListener('click', () => setTimeout(close, 50));
-  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
-};
-window.openWaUser = openWaUser;
 
 /* ==========================================================
    TRACKING MODAL
@@ -1771,9 +1722,6 @@ document.getElementById('tracking-modal')?.addEventListener('click', (e) => {
 document.getElementById('verify-modal')?.addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeVerifyModal();
 });
-document.getElementById('customer-modal')?.addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeCustomerModal();
-});
 
 /* ==========================================================
    NOTIFICATION SYSTEM — FIXED VERSION
@@ -1787,7 +1735,6 @@ let notifSoundEnabled = (() => {
 const NOTIF_MAX_AGE_HOURS = 48;
 
 function initNotifications() {
-  // FIX #2: Unsubscribe old channels before creating new ones
   notifRealtimeChannels.forEach(ch => {
     try { supabase.removeChannel(ch); } catch (e) {}
   });
@@ -1816,7 +1763,6 @@ function saveNotifications() {
 }
 
 function setupNotificationRealtime() {
-  // FIX #5: Add error handling to all subscriptions
   let _rlsWarningShown = false;
   const handleSubError = (status, err, channelName) => {
     if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -1841,7 +1787,7 @@ function setupNotificationRealtime() {
         message: `Order ${(order.order_id || '').slice(0, 12)} from ${order.delivery_city || 'Unknown'}`,
         data: { order_id: order.id, tab: 1 },
         icon: 'fa-shopping-bag',
-        dedupKey: order.id  // FIX #1: Unique dedup key
+        dedupKey: order.id
       });
     })
     .subscribe((status, err) => handleSubError(status, err, 'orders'));
@@ -1856,7 +1802,7 @@ function setupNotificationRealtime() {
         message: `${review.full_name || 'Someone'} rated ${review.rating || 0}★ — "${(review.message || '').slice(0, 40)}${(review.message || '').length > 40 ? '...' : ''}"`,
         data: { review_id: review.id, tab: 0 },
         icon: 'fa-star',
-        dedupKey: review.id  // FIX #1: Unique dedup key
+        dedupKey: review.id
       });
     })
     .subscribe((status, err) => handleSubError(status, err, 'reviews'));
@@ -1871,7 +1817,7 @@ function setupNotificationRealtime() {
         message: `₹${Math.round(pay.total_amount || 0).toLocaleString('en-IN')} via ${pay.payment_method || '—'}`,
         data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
         icon: 'fa-money-bill-wave',
-        dedupKey: pay.id  // FIX #1: Unique dedup key
+        dedupKey: pay.id
       });
     })
     .subscribe((status, err) => handleSubError(status, err, 'payments'));
@@ -1880,7 +1826,7 @@ function setupNotificationRealtime() {
     .channel('notif-payments-updates')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments' }, (payload) => {
       const pay = payload.new;
-      const old = (payload.old && Object.keys(payload.old).length > 0) ? payload.old : {};
+      const old = payload.old;
       if (old.status === 'pending' && pay.status === 'partial') {
         addNotification({
           type: 'payment',
@@ -1888,7 +1834,7 @@ function setupNotificationRealtime() {
           message: `Order payment partially confirmed. ₹${Math.round(pay.due_amount || 0).toLocaleString('en-IN')} still due.`,
           data: { payment_id: pay.id, tab: 1, subtab: 'payments' },
           icon: 'fa-check-circle',
-          dedupKey: pay.id + '-partial'  // FIX #1: Unique dedup key for status change
+          dedupKey: pay.id + '-partial'
         });
       }
       if (old.status === 'partial' && pay.status === 'verified') {
@@ -1901,7 +1847,6 @@ function setupNotificationRealtime() {
           dedupKey: pay.id + '-verified'
         });
       }
-      // Direct pending→verified (most common flow: admin verifies uploaded proof)
       if (old.status === 'pending' && pay.status === 'verified' && pay.payment_proof_url) {
         addNotification({
           type: 'payment',
@@ -1925,7 +1870,7 @@ function setupNotificationRealtime() {
         message: `${user.full_name || 'New user'} (+975 ${user.whatsapp || '—'})`,
         data: { user_id: user.id, tab: 3, subtab: 'users' },
         icon: 'fa-user-plus',
-        dedupKey: user.id  // FIX #1: Unique dedup key
+        dedupKey: user.id
       });
     })
     .subscribe((status, err) => handleSubError(status, err, 'users'));
@@ -1934,7 +1879,7 @@ function setupNotificationRealtime() {
     .channel('notif-quotes')
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'quotations' }, (payload) => {
       const q = payload.new;
-      const old = (payload.old && Object.keys(payload.old).length > 0) ? payload.old : {};
+      const old = payload.old;
       if (old.status === 'pending' && q.status === 'accepted') {
         addNotification({
           type: 'quotation',
@@ -1942,7 +1887,7 @@ function setupNotificationRealtime() {
           message: `Customer accepted quote. Total: ₹${Math.round(q.total_amount || 0).toLocaleString('en-IN')}`,
           data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
           icon: 'fa-file-signature',
-          dedupKey: q.id + '-accepted'  // FIX #1: Unique dedup key
+          dedupKey: q.id + '-accepted'
         });
       }
       if (old.status === 'pending' && q.status === 'rejected') {
@@ -1952,13 +1897,12 @@ function setupNotificationRealtime() {
           message: `Customer rejected the quotation.`,
           data: { quotation_id: q.id, tab: 1, subtab: 'quotations' },
           icon: 'fa-times-circle',
-          dedupKey: q.id + '-rejected'  // FIX #1: Unique dedup key
+          dedupKey: q.id + '-rejected'
         });
       }
     })
     .subscribe((status, err) => handleSubError(status, err, 'quotations'));
 
-  // FIX #3: Add tracking events channel (was missing)
   const trackingChannel = supabase
     .channel('notif-tracking')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracking_events' }, (payload) => {
@@ -1969,7 +1913,7 @@ function setupNotificationRealtime() {
         message: `Order status updated to: ${(event.status || '').replace(/_/g, ' ')}`,
         data: { tracking_id: event.id, tab: 1, subtab: 'orders' },
         icon: 'fa-truck-fast',
-        dedupKey: event.id  // FIX #1: Unique dedup key
+        dedupKey: event.id
       });
     })
     .subscribe((status, err) => handleSubError(status, err, 'tracking'));
@@ -1978,17 +1922,16 @@ function setupNotificationRealtime() {
 }
 
 function addNotification({ type, title, message, data = {}, icon = 'fa-bell', dedupKey = null }) {
-  // FIX #1: Use dedupKey for proper deduplication (includes unique ID + status suffix)
   const effectiveKey = dedupKey || (type + '-' + message);
   const recent = notifications.find(n => 
     (n.dedupKey || (n.type + '-' + n.message)) === effectiveKey && 
-    (Date.now() - new Date(n.created_at).getTime()) < 30000  // 30s dedup window
+    (Date.now() - new Date(n.created_at).getTime()) < 30000
   );
   if (recent) return;
 
   const notif = {
     id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
-    dedupKey: effectiveKey,  // Store for future deduplication
+    dedupKey: effectiveKey,
     type,
     title,
     message,
@@ -2071,7 +2014,6 @@ function renderNotificationList() {
   }).join('');
 }
 
-// FIX #7: Consistent timezone handling for time ago
 function getTimeAgo(iso) {
   const normalized = /[Z+\-]\d{2}:?\d{2}$|Z$/.test(iso) ? iso : iso + 'Z';
   const d = new Date(normalized);
@@ -2085,7 +2027,6 @@ function getTimeAgo(iso) {
 }
 
 function setupNotificationUI() {
-  // Sync sound button icon with persisted preference on load
   const soundBtnInit = document.getElementById('notif-sound-toggle');
   if (soundBtnInit) {
     const iconEl = soundBtnInit.querySelector('i');
@@ -2131,7 +2072,6 @@ function setupNotificationUI() {
     icon.className = notifSoundEnabled ? 'fas fa-volume-up text-xs' : 'fas fa-volume-mute text-xs';
     soundBtn.classList.toggle('text-indigo-600', notifSoundEnabled);
     showToast(notifSoundEnabled ? '🔔 Notification sound enabled' : '🔇 Notification sound muted', 'info');
-    // Unlock audio context on first gesture (required by browsers)
     if (notifSoundEnabled) {
       const audio = document.getElementById('notif-sound');
       if (audio) { audio.play().then(() => audio.pause()).catch(() => {}); }
@@ -2139,7 +2079,6 @@ function setupNotificationUI() {
   });
 }
 
-// FIX #6: Validate tab index before switching
 function handleNotifClick(id) {
   const notif = notifications.find(n => n.id === id);
   if (!notif) return;
@@ -2152,7 +2091,7 @@ function handleNotifClick(id) {
   if (notif.data?.tab !== undefined) {
     const tabIndex = parseInt(notif.data.tab);
     if (tabIndex >= 0 && tabIndex <= 4) {
-      window.switchTab(tabIndex);
+      switchTab(tabIndex);
       if (notif.data.subtab) {
         if (tabIndex === 1) switchOrderSubTab(notif.data.subtab);
         if (tabIndex === 3) switchPortalSubTab(notif.data.subtab);
@@ -2170,7 +2109,6 @@ function playNotifSound() {
   if (audio) {
     audio.currentTime = 0;
     audio.play().catch((err) => {
-      // Browsers block autoplay before a user gesture — this is expected on first load
       console.warn('[Notif] Sound blocked (autoplay policy):', err.message);
     });
   }
@@ -2195,7 +2133,7 @@ function notifyPaymentVerified(amount, method) {
     message: `₹${Math.round(amount).toLocaleString('en-IN')} via ${method || '—'}`,
     data: { tab: 1, subtab: 'payments' },
     icon: 'fa-check-circle',
-    dedupKey: 'payment-' + amount + '-' + method + '-' + Date.now()  // Time-based to allow multiple
+    dedupKey: 'payment-' + amount + '-' + method + '-' + Date.now()
   });
 }
 window.notifyPaymentVerified = notifyPaymentVerified;
@@ -2203,7 +2141,6 @@ window.notifyPaymentVerified = notifyPaymentVerified;
 /* ==========================================================
    ANALYTICS DASHBOARD
    ========================================================== */
-let analyticsLoaded = false;
 let analyticsCharts = {};
 
 async function loadAnalytics() {
@@ -2223,31 +2160,17 @@ async function loadAnalytics() {
     });
 
     analyticsLoaded = true;
+    
+    // Load pending actions counts
+    loadActionsDashboard();
   } catch (err) {
     console.error('Analytics load failed:', err);
     showToast('Failed to load analytics', 'error');
   }
-<<<<<<< HEAD
-
-  loadActionsDashboard();
-}
-window.loadAnalytics = loadAnalytics;
-
-
-
-function renderAnalytics({ payments, orders, quotes }) {
-  const setText = (id, text) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-  };
-
-=======
 }
 window.loadAnalytics = loadAnalytics;
 
 function renderAnalytics({ payments, orders, quotes }) {
->>>>>>> 1c5cd4d (Update all files and folders)
-  // --- Card Metrics ---
   const verifiedPayments = payments.filter(p => p.status === 'verified');
   const totalRevenue = verifiedPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
   
@@ -2274,15 +2197,6 @@ function renderAnalytics({ payments, orders, quotes }) {
   const acceptedQuotes = quotes.filter(q => q.status === 'accepted').length;
   const quoteRate = quotes.length > 0 ? Math.round((acceptedQuotes / quotes.length) * 100) : 0;
 
-<<<<<<< HEAD
- setText('metric-total-revenue', '₹' + Math.round(totalRevenue).toLocaleString('en-IN'));
-setText('metric-pending-revenue', '₹' + Math.round(pendingRevenue).toLocaleString('en-IN'));
-setText('metric-month-revenue', '₹' + Math.round(monthRevenue).toLocaleString('en-IN'));
-setText('metric-aov', '₹' + aov.toLocaleString('en-IN'));
-setText('metric-total-orders', orders.length.toLocaleString('en-IN'));
-setText('metric-quote-rate', quoteRate + '%');
-setText('metric-today-orders', todayOrders);
-=======
   document.getElementById('metric-total-revenue').textContent = '₹' + Math.round(totalRevenue).toLocaleString('en-IN');
   document.getElementById('metric-pending-revenue').textContent = '₹' + Math.round(pendingRevenue).toLocaleString('en-IN');
   document.getElementById('metric-month-revenue').textContent = '₹' + Math.round(monthRevenue).toLocaleString('en-IN');
@@ -2290,9 +2204,7 @@ setText('metric-today-orders', todayOrders);
   document.getElementById('metric-total-orders').textContent = orders.length.toLocaleString('en-IN');
   document.getElementById('metric-quote-rate').textContent = quoteRate + '%';
   document.getElementById('metric-today-orders').textContent = todayOrders;
->>>>>>> 1c5cd4d (Update all files and folders)
 
-  // --- Charts ---
   renderRevenueChart(verifiedPayments);
   renderCityChart(orders);
   renderStatusChart(orders);
@@ -2322,9 +2234,19 @@ function isTodayBhutan(isoString) {
 
 function getLast6MonthsLabels() {
   const labels = [];
-  const now = new Date();
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Thimphu', year: 'numeric', month: 'numeric', day: 'numeric'
+  });
+  const parts = fmt.formatToParts(new Date());
+  const getPart = (type) => parseInt(parts.find(p => p.type === type).value);
+  let year = getPart('year');
+  let month = getPart('month');
+  
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    let m = month - i;
+    let y = year;
+    while (m <= 0) { m += 12; y -= 1; }
+    const d = new Date(y, m - 1, 1);
     labels.push(new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Thimphu', month: 'short', year: 'numeric'
     }).format(d));
@@ -2351,7 +2273,7 @@ function renderRevenueChart(payments) {
   analyticsCharts.revenue = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels.map(l => l.split(' ')[0]), // "Jan", "Feb"...
+      labels: labels.map(l => l.split(' ')[0]),
       datasets: [{
         label: 'Revenue (₹)',
         data: data,
@@ -2888,7 +2810,11 @@ async function sendWhatsAppWithTemplate({ phone, templateId, variables = {}, ord
     if (!msg.trim()) return;
   }
 
-  const cleanPhone = String(phone).replace(/\D/g, '');
+  let cleanPhone = String(phone).replace(/\D/g, '');
+  // Ensure Bhutan numbers have country code
+  if (!cleanPhone.startsWith('975') && cleanPhone.length === 8) {
+    cleanPhone = '975' + cleanPhone;
+  }
   const waUrl = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(msg);
   window.open(waUrl, '_blank');
 
@@ -2907,12 +2833,8 @@ async function sendWhatsAppWithTemplate({ phone, templateId, variables = {}, ord
     console.warn('Message log failed:', e);
   }
 }
-
-<<<<<<< HEAD
 window.sendWhatsAppWithTemplate = sendWhatsAppWithTemplate;
 
-=======
->>>>>>> 1c5cd4d (Update all files and folders)
 function getTemplateMenuHtml({ phone, orderTextId, total, balance, status, userId, code }) {
   return WA_TEMPLATES.map(t => {
     let vars = {};
@@ -2923,46 +2845,9 @@ function getTemplateMenuHtml({ phone, orderTextId, total, balance, status, userI
     else if (t.id === 'tracking_update') vars = { order_id: orderTextId, status: (status || '').replace(/_/g, ' ') };
     else if (t.id === 'delivered') vars = { order_id: orderTextId };
     const varJson = JSON.stringify(vars).replace(/"/g, '&quot;');
-<<<<<<< HEAD
-    return `<button onclick="window.sendWhatsAppWithTemplate({phone:'${esc(phone)}',templateId:'${t.id}',variables:${varJson},orderTextId:'${esc(orderTextId || '')}',userId:'${esc(userId || '')}')" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors">${esc(t.name)}</button>`;
-=======
     return `<button onclick="window.sendWhatsAppWithTemplate({phone:'${esc(phone)}',templateId:'${t.id}',variables:${varJson},orderTextId:'${esc(orderTextId || '')}',userId:'${userId || ''}'})" class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors">${esc(t.name)}</button>`;
->>>>>>> 1c5cd4d (Update all files and folders)
   }).join('');
 }
-
-// Override existing WA functions to show template picker
-window.openWaFromOtp = function(phone, code) {
-  const menu = document.createElement('div');
-  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
-  menu.innerHTML = getTemplateMenuHtml({ phone, code });
-  document.body.appendChild(menu);
-  const rect = event.target.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = rect.left + 'px';
-  const close = () => menu.remove();
-  menu.addEventListener('click', () => setTimeout(close, 50));
-  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
-};
-
-window.openWaUser = function(phone) {
-  if (!phone || phone === '—') return;
-  const clean = String(phone).replace(/\D/g, '');
-  const menu = document.createElement('div');
-  menu.className = 'absolute z-50 bg-white rounded-lg shadow-xl border border-gray-100 py-1 w-56';
-  menu.innerHTML = getTemplateMenuHtml({ phone: clean });
-  document.body.appendChild(menu);
-<<<<<<< HEAD
- const rect = (event?.target || document.activeElement).getBoundingClientRect();
-=======
-  const rect = event.target.getBoundingClientRect();
->>>>>>> 1c5cd4d (Update all files and folders)
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = rect.left + 'px';
-  const close = () => menu.remove();
-  menu.addEventListener('click', () => setTimeout(close, 50));
-  setTimeout(() => document.addEventListener('click', close, { once: true }), 0);
-};
 
 /* ==========================================================
    MESSAGE LOG TAB
@@ -3090,7 +2975,7 @@ function renderTrips(trips) {
   };
 
   tbody.innerHTML = trips.map(t => {
-    const count = t.trip_orders?.count || 0;
+    const count = (Array.isArray(t.trip_orders) ? t.trip_orders[0]?.count : t.trip_orders?.count) || 0;
     const date = formatBtnDate(t.created_at);
     const status = t.status || 'preparing';
     return `
@@ -3347,30 +3232,23 @@ window.deleteTrip = deleteTrip;
    ========================================================== */
 async function loadActionsDashboard() {
   try {
-<<<<<<< HEAD
-    const [{ count: pendingReviews }, { data: pendingQuoteOrders }, { data: pendingPay }, { data: forwardOrders }] = await Promise.all([
-=======
     const [
       { count: pendingReviews, error: e1 },
       { data: pendingQuoteOrders, error: e2 },
       { data: pendingPay, error: e3 },
       { data: forwardOrders, error: e4 }
     ] = await Promise.all([
->>>>>>> 1c5cd4d (Update all files and folders)
       supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('is_approved', false),
       supabase.from('orders').select('id').eq('order_status', 'pending'),
       supabase.from('payments').select('id').eq('status', 'pending'),
       supabase.from('orders').select('id').in('order_status', ['confirmed', 'ordered'])
     ]);
 
-<<<<<<< HEAD
-=======
     if (e1) console.warn('Pending reviews count error:', e1);
     if (e2) console.warn('Pending orders error:', e2);
     if (e3) console.warn('Pending payments error:', e3);
     if (e4) console.warn('Forward orders error:', e4);
 
->>>>>>> 1c5cd4d (Update all files and folders)
     document.getElementById('todo-reviews').textContent = pendingReviews || 0;
     document.getElementById('todo-quotes').textContent = (pendingQuoteOrders || []).length;
     document.getElementById('todo-payments').textContent = (pendingPay || []).length;
@@ -3383,7 +3261,6 @@ async function loadActionsDashboard() {
 /* ==========================================================
    EVENT WIRING (add to existing block)
    ========================================================== */
-// Add these inside your existing event wiring section:
 document.getElementById('timeline-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeTimelineModal(); });
 document.getElementById('cancel-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeCancelModal(); });
 document.getElementById('refund-modal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeRefundModal(); });
