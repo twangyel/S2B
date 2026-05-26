@@ -1,30 +1,33 @@
 /* ── 1. CSS Variables ── */
 :root {
-  /* Primary: Deep Teal — inspired by Bhutan's valleys & trust */
-  --primary: #0f766e;
-  --primary-dark: #115e59;
-  --primary-light: #ccfbf1;
-  --primary-ghost: rgba(15, 118, 110, 0.06);
-  --primary-glow: rgba(15, 118, 110, 0.15);
+  /* Primary: Deep Maroon — inspired by Bhutanese monastic robes & Dzong woodwork */
+  --primary: #7c2d2d;
+  --primary-dark: #5c1f1f;
+  --primary-light: #fce7e7;
+  --primary-ghost: rgba(124, 45, 45, 0.06);
+  --primary-glow: rgba(124, 45, 45, 0.15);
 
-  /* Secondary: Saffron — warmth, Bhutanese spiritual/cultural energy */
-  --secondary: #ea580c;
-  --secondary-light: #ffedd5;
+  /* Secondary: Bhutanese Saffron — warmth, spiritual tradition, flag orange */
+  --secondary: #d97706;
+  --secondary-light: #fef3c7;
 
-  --accent: #f59e0b;
-  --accent-warm: #fb7185;
-  --success: #059669;
-  --danger: #dc2626;
-  --warning: #d97706;
+  /* Accent: Bhutanese Gold — flag yellow, Dzong golden roofs, prosperity */
+  --accent: #d4a017;
+  --accent-warm: #c0392b;
+  
+  /* Success: Himalayan Green — Bhutan's lush valleys */
+  --success: #1a5c3a;
+  --danger: #991b1b;
+  --warning: #b45309;
 
-  --bg: #f8fafc;
+  --bg: #faf6f0;
   --surface: #ffffff;
-  --surface-hover: #f1f5f9;
-  --text: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --surface-hover: #f5efe6;
+  --text: #1a0f0f;
+  --text-secondary: #5c4a3d;
+  --text-muted: #9c8e7e;
+  --border: #e8e0d5;
+  --border-strong: #d4c8b8;
 
   --radius-sm: 8px;
   --radius: 12px;
@@ -161,12 +164,12 @@ p {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(124, 45, 45, 0.3), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.4);
+  box-shadow: 0 8px 24px rgba(124, 45, 45, 0.4);
 }
 
 .btn-primary:active {
@@ -298,7 +301,7 @@ p {
 }
 
 .input-field.field-error:focus {
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+  box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.1);
 }
 
 textarea.input-field {
@@ -308,7 +311,7 @@ textarea.input-field {
 
 select.input-field {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239c8e7e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
@@ -350,7 +353,7 @@ select.input-field {
   z-index: 100;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px) saturate(1.6);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  border-bottom: 1px solid rgba(232, 224, 213, 0.7);
   transition: var(--transition);
 }
 
@@ -494,7 +497,7 @@ select.input-field {
 
 /* ── 9. Hero ── */
 .hero {
-  background: linear-gradient(160deg, #042f2e 0%, #0f766e 45%, #115e59 100%);
+  background: linear-gradient(160deg, #1a0f0f 0%, #7c2d2d 45%, #5c1f1f 100%);
   color: white;
   position: relative;
   overflow: hidden;
@@ -506,9 +509,9 @@ select.input-field {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 40%, rgba(20, 184, 166, 0.18) 0%, transparent 50%),
-    radial-gradient(circle at 85% 75%, rgba(234, 88, 12, 0.1) 0%, transparent 45%),
-    radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.06) 0%, transparent 40%);
+    radial-gradient(circle at 15% 40%, rgba(212, 160, 23, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(217, 119, 6, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(251, 191, 36, 0.06) 0%, transparent 40%);
   pointer-events: none;
 }
 
@@ -545,7 +548,7 @@ select.input-field {
 }
 
 .hero-badge i {
-  color: #34d399;
+  color: #fbbf24;
   font-size: 0.75rem;
 }
 
@@ -557,7 +560,7 @@ select.input-field {
 }
 
 .hero h1 span {
-  background: linear-gradient(135deg, #5eead4 0%, #34d399 50%, #fbbf24 100%);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #e67e22 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -651,7 +654,7 @@ select.input-field {
 
 /* ── 10. Search Hub ── */
 .search-hub-section {
-  background: linear-gradient(180deg, #042f2e 0%, #0f766e 60%, #134e4a 100%);
+  background: linear-gradient(180deg, #1a0f0f 0%, #7c2d2d 60%, #4a1818 100%);
   color: white;
   padding: 4.5rem 0 5.5rem;
   position: relative;
@@ -662,7 +665,7 @@ select.input-field {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(20, 184, 166, 0.12) 0%, transparent 60%);
+  background: radial-gradient(circle at 50% 0%, rgba(212, 160, 23, 0.12) 0%, transparent 60%);
 }
 
 .search-hub {
@@ -689,7 +692,7 @@ select.input-field {
 .search-input-wrap:focus-within {
   border-color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 8px 32px rgba(124, 45, 45, 0.12);
 }
 
 .search-icon {
@@ -765,7 +768,7 @@ select.input-field {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--primary-light), #5eead4);
+  background: linear-gradient(180deg, var(--primary-light), #fbbf24);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -910,7 +913,7 @@ select.input-field {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #5eead4;
+  border-top-color: #fbbf24;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1059,8 +1062,8 @@ select.input-field {
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--success);
-  background: rgba(5, 150, 105, 0.1);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background: rgba(26, 92, 58, 0.1);
+  border: 1px solid rgba(26, 92, 58, 0.2);
   padding: 2px 8px;
   border-radius: 999px;
   margin-left: 6px;
@@ -1139,7 +1142,7 @@ select.input-field {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 0.875rem;
-  background: linear-gradient(135deg, var(--bg), #f0fdfa);
+  background: linear-gradient(135deg, var(--bg), #f5efe6);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   margin-top: 1.25rem;
@@ -1206,7 +1209,7 @@ select.input-field {
 .how-icon {
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, var(--primary-ghost), #f0fdfa);
+  background: linear-gradient(135deg, var(--primary-ghost), #f5efe6);
   color: var(--primary);
   border-radius: var(--radius-lg);
   display: grid;
@@ -1340,7 +1343,7 @@ select.input-field {
   width: 52px;
   height: 52px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, var(--primary-ghost), #f0fdfa);
+  background: linear-gradient(135deg, var(--primary-ghost), #f5efe6);
   color: var(--primary);
   display: grid;
   place-items: center;
@@ -1446,8 +1449,8 @@ select.input-field {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--success);
-  background: rgba(5, 150, 105, 0.1);
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background: rgba(26, 92, 58, 0.1);
+  border: 1px solid rgba(26, 92, 58, 0.2);
   padding: 3px 8px;
   border-radius: 999px;
   margin-left: 6px;
@@ -1568,7 +1571,7 @@ select.input-field {
 }
 
 .step-item.completed .step-dot {
-  background: linear-gradient(135deg, var(--success), #047857);
+  background: linear-gradient(135deg, var(--success), #0f3d26);
   border-color: var(--success);
   color: white;
 }
@@ -2368,7 +2371,7 @@ select.input-field {
 
 /* Pricing Summary */
 .pricing-summary {
-  background: linear-gradient(135deg, var(--primary-ghost), #f8fafc);
+  background: linear-gradient(135deg, var(--primary-ghost), #faf6f0);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   margin-bottom: 1.25rem;
@@ -2435,7 +2438,7 @@ select.input-field {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow: 0 4px 14px rgba(124, 45, 45, 0.3), inset 0 1px 0 rgba(255,255,255,0.12);
   position: relative;
   overflow: hidden;
   font-family: inherit;
@@ -2443,7 +2446,7 @@ select.input-field {
 
 .btn-submit-final:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.4);
+  box-shadow: 0 8px 24px rgba(124, 45, 45, 0.4);
 }
 
 .btn-submit-final:active {
@@ -2605,7 +2608,7 @@ select.input-field {
 
 /* ── 21. Footer ── */
 footer {
-  background: #0b1220;
+  background: #0f0a0a;
   color: rgba(255, 255, 255, 0.6);
   padding: 4rem 0 2rem;
 }
@@ -2928,14 +2931,14 @@ footer {
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 4px 12px rgba(124, 45, 45, 0.25);
   font-family: inherit;
   font-size: 1rem;
 }
 
 .modal-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.35);
+  box-shadow: 0 8px 20px rgba(124, 45, 45, 0.35);
 }
 
 .modal-submit:disabled {
@@ -2976,7 +2979,7 @@ footer {
 .ticker-wrapper {
   width: 100%;
   overflow: hidden;
-  background: linear-gradient(90deg, #042f2e 0%, #0f766e 50%, #042f2e 100%);
+  background: linear-gradient(90deg, #1a0f0f 0%, #7c2d2d 50%, #1a0f0f 100%);
   border-bottom: 1px solid rgba(255,255,255,0.1);
   height: 36px;
   display: flex;
@@ -3042,7 +3045,7 @@ footer {
 .live-dot {
   width: 6px;
   height: 6px;
-  background: #34d399;
+  background: #fbbf24;
   border-radius: 50%;
   animation: livePulse 1.4s ease-in-out infinite;
 }

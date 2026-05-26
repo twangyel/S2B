@@ -1280,178 +1280,6 @@ function loadReviews() {
 window.loadReviews = loadReviews;
 
 /* ==========================================================
-   LIVE ACTIVITY TICKER
-   ========================================================== */
-const TICKER_FALLBACK = [
-  { icon: '🛒', text: 'Tenzin ordered from Amazon', city: 'Thimphu', time: '2 mins ago' },
-  { icon: '📦', text: 'Delivered to Paro', city: 'Paro', time: '5 mins ago' },
-  { icon: '🛒', text: 'Pema ordered from Myntra', city: 'Phuntsholing', time: '8 mins ago' },
-  { icon: '🚚', text: 'Package collected from Jaigaon', city: 'Jaigaon', time: '12 mins ago' },
-  { icon: '🛒', text: 'Karma ordered from Flipkart', city: 'Thimphu', time: '15 mins ago' },
-  { icon: '📦', text: 'Delivered to Thimphu', city: 'Thimphu', time: '18 mins ago' },
-  { icon: '🛒', text: 'Dorji ordered from Meesho', city: 'Paro', time: '22 mins ago' },
-  { icon: '🚚', text: 'Package arrived at Jaigaon hub', city: 'Jaigaon', time: '25 mins ago' },
-  { icon: '🛒', text: 'Sonam ordered from Amazon', city: 'Phuntsholing', time: '30 mins ago' },
-  { icon: '📦', text: 'Delivered to Phuntsholing', city: 'Phuntsholing', time: '35 mins ago' },
-  { icon: '🛒', text: 'Ugyen ordered from Myntra', city: 'Thimphu', time: '40 mins ago' },
-  { icon: '🚚', text: 'Crossing Bhutan border', city: 'Phuntsholing', time: '45 mins ago' },
-];
-
-/* ==========================================================
-   LIVE ACTIVITY TICKER  (v2 — Real-time, no-flicker, pinned badge)
-   ========================================================== */
-async function loadLiveTicker() {
-  const track = document.getElementById('tickerTrack');
-  if (!track) return;
-
-  let tickerData = []; // { icon, text, city, baseTime: Date, isFallback }
-
-  /* ---------- helpers ---------- */
-  function formatTimeAgo(totalMinutes) {
-    if (totalMinutes < 1) return 'Just now';
-    if (totalMinutes < 60) return totalMinutes + ' min' + (totalMinutes === 1 ? '' : 's') + ' ago';
-    const hours = Math.floor(totalMinutes / 60);
-    if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
-    const days = Math.floor(hours / 24);
-    return days + ' day' + (days === 1 ? '' : 's') + ' ago';
-  }
-
-  function parseFallbackMinutes(timeStr) {
-    if (timeStr === 'Just now') return 0;
-    const m = timeStr.match(/^(\d+)\s+min/i);
-    if (m) return parseInt(m[1], 10);
-    const h = timeStr.match(/^(\d+)\s+hour/i);
-    if (h) return parseInt(h[1], 10) * 60;
-    const d = timeStr.match(/^(\d+)\s+day/i);
-    if (d) return parseInt(d[1], 10) * 1440;
-    return 0;
-  }
-
-  async function fetchOrderItems() {
-    try {
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select('order_id, delivery_city, product_links, order_status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(8);
-
-      if (error || !orders || orders.length === 0) return null;
-
-      return orders.map(o => {
-        const createdAt = new Date(o.created_at);
-        let store = 'a store';
-        try {
-          const link = o.product_links?.[0] || '';
-          const host = new URL(link).hostname.replace('www.', '').split('.')[0];
-          store = host.charAt(0).toUpperCase() + host.slice(1);
-        } catch (e) {}
-
-        const isDelivered = o.order_status === 'delivered';
-        return {
-          icon: isDelivered ? '📦' : '🛒',
-          text: isDelivered
-            ? 'Delivered to ' + (o.delivery_city || 'Bhutan')
-            : 'Ordered from ' + store,
-          city: o.delivery_city || 'Bhutan',
-          baseTime: createdAt,
-          isFallback: false
-        };
-      });
-    } catch (e) {
-      console.log('Ticker fetch error:', e);
-      return null;
-    }
-  }
-
-  function buildFallbackItems() {
-    return TICKER_FALLBACK.map(f => ({
-      ...f,
-      baseTime: new Date(Date.now() - parseFallbackMinutes(f.time) * 60000),
-      isFallback: true
-    }));
-  }
-
-  /* ---------- render ---------- */
-  function renderTicker(items) {
-    const html = items.map(item => {
-      const minsAgo = Math.floor((Date.now() - item.baseTime) / 60000);
-      const timeText = formatTimeAgo(minsAgo);
-      return `
-        <div class="ticker-item">
-          <span>${item.icon}</span>
-          <span>${escHtml(item.text)}</span>
-          <span class="ticker-city">${escHtml(item.city)}</span>
-          <span class="ticker-time">${escHtml(timeText)}</span>
-        </div>
-      `;
-    }).join('');
-
-    // Duplicate for seamless infinite scroll
-    track.innerHTML = html + html;
-
-    // Restart animation from position 0 so the loop stays seamless
-    track.style.animation = 'none';
-    track.offsetHeight; // reflow
-    track.style.animation = '';
-  }
-
-  /* ---------- light-weight time update (no flicker) ---------- */
-  function updateTickerTimes() {
-    if (!tickerData.length) return;
-    const timeEls = track.querySelectorAll('.ticker-time');
-    const half = timeEls.length / 2; // content is duplicated
-
-    for (let i = 0; i < half; i++) {
-      const minsAgo = Math.floor((Date.now() - tickerData[i].baseTime) / 60000);
-      const timeText = formatTimeAgo(minsAgo);
-      if (timeEls[i]) timeEls[i].textContent = timeText;
-      if (timeEls[i + half]) timeEls[i + half].textContent = timeText;
-    }
-  }
-
-  /* ---------- full rebuild (new data) ---------- */
-  async function rebuildTicker() {
-    let items = await fetchOrderItems();
-    if (!items || items.length === 0) {
-      items = buildFallbackItems();
-    }
-    tickerData = items;
-    renderTicker(items);
-  }
-
-  /* ---------- init ---------- */
-  await rebuildTicker();
-
-  // 1. Refresh timestamps every 60s without touching animation or DOM structure
-  setInterval(() => {
-    updateTickerTimes();
-  }, 60000);
-
-  // 2. Re-fetch live data from Supabase every 2.5 minutes
-  setInterval(() => {
-    rebuildTicker();
-  }, 150000);
-
-  // 3. Supabase Realtime — instant update when a new order is inserted
-  try {
-    supabase
-      .channel('public:orders')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('[Ticker] Realtime INSERT received:', payload);
-          rebuildTicker();
-        }
-      )
-      .subscribe();
-  } catch (e) {
-    console.log('[Ticker] Realtime subscription failed:', e);
-  }
-}
-window.loadLiveTicker = loadLiveTicker;
-
-/* ==========================================================
    SEARCH HUB — NEW
    ========================================================== */
 let quickCart = [];
@@ -1765,9 +1593,237 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggle) toggle.style.display = 'flex';
   }
 
+  
+
   addProductRow();
   loadFormState();
   loadReviews();
-  loadLiveTicker();
-  loadQuickCart();
 });
+
+(function() {
+  'use strict';
+
+  function init() {
+    var orderForm         = document.getElementById('order-form');
+    var inlineCartSection = document.getElementById('inlineCartSection');
+    var inlineCartItems   = document.getElementById('inlineCartItems');
+    var inlineCartCount   = document.getElementById('inlineCartCount');
+    var quickCartItems    = document.getElementById('quickCartItems');
+    var quickCartCount    = document.getElementById('quickCartCount');
+    var quickAddBtn       = document.getElementById('quickAddBtn');
+
+    function syncCart() {
+      if (quickCartItems && inlineCartItems) {
+        inlineCartItems.innerHTML = quickCartItems.innerHTML;
+      }
+      if (quickCartCount && inlineCartCount) {
+        inlineCartCount.textContent = quickCartCount.textContent;
+      }
+    }
+
+    window.showOrderForm = function() {
+      if (orderForm) {
+        orderForm.style.display = 'block';
+        orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    if (quickAddBtn) {
+      quickAddBtn.addEventListener('click', function() {
+        setTimeout(function() {
+          if (inlineCartSection) inlineCartSection.style.display = 'block';
+          if (orderForm)         orderForm.style.display         = 'block';
+          syncCart();
+        }, 50);
+      });
+    }
+
+    if (quickCartItems) {
+      var observerItems = new MutationObserver(syncCart);
+      observerItems.observe(quickCartItems, { childList: true, subtree: true });
+    }
+    if (quickCartCount) {
+      var observerCount = new MutationObserver(syncCart);
+      observerCount.observe(quickCartCount, { characterData: true, childList: true });
+    }
+
+    var origProceed = window.proceedToOrderForm;
+    window.proceedToOrderForm = function() {
+      if (orderForm) orderForm.style.display = 'block';
+      if (typeof origProceed === 'function') {
+        origProceed();
+      } else if (orderForm) {
+        orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+
+})();
+
+(function() {
+  'use strict';
+
+  var cart = [];
+  var inlineCartSection, inlineCartItems, inlineCartCount, inlineCartEmpty;
+  var orderForm, quickAddBtn, quickAddUrl;
+
+  function init() {
+    inlineCartSection = document.getElementById('inlineCartSection');
+    inlineCartItems   = document.getElementById('inlineCartItems');
+    inlineCartCount   = document.getElementById('inlineCartCount');
+    inlineCartEmpty   = document.getElementById('inlineCartEmpty');
+    orderForm         = document.getElementById('order-form');
+    quickAddBtn       = document.getElementById('quickAddBtn');
+    quickAddUrl       = document.getElementById('quickAddUrl');
+
+    // Override the original addToQuickCart to use our inline cart
+    var origAddToQuickCart = window.addToQuickCart;
+    window.addToQuickCart = function() {
+      var url = quickAddUrl ? quickAddUrl.value.trim() : '';
+      if (!url) return;
+      
+      // Add to our cart array
+      var item = {
+        id: Date.now(),
+        url: url,
+        title: extractTitleFromUrl(url),
+        image: null
+      };
+      cart.push(item);
+      
+      // Show inline cart section
+      if (inlineCartSection) inlineCartSection.style.display = 'block';
+      
+      // Update display
+      renderInlineCart();
+      
+      // Clear input
+      if (quickAddUrl) quickAddUrl.value = '';
+      if (quickAddBtn) quickAddBtn.disabled = true;
+      
+      // Also call original if it exists (for compatibility)
+      if (typeof origAddToQuickCart === 'function') {
+        try { origAddToQuickCart(); } catch(e) {}
+      }
+    };
+
+    // Override preview function to enable/disable button
+    var origPreview = window.previewQuickAdd;
+    window.previewQuickAdd = function(input) {
+      if (quickAddBtn) {
+        quickAddBtn.disabled = !(input && input.value && input.value.trim().length > 0);
+      }
+      if (typeof origPreview === 'function') {
+        try { origPreview(input); } catch(e) {}
+      }
+    };
+
+    // Handle paste
+    var origHandlePaste = window.handleQuickPaste;
+    window.handleQuickPaste = function(e) {
+      setTimeout(function() {
+        if (quickAddBtn && quickAddUrl) {
+          quickAddBtn.disabled = !quickAddUrl.value.trim();
+        }
+      }, 0);
+      if (typeof origHandlePaste === 'function') {
+        try { origHandlePaste(e); } catch(e) {}
+      }
+    };
+  }
+
+  function extractTitleFromUrl(url) {
+    try {
+      var hostname = new URL(url).hostname;
+      if (hostname.includes('amazon')) return 'Amazon Product';
+      if (hostname.includes('flipkart')) return 'Flipkart Product';
+      if (hostname.includes('myntra')) return 'Myntra Product';
+      if (hostname.includes('meesho')) return 'Meesho Product';
+      return 'Product Link';
+    } catch(e) {
+      return 'Product Link';
+    }
+  }
+
+  function renderInlineCart() {
+    if (!inlineCartItems || !inlineCartCount) return;
+    
+    inlineCartCount.textContent = cart.length;
+    
+    if (cart.length === 0) {
+      inlineCartItems.innerHTML = '<div id="inlineCartEmpty"><i class="fa-solid fa-basket-shopping" style="font-size:2rem; display:block; margin-bottom:0.5rem; opacity:0.3;"></i>Your cart is empty</div>';
+      return;
+    }
+    
+    var html = '';
+    for (var i = 0; i < cart.length; i++) {
+      var item = cart[i];
+      html += '<div class="cart-item" data-id="' + item.id + '">' +
+        '<div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#f5efe6,#e8dfd1);display:flex;align-items:center;justify-content:center;color:#7c2d2d;font-size:1.2rem;"><i class="fa-solid fa-bag-shopping"></i></div>' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-title">' + escapeHtml(item.title) + '</div>' +
+          '<div class="cart-item-url">' + escapeHtml(truncateUrl(item.url)) + '</div>' +
+        '</div>' +
+        '<button class="cart-item-remove" onclick="removeFromInlineCart(' + item.id + ')" title="Remove">' +
+          '<i class="fa-solid fa-xmark"></i>' +
+        '</button>' +
+      '</div>';
+    }
+    inlineCartItems.innerHTML = html;
+  }
+
+  function truncateUrl(url) {
+    if (url.length > 60) return url.substring(0, 57) + '...';
+    return url;
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  window.removeFromInlineCart = function(id) {
+    cart = cart.filter(function(item) { return item.id !== id; });
+    renderInlineCart();
+    if (cart.length === 0 && inlineCartSection) {
+      // Keep section visible but show empty state
+    }
+  };
+
+  window.clearInlineCart = function() {
+    cart = [];
+    renderInlineCart();
+  };
+
+  window.showOrderForm = function() {
+    if (cart.length === 0) {
+      alert('Please add at least one product to your cart first.');
+      return;
+    }
+    if (orderForm) {
+      orderForm.style.display = 'block';
+      setTimeout(function() {
+        orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
+
+  // Also hide the floating cart trigger if it exists
+  var floatCart = document.getElementById('quickCartFloat');
+  if (floatCart) floatCart.style.display = 'none';
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
